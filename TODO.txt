@@ -1,0 +1,20 @@
+PHASE 1
+-------
+1. Get this authorizer deployed, with no caching
+
+2. Get the gateway to manually route GET requests to mockbin.org
+
+3. Get the gateway to run the authorizer for the /api route
+
+4. Get Serverless framework to automate the above deployment
+
+5. Add a new API gateway with an API domain of https://api-spa.authsamples.com and get a cert issued
+
+PHASE 2
+-------
+1. Get CORS working
+
+2. Consolidate logging and error handling for cookie authorizer
+
+3. Add an 'npm run http' task
+

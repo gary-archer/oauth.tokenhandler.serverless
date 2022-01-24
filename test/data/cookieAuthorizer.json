@@ -1,0 +1,18 @@
+{
+  "methodArn": "arn:aws:execute-api:eu-west-2:090109105180:cisgvmtrf1/deployed/GET/companies",
+  "httpMethod": "GET",
+  "headers": {
+    "origin": "https://web.mycompany.com",
+    "x-mycompany-csrf": "pUYNK+ygOnmGMbqI6Zyob1mdkiYgpzc4updYjyti6mM=",
+    "x-mycompany-api-client": "ServerlessTest",
+    "x-mycompany-correlation-id": "b0733b17-b147-bf65-029b-2789229aa5bb",
+    "x-mycompany-session-id": "d1270ebf-0323-4e43-c6e1-5458f26c8e23",
+    "x-mycompany-test-exception": ""
+  },
+  "multiValueHeaders": {
+    "cookie": [
+      "mycompany-at=AQOoFpZAzSJgFJXgljOJa435hWpxZI0D5Ao0MNWR9iGTLyAaf54i5_cyfaolhnr7fTiuIlyofK6HnkHZIQyGvEXJB3NGv5UYUgoJTb5jjk_-kA4eOpnrmYE_jjbMdIEl0GYDrOby1D5YXq9VeI9niMb8PGhRoFwqBIH69ZrggHZm3ds-H0cz3mMl2KC98djwSqiHq17eIsgj4IXYtLVK60A2VaT5lkxxjnfOPUH-PkZPN-sNTou7rp83EZ5Owb5-SL8O4AjxzGVE5q9-1vuM7tbipoEB1XiEd9A6sdGmi_3chugI4ulGOEzNzXFyq2xp-6MnONZdtB4_w_11y4U8BSAcoAqyU2KiHEKc1nOpuSS7x_VAtdqP7ZqPPQaeqZ-7M8A_hjGcGZ9FpkkUez1l_QnFozkqN-xgUwlIjbgOUJ18fRy1oLagzOYcntklVCSvshf__FClSmqtfzu0261iXkY1g4Y42QbRHVlQoa35DD3wPYqs0lOJS4PZeeu4Ejc_SZ5vh585HFs6Wstbpybz57FzHqZgnzas9PixVd1NPete9gs3GEn1IcYfvp0xJksmvHOKG_GnRE6Jhc_9_A06XaZXF35l7tItEj-bSSEa5pOaFUDXSyWM6m6X8N6nkkPq2AnFiFkcWAYADbwiCtM_WCmF7bDyl2fnymI8-ce19OzZfImM_2yE3Z2rebzCV2z3_5dbcfIBJ6mMoJ1sy2wviX2HDxHamkSXK4erQPbMNCdPoblIB7tPz3dAVazsVJMcr9UDrBw6oPbL56_4FFRfPTa2jLi557cU2x4VbuRGGp2-hMaw9sCkGdqyf5UunTfzOYDL8rQzWisosOTRnbFRQykAA6rH5Or8yaYg1bmQB2QfmLoeqS0CpKvrAZ5s6rKta-dKjgjYsK8tymkOXxMlNkHG3bac1CytPJ6jkLkiJqK77tBWHm-hQSgANodzrAy5vdtEre03LJ--x7424yeOX63XxsEkTUnTiXLd7fTfevoxSrFDyoeHsgblZBB4LaU0y7scQWKraCbuQY0d-BsRuwIkCibiEY_KvdrMmUk1tfgqVa44gjeeNnis0KpQEv_kHI02m08Xe3nstCJGACg2BbgRyEq8YhhsCcyqe72MNxkisSi18FjFMYx2tYUR9KQg2AHl8TMqcotQ8vzyzd-7EcMjASynUtcfPszoPPQzp2eJzvqgBC18DRPpVRLmxUGzKONY4bndMQr8kDG-8qwlc0BCmocG--SKYbxFy85FOFl0CBtFn-NhSw_G1CbqLh2RU9fzgRgFjZ6gdMeQUvq51JvSXvU68oHfNwYnaWrThfbf3ROlJzNnwLsJZ_bXF1Nk4rY97Mnmae0Chs2OPZel9J6GSGYa4FIEPDRBHH0mbukCL-M_4d5qTlYgjcegorqQY1pON4aOS1IH3hluVGGnOk_ng0fU_QRz4zE21bul2CRrEaSIzcoHW7wxuCUr6npuek22lRz1aw47eMkg2uT6Zt488nGcRitUu34orUmsINulwwIKiv_NWnQqRwDIu4s-cPU7iV2fBrjWu3C9yTK68v-79tEMO8Ww",
+      "mycompany-csrf=AVh-KiWAuusvpzCaY_wfMB29bVSKZnqYz-aXyLv1FHr9tPt8Hp0OXbs1-gIvgD7Kb5Fb3qQVFFfxbqpR5lWnBnF5lHE8bcPGxA"
+    ]
+  }
+}

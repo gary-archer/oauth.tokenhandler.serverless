@@ -1,0 +1,140 @@
+service: oauthproxy
+
+# Base details for AWS deployment
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: eu-west-2
+  profile: default
+  stage: ${self:custom.config.settings.stage}
+  lambdaHashingVersion: '20201221'
+  apiGateway:
+    shouldStartNameWithService: true
+
+custom:
+  # Each environment can have its own configuration file
+  config: ${file(environments/${opt:stage, 'local'}.yml)}
+  
+  # API gateway domain details
+  customDomain:
+    domainName: ${self:custom.config.settings.proxyHostName}
+    certificateName: '*.${self:custom.config.settings.certificateDomainName}'
+    stage: ${self:custom.config.settings.stage}
+    endpointType: regional
+
+  # Tell the API gateway to not reject any requests with these headers
+  allowedHeaders:
+    - Content-Type
+    - Accept
+    - Cookie
+    - X-Amz-Date
+    - X-Api-Key
+    - X-Amz-Security-Token
+    - X-Amz-User-Agent
+    - x-mycompany-csrf
+    - x-mycompany-api-client
+    - x-mycompany-correlation-id
+    - x-mycompany-session-id
+    - x-mycompany-test-exception
+
+functions:
+  cookieAuthorizer:
+    handler: dist/lambda/authorizer.handler
+
+# This needs to go somewhere
+#cors:
+#  origins:
+#    - ${self:custom.config.settings.trustedOrigin}
+#    - ${self:custom.config.settings.trustedDevOrigin}
+#  headers: ${self:custom.allowedHeaders}
+#  allowCredentials: true
+#  maxAge: 86400
+
+# By default all files are included so remove files we don't need for any lambda
+package:
+  patterns:
+  - '!.codacy.yaml'
+  - '!.eslintrc.js'
+  - '!.vscode/**'
+  - '!.vscode/**'
+  - '!environments/**'
+  - '!src/**'
+  - '!test/**'
+  - '!ts*.json'
+  - '!package*.json'
+  - '!README.md'
+  - '!LICENSE.txt'
+
+plugins:
+  - serverless-domain-manager
+
+resources:
+  Resources:
+
+    # Improve status codes and default messages for authentication responses from API gateway  
+    # https://docs.aws.amazon.com/apigateway/latest/developerguide/supported-gateway-response-types.html
+
+    # Handle missing API request credentials
+    MissingTokenValidPathGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.WWW-Authenticate: "'Bearer'"
+
+        ResponseType: UNAUTHORIZED
+        
+        ResponseTemplates:
+          application/json: |
+            {
+              "code": "unauthorized",
+              "message": "Missing, invalid or expired request credentials"
+            }
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+
+    # Handle invalid API request credentials
+    InvalidTokenGatewayResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.WWW-Authenticate: "'Bearer'"
+
+        ResponseType: ACCESS_DENIED
+        
+        ResponseTemplates:
+          application/json: |
+            {
+              "code": "unauthorized",
+              "message": "Missing, invalid or expired request credentials"
+            }
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '401'
+
+    # Technical errors translating cookies to tokens, and this response type cannot be customized
+    AuthenticationErrorResponse:
+      Type: 'AWS::ApiGateway::GatewayResponse'
+      Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+
+        ResponseType: AUTHORIZER_CONFIGURATION_ERROR
+
+        ResponseTemplates:
+          application/json: |
+            {
+              "code": "server_error",
+              "message": "Problem encountered authorizing the request"
+            }
+        RestApiId:
+          Ref: 'ApiGatewayRestApi'
+        StatusCode: '500'
+
+    # Limit cloudwatch log retention 
+    CookieAuthorizerLogGroup:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        RetentionInDays: '5'

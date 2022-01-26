@@ -58,16 +58,16 @@ export class PolicyDocumentWriter {
 
     /*
      * This takes an ARN for the current API request, such as this:
-     *   arn:aws:execute-api:eu-west-2:090109105180:cqo3riplm6/default/GET/companies
+     *   arn:aws:execute-api:eu-west-2:090109105180:cqo3riplm6/deployed/GET/companies
      *
      * It reduces it to a wildcard that applies to all lambdas in the service:
-     *   arn:aws:execute-api:eu-west-2:090109105180:cqo3riplm6/default/*
+     *   arn:aws:execute-api:eu-west-2:090109105180:cqo3riplm6/deployed/*
      *
      * The policy document will be cached and will then be usable for any secured API request
      */
     private static _getServiceArn(methodArn: string): any {
 
-        // Get the last part, such as cqo3riplm6/default/GET/companies
+        // Get the last part, such as cqo3riplm6/deployed/GET/companies
         const parts = methodArn.split(':');
         if (parts.length === 6) {
 
@@ -75,7 +75,7 @@ export class PolicyDocumentWriter {
             const pathParts = parts[5].split('/');
             if (pathParts.length >= 4) {
 
-                // Update the final part to a wildcard value such as cqo3riplm6/default/* and then rejoin
+                // Update the final part to a wildcard value such as cqo3riplm6/deployed/* and then rejoin
                 parts[5] = `${pathParts[0]}/${pathParts[1]}/*`;
                 return parts.join(':');
             }

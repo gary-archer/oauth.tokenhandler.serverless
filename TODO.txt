@@ -18,3 +18,44 @@ PHASE 2
 
 3. Add an 'npm run http' task
 
+IMPL
+----
+1. Under API Gateway create an API called spa-cookie-proxy, endpointType=regional
+
+2. Select create resource and enter:
+- Resource name: proxy
+- Resource path: {proxy+}
+Leave API gateway CORS unchecked
+
+3. Under ANY select Create Method, then select HTTT Proxy and enter this URL:
+   https://mockbin.org/request
+
+My API ID is wfkyqcy2hh so this is the proxied URL to mockbin:
+curl -i https://wfkyqcy2hh.execute-api.eu-west-2.amazonaws.com/deployed/request
+
+It will become:
+https://spa-api.authsamples.com/request
+
+4. Query parameters - feels convoluted but should be possible:
+   https://stackoverflow.com/questions/31329958/how-to-pass-a-querystring-or-route-parameter-to-aws-lambda-from-amazon-api-gatew
+
+5. Calling an authorizer works but I get an AuthorizerConfigurationException returning a policy doc for another API.
+
+exports.handler = async (event) => {
+    console.log('** COOKIE VALIDATED - SENDING TOKEN **');
+    
+    return {
+        principalId: 'user',
+        policyDocument: {
+            Version: '2012-10-17',
+            Statement: [
+                {
+                    Action: 'execute-api:Invoke',
+                    Effect: 'Allow',
+                    Resource: 'arn:aws:execute-api:eu-west-2:090109105180:4pdnzzcag7/deployed/*',
+                },
+            ],
+        },
+        context: 'whatevar',
+    };
+};

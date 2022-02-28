@@ -22,33 +22,14 @@ custom:
     stage: ${self:custom.config.settings.stage}
     endpointType: regional
 
-  # Tell the API gateway to not reject any requests with these headers
-  allowedHeaders:
-    - Content-Type
-    - Accept
-    - Cookie
-    - X-Amz-Date
-    - X-Api-Key
-    - X-Amz-Security-Token
-    - X-Amz-User-Agent
-    - x-mycompany-csrf
-    - x-mycompany-api-client
-    - x-mycompany-correlation-id
-    - x-mycompany-session-id
-    - x-mycompany-test-exception
-
+# A single HTTP endpoint covers all routes, with other logic handled in code
 functions:
-  cookieAuthorizer:
-    handler: dist/lambda/authorizer.handler
-
-# This needs to go somewhere
-#cors:
-#  origins:
-#    - ${self:custom.config.settings.trustedOrigin}
-#    - ${self:custom.config.settings.trustedDevOrigin}
-#  headers: ${self:custom.allowedHeaders}
-#  allowCredentials: true
-#  maxAge: 86400
+  reverseProxy:
+    handler: dist/lambda/reverseProxy.handler
+    events:
+      - http: 
+          path: /{proxy+}.
+          method: ANY
 
 # By default all files are included so remove files we don't need for any lambda
 package:
@@ -71,70 +52,8 @@ plugins:
 resources:
   Resources:
 
-    # Improve status codes and default messages for authentication responses from API gateway  
-    # https://docs.aws.amazon.com/apigateway/latest/developerguide/supported-gateway-response-types.html
-
-    # Handle missing API request credentials
-    MissingTokenValidPathGatewayResponse:
-      Type: 'AWS::ApiGateway::GatewayResponse'
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.WWW-Authenticate: "'Bearer'"
-
-        ResponseType: UNAUTHORIZED
-        
-        ResponseTemplates:
-          application/json: |
-            {
-              "code": "unauthorized",
-              "message": "Missing, invalid or expired request credentials"
-            }
-        RestApiId:
-          Ref: 'ApiGatewayRestApi'
-        StatusCode: '401'
-
-    # Handle invalid API request credentials
-    InvalidTokenGatewayResponse:
-      Type: 'AWS::ApiGateway::GatewayResponse'
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-          gatewayresponse.header.WWW-Authenticate: "'Bearer'"
-
-        ResponseType: ACCESS_DENIED
-        
-        ResponseTemplates:
-          application/json: |
-            {
-              "code": "unauthorized",
-              "message": "Missing, invalid or expired request credentials"
-            }
-        RestApiId:
-          Ref: 'ApiGatewayRestApi'
-        StatusCode: '401'
-
-    # Technical errors translating cookies to tokens, and this response type cannot be customized
-    AuthenticationErrorResponse:
-      Type: 'AWS::ApiGateway::GatewayResponse'
-      Properties:
-        ResponseParameters:
-          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-
-        ResponseType: AUTHORIZER_CONFIGURATION_ERROR
-
-        ResponseTemplates:
-          application/json: |
-            {
-              "code": "server_error",
-              "message": "Problem encountered authorizing the request"
-            }
-        RestApiId:
-          Ref: 'ApiGatewayRestApi'
-        StatusCode: '500'
-
     # Limit cloudwatch log retention 
-    CookieAuthorizerLogGroup:
+    GetCompanyListLogGroup:
       Type: 'AWS::Logs::LogGroup'
       Properties:
         RetentionInDays: '5'

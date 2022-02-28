@@ -1,61 +1,22 @@
-PHASE 1
--------
-1. Get this authorizer deployed, with no caching
+DELIVERABLE
+-----------
+Local setup:
+- web.authsamples-dev.com
+- api.authsamples-dev.com (deployed)
 
-2. Get the gateway to manually route GET requests to mockbin.org
+Deployed setup:
+- web.authsamples.com
+- api.authsamples.com
+- tokenhandler.authsamples.com
 
-3. Get the gateway to run the authorizer for the /api route
+FIRST STEPS
+-----------
+1. Update dependencies and get code running with a minimal mock implementation
 
-4. Get Serverless framework to automate the above deployment
+2. Verify catch all path by deploying to the new dev domain:
+   https://stackoverflow.com/questions/35773025/is-it-possible-to-use-wildcards-or-catch-all-paths-in-aws-api-gateway/40608247#40608247
 
-5. Add a new API gateway with an API domain of https://api-spa.authsamples.com and get a cert issued
+3. Get cookie translation code working, followed by axios call to Serverless API
+   For tokenhandler path it should instead be a straight pass through - manage this via config
 
-PHASE 2
--------
-1. Get CORS working
-
-2. Consolidate logging and error handling for cookie authorizer
-
-3. Add an 'npm run http' task
-
-IMPL
-----
-1. Under API Gateway create an API called spa-cookie-proxy, endpointType=regional
-
-2. Select create resource and enter:
-- Resource name: proxy
-- Resource path: {proxy+}
-Leave API gateway CORS unchecked
-
-3. Under ANY select Create Method, then select HTTT Proxy and enter this URL:
-   https://mockbin.org/request
-
-My API ID is wfkyqcy2hh so this is the proxied URL to mockbin:
-curl -i https://wfkyqcy2hh.execute-api.eu-west-2.amazonaws.com/deployed/request
-
-It will become:
-https://spa-api.authsamples.com/request
-
-4. Query parameters - feels convoluted but should be possible:
-   https://stackoverflow.com/questions/31329958/how-to-pass-a-querystring-or-route-parameter-to-aws-lambda-from-amazon-api-gatew
-
-5. Calling an authorizer works but I get an AuthorizerConfigurationException returning a policy doc for another API.
-
-exports.handler = async (event) => {
-    console.log('** COOKIE VALIDATED - SENDING TOKEN **');
-    
-    return {
-        principalId: 'user',
-        policyDocument: {
-            Version: '2012-10-17',
-            Statement: [
-                {
-                    Action: 'execute-api:Invoke',
-                    Effect: 'Allow',
-                    Resource: 'arn:aws:execute-api:eu-west-2:090109105180:4pdnzzcag7/deployed/*',
-                },
-            ],
-        },
-        context: 'whatevar',
-    };
-};
+4. Get SPA working on a feature branch

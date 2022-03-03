@@ -6,6 +6,7 @@
     "lint": "npx eslint . --ext .ts,.tsx",
     "build": "rimraf dist && tsc --sourceMap true",
     "setup": "./test/setup.sh",
+    "reverseProxy": "sls invoke local -f reverseProxy",
     "lambda": "./test/lambda.sh",
     "package": "npm run buildRelease && rimraf .serverless && sls package --stage deployed",
     "buildRelease": "rimraf dist && tsc",

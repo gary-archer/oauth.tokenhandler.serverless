@@ -28,7 +28,7 @@ functions:
     handler: dist/lambda/reverseProxy.handler
     events:
       - http: 
-          path: /{proxy+}.
+          path: /{proxy+}
           method: ANY
 
 # By default all files are included so remove files we don't need for any lambda
@@ -40,6 +40,7 @@ package:
   - '!.vscode/**'
   - '!environments/**'
   - '!src/**'
+  - '!src.OLD/**'
   - '!test/**'
   - '!ts*.json'
   - '!package*.json'
@@ -53,7 +54,7 @@ resources:
   Resources:
 
     # Limit cloudwatch log retention 
-    GetCompanyListLogGroup:
+    ReverseProxyLogGroup:
       Type: 'AWS::Logs::LogGroup'
       Properties:
         RetentionInDays: '5'

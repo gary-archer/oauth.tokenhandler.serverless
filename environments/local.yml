@@ -6,7 +6,5 @@ settings:
   stage: 'local'
 
   # These are dummy values for when running on a development computer, to keep Serverless happy
-  proxyHostName: 'api-spa.mycompany.com'
-  certificateDomainName: 'mycompany.com'
-  trustedOrigin: 'https://web.mycompany.com'
-  trustedDevOrigin: 'https://web.mycompany.com'
+  proxyHostName: 'tokenhandler.authsamples-local.com'
+  certificateDomainName: 'authsamples-local.com'

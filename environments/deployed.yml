@@ -6,9 +6,5 @@ settings:
   stage: 'deployed'
 
   # Host names for our single example AWS stage, though a real system would have a pipeline
-  proxyHostName: 'api-spa.authsamples.com'
-  certificateDomainName: 'authsamples.com'
-
-  # The cloud API allows either of these web origins to make CORS requests to it
-  trustedOrigin: 'https://web.authsamples.com'
-  trustedDevOrigin: 'https://web.mycompany.com'
+  proxyHostName: 'tokenhandler.authsamples-dev.com'
+  certificateDomainName: 'authsamples-dev.com'

@@ -77,11 +77,11 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
         const router = new JsonRouter(this._configuration);
         const route = router.findRoute(event);
 
-        if (!route.oauthProxy) {
+        if (!route.cors) {
             return false;
         }
 
-        if (!route.oauthProxy.trustedWebOrigins.find(o => o.toLowerCase() === origin.toLowerCase())) {
+        if (!route.cors.trustedWebOrigins.find(o => o.toLowerCase() === origin.toLowerCase())) {
             return false;
         }
 

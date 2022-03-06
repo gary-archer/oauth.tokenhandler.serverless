@@ -6,9 +6,7 @@
     "lib": ["es2017"],
     "module": "commonjs",
     "moduleResolution": "node",
-    "esModuleInterop": true,
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "esModuleInterop": true
   },
   "include": [
     "src/**/*.ts"

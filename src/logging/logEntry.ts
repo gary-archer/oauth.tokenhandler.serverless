@@ -1,4 +1,5 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
+import fs from 'fs-extra';
 import {ClientError} from '../errors/clientError';
 import {ServerError} from '../errors/serverError';
 import {PathHelper} from '../utilities/pathHelper';
@@ -57,9 +58,10 @@ export class LogEntry {
 
             if (process.env.IS_LOCAL) {
 
-                // On a developer PC, output logs with pretty printing
-                console.error(JSON.stringify(this._data.toLogFormat(), null, 2));
-            
+                // On a developer PC, output from 'npm run lambda' is written with pretty printing to a file
+                const data = JSON.stringify(this._data.toLogFormat(), null, 2);
+                fs.appendFileSync('./test/lambdatest.log', data);
+
             } else {
 
                 // In AWS Cloudwatch we use bare JSON logging that will work best with log shippers

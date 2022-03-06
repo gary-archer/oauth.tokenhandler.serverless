@@ -3,18 +3,25 @@
         {
             "name": "oauthAgent",
             "path": "/oauth-agent",
-            "target": "https://api.authsamples.com"
+            "target": "https://api.authsamples.com",
+            "cors": {
+                "trustedWebOrigins": [
+                    "https://web.authsamples-dev.com"
+                ]
+            }
         },
         {
             "name": "api",
             "path": "/api",
             "target": "https://api.authsamples.com",
-            "oauthProxy": {
-                "cookiePrefix": "authsamples-dev",
-                "cookieDecryptionKey": "d26d160214a85a2aa9dc80487e0c24b33d1594bda7b0e1954e99fde54f6486df",
+            "cors": {
                 "trustedWebOrigins": [
                     "https://web.authsamples-dev.com"
                 ]
+            },
+            "oauthProxy": {
+                "cookiePrefix": "authsamples-dev",
+                "cookieDecryptionKey": "d26d160214a85a2aa9dc80487e0c24b33d1594bda7b0e1954e99fde54f6486df"
             }
         }
     ]

@@ -1,18 +1,14 @@
-# OAuth Cookie Proxy
+# OAuth Serverless Reverse Proxy
 
-A utility to receive secure cookies from Single Page Application and route access tokens to APIs.
+A demo level reverse proxy to deal with cookie concerns for a Single Page Application.\
+The goal of the repo is to demonstrate the preferred architectural routing, to separate concerns.
 
 ## Modern Web Security
 
-The [Final SPA](https://github.com/gary-archer/oauth.websample.final) uses Curity's [Token Handler Pattern](https://github.com/curityio/web-oauth-via-bff) and calls this API to perform OAuth related work.
+The [Final SPA](https://github.com/gary-archer/oauth.websample.final) uses Curity's [Token Handler Pattern](https://github.com/curityio/web-oauth-via-bff) and makes OAuth and API requests via the reverse proxy.\
+All CORS and cookie related logic is implemented here before routing requests to the target API.
 
-## Implementation
+## OAuth Proxy
 
-An AWS Serverless implementation that performs the following actions:
-
-- Listens on the API entry point for the SPA, at https://api-spa.authsamples.com/api
-- Allows the SPA to make a cross origin request to the cookie entry point, via CORS headers
-- Verifies the origin header as a trusted web origin
-- For data changing commands, make double submit cookie checks as a CSRF defense in depth
-- Decrypts secure cookies to get access tokens
-- Forwards access tokens to the real API, at https://api-spa.authsamples.com/api
+For API routes, some `OAuth Proxy` logic runs to decrypt cookies, then forwards an access token to the API.\
+For data changing requests, the OAuth Proxy also makes additional CSRF checks.

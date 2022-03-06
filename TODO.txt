@@ -1,17 +1,11 @@
-INITIAL CODE
-------------
-1. Log Consolidation in other projects
-   Update Serverless API logging to use proper event object
-   Do the same IS_LOCAL based logging everywhere and avoid 'mode=development'
-   Leftover code in serverless API to log when event.type === 'REQUEST', in LogEntryImpl.calculateOperationName
-
 CODE COMPLETION
 ---------------
 1. Get cookie and CSRF code ported from the OLD folder and working
    Headers will be tricky and should be done according to convention, to avoid sending bad protocol headers
    Get 'npm run setup' done
-
-2. Many error codes to handle, from the OLD folder
+   Many error codes to handle, from the OLD folder
+   Get end-to-end working against deployed APIs
+   Test both OAuth-Agent and APIs and run a full workflow
 
 SPA INTEGRATION
 ---------------
@@ -19,8 +13,10 @@ SPA INTEGRATION
    Also update README naming, ready for merging
 
 2. Serverless API must no longer deal with cookies, CORS or CSRF
+   Update tests to only receive tokens
 
 3. Token handler must no longer deal with CORS
+   Update tests to only receive tokens
 
 4. SPA repointed on a branch and working on my local PC
 

@@ -1,19 +1,22 @@
-FIRST STEPS
------------
-1. Update dependencies and get code running with a minimal mock implementation
+TODO
+----
+1. README updated
 
-2. Verify catch all path by deploying to the new dev domain:
-   https://stackoverflow.com/questions/35773025/is-it-possible-to-use-wildcards-or-catch-all-paths-in-aws-api-gateway/40608247#40608247
+2. Deployment to https://tokenhandler.authsamples-dev.com using local file
+   'npm run http' initial work
 
-3. Get a basic router working and calling Serverless API
-   Run locally, and route to target API
-   Invalid paths should not reach target endpoints
-   https://github.com/berstend/tiny-request-router
+3. Logging and exception middleware working and writing 4xx or 5xx errors
 
-4. Get deployment planned, with versions on both the deployed and local environments
-   How to express that?
+4. Deploy to both domains
+   Request a new AWS cert that includes tokenhandler domain, then swap for existing resources
 
-5. Get cookie translation code working, followed by axios call to Serverless API
-   For tokenhandler path it should instead be a straight pass through - manage this via config
+5. Add CORS middleware, deploy and update tests
+   Check that error responses in tests have the correct headers
 
-6. Get SPA working on a feature branch
+6. Get cookie and CSRF code ported and working
+   Deploy this
+
+7. Deploy oauth-agent and update README on a feature branch of tokenhandlerapi
+   This will enable me to get URLs right early
+
+8. Update SPA on a branch and work on integration

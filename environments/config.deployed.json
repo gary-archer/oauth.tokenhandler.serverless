@@ -2,18 +2,16 @@
     "routes": [
     {
         "name": "oauthAgent",
-        "path": "/oauth-agent",
-        "target": "https://api.authsamples-dev.com"
+        "target": "https://api.authsamples.com/oauth-agent"
     },
     {
         "name": "api",
-        "path": "/api",
-        "target": "https://api.authsamples.com",
+        "target": "https://api.authsamples.com/api",
         "oauthProxy": {
             "cookiePrefix": "authsamples-dev",
             "cookieDecryptionKey": "d26d160214a85a2aa9dc80487e0c24b33d1594bda7b0e1954e99fde54f6486df",
             "trustedWebOrigins": [
-                "https://web.authsamples-dev.com"
+                "https://web.authsamples.com"
             ]
         }
     }]

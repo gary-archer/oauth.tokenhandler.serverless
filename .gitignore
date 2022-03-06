@@ -1,5 +1,6 @@
-node_modules
-.serverless
-dist
 .DS_store
-test/*.txt
+node_modules
+dist
+request.txt
+response.txt
+.serverless

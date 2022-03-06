@@ -1,22 +1,26 @@
 TODO
 ----
-1. README updated
+1. Fix 500 error in deployed system and log path to include query params
+   Use primitive error logging
 
-2. Deployment to https://tokenhandler.authsamples-dev.com using local file
-   'npm run http' initial work
+2. Logging and exception middleware working and writing 4xx or 5xx log entries
+   Base this on the serverless API, which does not need to deal with Express and hence uses middy consistently
 
-3. Logging and exception middleware working and writing 4xx or 5xx errors
-
-4. Deploy to both domains
-   Request a new AWS cert that includes tokenhandler domain, then swap for existing resources
-
-5. Add CORS middleware, deploy and update tests
+3. Add CORS middleware, deploy and update tests
    Check that error responses in tests have the correct headers
 
-6. Get cookie and CSRF code ported and working
+4. Get cookie and CSRF code ported and working
    Deploy this
 
-7. Deploy oauth-agent and update README on a feature branch of tokenhandlerapi
+5. Reduce and deploy oauth-agent and update README on a feature branch of tokenhandlerapi
    This will enable me to get URLs right early
 
-8. Update SPA on a branch and work on integration
+6. Update SPA on a branch and work on integration
+
+7. Include tokenhandlerapi and reverseproxy as codacy projects
+   Also document use of console.error for local debugging, to avoid writing to response files
+
+8. Reverse proxy for deployed SPA
+   Request a new AWS cert that includes tokenhandler domain, then swap for existing resources
+   Include Elasticsearch logs for errors, then do curl requests to verify
+   Custom packager may be needed

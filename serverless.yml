@@ -1,4 +1,4 @@
-service: oauthproxy
+service: reverseproxy
 
 # Base details for AWS deployment
 provider:
@@ -7,7 +7,6 @@ provider:
   region: eu-west-2
   profile: default
   stage: ${self:custom.config.settings.stage}
-  lambdaHashingVersion: '20201221'
   apiGateway:
     shouldStartNameWithService: true
 
@@ -40,7 +39,7 @@ package:
   - '!.vscode/**'
   - '!environments/**'
   - '!src/**'
-  - '!src.OLD/**'
+  - '!OLD/**'
   - '!test/**'
   - '!ts*.json'
   - '!package*.json'

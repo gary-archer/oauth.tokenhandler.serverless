@@ -33,7 +33,7 @@ function apiError() {
 #
 jo \
 httpMethod=GET \
-path=/api2 \
+path=/badpath \
 | jq > $REQUEST_FILE
 
 #
@@ -60,11 +60,11 @@ echo 'Request for an invalid route was handled successfully'
 #
 jo \
 httpMethod=GET \
-path=/api \
+path=/api/companies \
 | jq > $REQUEST_FILE
 
 #
-# Execute the valid route request
+# Execute the valid route request but without credentials
 #
 echo 'Calling reverse proxy with a valid route ...'
 $SLS invoke local -f reverseProxy -p $REQUEST_FILE > $RESPONSE_FILE
@@ -75,7 +75,7 @@ fi
 JSON=$(cat $RESPONSE_FILE)
 HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
 BODY=$(jq -r .body <<< "$JSON")
-if [ $HTTP_STATUS -ne '200' ]; then
+if [ $HTTP_STATUS -ne '401' ]; then
   echo "*** A request with a valid route did not returned an unexpected HTTP status: $HTTP_STATUS"
   apiError "$BODY"
   exit

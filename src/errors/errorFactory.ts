@@ -45,7 +45,7 @@ export class ErrorFactory {
         const error = new ClientErrorImpl(
             401,
             ErrorCodes.unauthorizedRequest,
-            'Missing, invalid or expired credential');
+            'Missing, invalid or expired cookie credential');
         error.setLogContext({
             details,
         });

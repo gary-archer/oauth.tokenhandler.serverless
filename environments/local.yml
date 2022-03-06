@@ -5,6 +5,6 @@ settings:
   # Sets event.requestContext.stage to this value
   stage: 'local'
 
-  # These are dummy values for when running on a development computer, to keep Serverless happy
-  proxyHostName: 'tokenhandler.authsamples-local.com'
-  certificateDomainName: 'authsamples-local.com'
+  # Host names for the deployed token handler used when running the SPA locally
+  proxyHostName: 'tokenhandler.authsamples-dev.com'
+  certificateDomainName: 'authsamples-dev.com'

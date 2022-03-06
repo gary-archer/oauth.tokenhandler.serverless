@@ -12,3 +12,9 @@ All CORS and cookie related logic is implemented here before routing requests to
 
 For API routes, some `OAuth Proxy` logic runs to decrypt cookies, then forwards an access token to the API.\
 For data changing requests, the OAuth Proxy also makes additional CSRF checks.
+
+## Quick Start
+
+## Blog Post
+
+See the `Reverse Proxy SPA Architecture` blog post for further details on the overall setup.

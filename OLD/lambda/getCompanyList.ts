@@ -27,9 +27,6 @@ const handler = async (event: APIGatewayRequestAuthorizerEvent)
 
         const error = GatewayErrorUtils.fromException(e);
 
-        console.log('*** Cookie authorizer error');
-        console.log(JSON.stringify(error.toLogFormat()));
-
         // To return a 401 to the caller we must return an unauthorized policy document
         if (error.statusCode === 401) {
             return PolicyDocumentWriter.unauthorizedResponse(event);

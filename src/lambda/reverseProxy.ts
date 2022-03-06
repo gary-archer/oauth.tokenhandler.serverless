@@ -40,6 +40,8 @@ const handler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyRes
             };
         }
 
+        console.error('*** LOGGING 500 ERROR');
+        console.error(e);
         return {
             statusCode: 500,
             body: JSON.stringify({

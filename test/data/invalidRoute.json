@@ -1,8 +1,0 @@
-{
-    "httpMethod": "GET",
-    "path": "/api2",
-    "headers": {
-      "origin": "https://web.mycompany.com"
-    }
-  }
-  

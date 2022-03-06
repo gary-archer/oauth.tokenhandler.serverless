@@ -20,7 +20,7 @@ export class Router {
      */
     public findRoute(event: APIGatewayProxyEvent): RouteConfiguration {
 
-        const found = this._configuration.routes.find(r => r.path.toLowerCase() === event.path.toLowerCase());
+        const found = this._configuration.routes.find(r => event.path.toLowerCase().startsWith(r.path.toLowerCase()));
         if (!found) {
             throw ErrorFactory.createClient401Error(`An invalid route was requested: ${event.path}`);
         }
@@ -45,8 +45,6 @@ export class Router {
             options.data = event.body;
         }
 
-        // Try the request and forward either request or response errors
-        
         try {
 
             // Try the request, and return the response on success

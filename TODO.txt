@@ -1,42 +1,47 @@
 INITIAL CODE
 ------------
-1. CORS OPTIONS tests
-   Add tests for CORS results
+1. Write the output to a log.txt file as for token handler
+   This style of project uses 'npm run lambda' and 'npm run http'
 
 2. CORS config changes
    CORS settings should have an enabled flag and also work for the oauth-agent route
 
-3. Write the output to a log.txt file as for token handler
-   This style of project uses 'npm run lambda' and 'npm run http'
+   "cors": {
+      "trustedWebOrigins": [
+         "https://web.authsamples-dev.com"
+      ]
+   },
+   "oauthProxy": {
+      "cookiePrefix": "authsamples-dev",
+      "cookieDecryptionKey": "d26d160214a85a2aa9dc80487e0c24b33d1594bda7b0e1954e99fde54f6486df",
+   }
 
-4. Log Consolidation in other projects
+3. Log Consolidation in other projects
    Update Serverless API logging to use proper event object
    Do the same IS_LOCAL based logging everywhere and avoid 'mode=development'
    Leftover code in serverless API to log when event.type === 'REQUEST', in LogEntryImpl.calculateOperationName
 
 CODE COMPLETION
 ---------------
-1. Get cookie and CSRF code ported and working
-   All error codes to cover and log
-   
-2. Fix up header handling and avoid routing of protocol headers since I don't know enough
+1. Get cookie and CSRF code ported from the OLD folder and working
+   Headers will be tricky and should be done according to convention, to avoid sending bad protocol headers
+   Get 'npm run setup' done
 
-3. Write all tests for both 'npm run lambda' and 'npm run http'
-   npm run setup will change
+2. Many error codes to handle, from the OLD folder
 
-INTEGRATION 1
--------------
+SPA INTEGRATION
+---------------
 1. Reduce and deploy a new oauth-agent API on a feature branch of tokenhandlerapi
    Also update README naming, ready for merging
 
-2. Serverless API no longer deals with cookies, CORS or CSRF
+2. Serverless API must no longer deal with cookies, CORS or CSRF
 
-3. Token handler no longer deals with CORS
+3. Token handler must no longer deal with CORS
 
-4. SPA repointing on a branch for end-to-end verification
+4. SPA repointed on a branch and working on my local PC
 
-INTEGRATION 2
--------------
+API INTEGRATION
+---------------
 1. No local Docker by default - get it working and see what performance is like
    Then update deploy.sh with support for a local token handler
    deploy.sh will need to update local config files
@@ -44,7 +49,9 @@ INTEGRATION 2
 1. Include tokenhandlerapi and reverseproxy as codacy projects
    Also document use of console.error for local debugging, to avoid writing to response files
 
-3. Reverse proxy for deployed SPA
+DEPLOYED ENVIRONMENT UPDATES
+----------------------------
+1. Reverse proxy for deployed SPA
    Request a new AWS cert that includes tokenhandler domain, then swap certs for existing resources
    Include Elasticsearch logs for errors, then do curl requests to verify
    Custom packager may be needed

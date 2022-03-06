@@ -9,6 +9,13 @@ import {LambdaConfiguration} from '../startup/lambdaConfiguration';
 const container = new Container();
 const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyResult> => {
 
+    // Avoid doing any real works for pre-flight OPTIONS requests
+    if (event.httpMethod.toUpperCase() === 'OPTIONS') {
+        return {
+            statusCode: 204,
+        } as APIGatewayProxyResult;
+    }
+    
     // Try to route the incoming HTTP request to the target API
     const router = new JsonRouter(container.getConfiguration());
     const response = await router.route(event);

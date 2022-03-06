@@ -1,26 +1,28 @@
 TODO
 ----
-1. Fix 500 error in deployed system and log path to include query params
-   Use primitive error logging
-
-2. Logging and exception middleware working and writing 4xx or 5xx log entries
+1. Logging and exception middleware working and writing 4xx or 5xx log entries
    Base this on the serverless API, which does not need to deal with Express and hence uses middy consistently
+   Log to file only during tests
 
-3. Add CORS middleware, deploy and update tests
+2. Add CORS middleware, deploy and update tests
    Check that error responses in tests have the correct headers
 
-4. Get cookie and CSRF code ported and working
-   Deploy this
+3. Get cookie and CSRF code ported and working
+   Fix up header handling and avoid routing of protocol headers since I don't know enough
+   Write all tests for both 'npm run lambda' and 'npm run http'
 
-5. Reduce and deploy oauth-agent and update README on a feature branch of tokenhandlerapi
-   This will enable me to get URLs right early
+4. Reduce and deploy a new oauth-agent API on a feature branch of tokenhandlerapi
+   Also update README naming, ready for merging
 
-6. Update SPA on a branch and work on integration
+5. Update SPA on a branch and work on integration
+   No local Docker by default - get it working and see what performance is like
+   Then update deploy.sh with support for a local token handler
+   deploy.sh will need to update local config files
 
-7. Include tokenhandlerapi and reverseproxy as codacy projects
+6. Include tokenhandlerapi and reverseproxy as codacy projects
    Also document use of console.error for local debugging, to avoid writing to response files
 
-8. Reverse proxy for deployed SPA
-   Request a new AWS cert that includes tokenhandler domain, then swap for existing resources
+7. Reverse proxy for deployed SPA
+   Request a new AWS cert that includes tokenhandler domain, then swap certs for existing resources
    Include Elasticsearch logs for errors, then do curl requests to verify
    Custom packager may be needed

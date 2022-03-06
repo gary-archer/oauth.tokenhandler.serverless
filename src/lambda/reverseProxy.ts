@@ -2,7 +2,7 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import fs from 'fs-extra';
 import {ReverseProxyConfiguration} from '../configuration/reverseProxyConfiguration';
 import {ClientError} from '../errors/clientError';
-import {Router} from '../routing/router';
+import {JsonRouter} from '../routing/jsonRouter';
 
 /*
  * A simple generic reverse proxy handler
@@ -15,18 +15,14 @@ const handler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyRes
 
     try {
 
-        // Find the route for the incoming HTTP request
-        const router = new Router(configuration);
-        const route = router.findRoute(event);
-
-        // Forward to the target API
-        const response = await router.forward(event, route);
+        // Try to route the incoming HTTP request to the target API
+        const router = new JsonRouter(configuration);
+        const response = await router.route(event);
 
         // Return the API response details
         return {
             statusCode: response.status,
-            body: JSON.stringify(response.data),
-            headers: response.headers,
+            body: response.data,
         };
 
     } catch (e: any) {
@@ -34,13 +30,13 @@ const handler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyRes
         // Report errors
         if (e instanceof ClientError) {
 
+            console.error(e.toLogFormat());
             return {
                 statusCode: e.getStatusCode(),
                 body: JSON.stringify(e.toResponseFormat()),
             };
         }
 
-        console.error('*** LOGGING 500 ERROR');
         console.error(e);
         return {
             statusCode: 500,

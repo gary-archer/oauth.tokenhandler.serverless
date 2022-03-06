@@ -3,7 +3,7 @@
     {
         "name": "oauthAgent",
         "path": "/oauth-agent",
-        "target": "https://api.authsamples-dev.com"
+        "target": "https://api.authsamples.com"
     },
     {
         "name": "api",
@@ -16,5 +16,10 @@
                 "https://web.authsamples-dev.com"
             ]
         }
+    },
+    {
+        "name": "test",
+        "path": "/.well-known",
+        "target": "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_qqJgVeuTn"
     }]
 }

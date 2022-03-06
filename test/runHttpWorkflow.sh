@@ -31,7 +31,7 @@ function apiError() {
 echo 'Calling reverse proxy with an invalid route ...'
 HTTP_STATUS=$(curl -i -s "$TOKEN_HANDLER_BASE_URL/badpath" \
 -o $RESPONSE_FILE -w '%{http_code}')
-if [ "$HTTP_STATUS" != '401' ]; then
+if [ "$HTTP_STATUS" != '404' ]; then
   echo "*** A request with an invalid route returned an unexpected HTTP status: $HTTP_STATUS"
   apiError "$BODY"
   exit
@@ -42,7 +42,7 @@ echo 'Request for an invalid route was handled successfully'
 # Execute a request for a valid route but without a credential
 #
 echo 'Calling reverse proxy with a valid route but no credential ...'
-HTTP_STATUS=$(curl -i -s "$TOKEN_HANDLER_BASE_URL/api/companies" \
+HTTP_STATUS=$(curl -i -s "$TOKEN_HANDLER_BASE_URL/api/companies?x=y&v=pp" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '401' ]; then
   echo "*** A request with an invalid route returned an unexpected HTTP status: $HTTP_STATUS"

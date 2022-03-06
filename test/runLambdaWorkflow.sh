@@ -48,7 +48,7 @@ fi
 JSON=$(cat $RESPONSE_FILE)
 HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
 BODY=$(jq -r .body <<< "$JSON")
-if [ $HTTP_STATUS -ne '401' ]; then
+if [ $HTTP_STATUS -ne '404' ]; then
   echo "*** A request with an invalid route returned an unexpected HTTP status: $HTTP_STATUS"
   apiError "$BODY"
   exit

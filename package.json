@@ -1,7 +1,7 @@
 {
   "name": "reverseproxy",
   "version": "1.0.0",
-  "description": "A demo level Serverless reverse proxy to manage cookie routing in an API driven SPA architecture",
+  "description": "A Serverless reverse proxy to manage cookie routing in an API driven SPA architecture",
   "scripts": {
     "lint": "npx eslint . --ext .ts,.tsx",
     "build": "rimraf dist && tsc --sourceMap true",

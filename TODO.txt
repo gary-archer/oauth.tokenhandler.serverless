@@ -5,7 +5,10 @@ CODE COMPLETION
    Get 'npm run setup' done
    Many error codes to handle, from the OLD folder
    Get end-to-end working against deployed APIs
-   Test both OAuth-Agent and APIs and run a full workflow
+
+2. Test both OAuth-Agent and APIs and run a full workflow
+   Draw the lines between end-to-end and too much detail for other components
+   This should only verify the reverse proxy responsibilities
 
 SPA INTEGRATION
 ---------------

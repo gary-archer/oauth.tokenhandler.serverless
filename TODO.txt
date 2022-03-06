@@ -1,28 +1,50 @@
-TODO
-----
-1. Logging and exception middleware working and writing 4xx or 5xx log entries
-   Base this on the serverless API, which does not need to deal with Express and hence uses middy consistently
-   Log to file only during tests
+INITIAL CODE
+------------
+1. CORS OPTIONS tests
+   Add tests for CORS results
 
-2. Add CORS middleware, deploy and update tests
-   Check that error responses in tests have the correct headers
+2. CORS config changes
+   CORS settings should have an enabled flag and also work for the oauth-agent route
 
-3. Get cookie and CSRF code ported and working
-   Fix up header handling and avoid routing of protocol headers since I don't know enough
-   Write all tests for both 'npm run lambda' and 'npm run http'
+3. Write the output to a log.txt file as for token handler
+   This style of project uses 'npm run lambda' and 'npm run http'
 
-4. Reduce and deploy a new oauth-agent API on a feature branch of tokenhandlerapi
+4. Log Consolidation in other projects
+   Update Serverless API logging to use proper event object
+   Do the same IS_LOCAL based logging everywhere and avoid 'mode=development'
+   Leftover code in serverless API to log when event.type === 'REQUEST', in LogEntryImpl.calculateOperationName
+
+CODE COMPLETION
+---------------
+1. Get cookie and CSRF code ported and working
+   All error codes to cover and log
+   
+2. Fix up header handling and avoid routing of protocol headers since I don't know enough
+
+3. Write all tests for both 'npm run lambda' and 'npm run http'
+   npm run setup will change
+
+INTEGRATION 1
+-------------
+1. Reduce and deploy a new oauth-agent API on a feature branch of tokenhandlerapi
    Also update README naming, ready for merging
 
-5. Update SPA on a branch and work on integration
-   No local Docker by default - get it working and see what performance is like
+2. Serverless API no longer deals with cookies, CORS or CSRF
+
+3. Token handler no longer deals with CORS
+
+4. SPA repointing on a branch for end-to-end verification
+
+INTEGRATION 2
+-------------
+1. No local Docker by default - get it working and see what performance is like
    Then update deploy.sh with support for a local token handler
    deploy.sh will need to update local config files
 
-6. Include tokenhandlerapi and reverseproxy as codacy projects
+1. Include tokenhandlerapi and reverseproxy as codacy projects
    Also document use of console.error for local debugging, to avoid writing to response files
 
-7. Reverse proxy for deployed SPA
+3. Reverse proxy for deployed SPA
    Request a new AWS cert that includes tokenhandler domain, then swap certs for existing resources
    Include Elasticsearch logs for errors, then do curl requests to verify
    Custom packager may be needed

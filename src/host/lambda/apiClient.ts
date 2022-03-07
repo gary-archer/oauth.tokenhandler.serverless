@@ -1,15 +1,14 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
 import axios, {AxiosRequestConfig, AxiosResponse, Method} from 'axios';
+import {ClientErrorImpl} from '../../plumbing/errors/clientErrorImpl';
+import {ErrorCodes} from '../../plumbing/errors/errorCodes';
+import {PathHelper} from '../../plumbing/utilities/pathHelper';
 import {Configuration} from '../configuration/configuration';
-import {RouteConfiguration} from '../configuration/routeConfiguration';
-import {ClientErrorImpl} from '../errors/clientErrorImpl';
-import {ErrorCodes} from '../errors/errorCodes';
-import {PathHelper} from '../utilities/pathHelper';
 
 /*
  * A class to manage HTTP routing of JSON based requests
  */
-export class JsonRouter {
+export class ApiClient {
 
     private readonly _configuration: Configuration;
 
@@ -18,27 +17,17 @@ export class JsonRouter {
     }
 
     /*
-     * Find an incoming route and return a generic error if an invalid route is requested
-     */
-    public findRoute(event: APIGatewayProxyEvent): RouteConfiguration {
-
-        const found = this._configuration.routes.find(r => event.path.toLowerCase().startsWith(r.path.toLowerCase()));
-        if (!found) {
-            const error = new ClientErrorImpl(404, ErrorCodes.invalidRoute, 'The API route requested does not exist');
-            error.setLogContext(event.path);
-            throw error;
-        }
-
-        return found;
-    }
-
-    /*
      * Forward to the target API
      */
     public async route(event: APIGatewayProxyEvent): Promise<AxiosResponse> {
 
         // Try to find the route, or return a 404 if not found
-        const route = this.findRoute(event);
+        const route = PathHelper.findRoute(event, this._configuration.routes);
+        if (!route) {
+            const error = new ClientErrorImpl(404, ErrorCodes.invalidRoute, 'The API route requested does not exist');
+            error.setLogContext(event.path);
+            throw error;
+        }
 
         // Send data and headers received by the proxy
         const path = PathHelper.getFullPath(event);

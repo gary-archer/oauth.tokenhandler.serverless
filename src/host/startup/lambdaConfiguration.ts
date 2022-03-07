@@ -1,12 +1,12 @@
 import middy from '@middy/core';
 import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
 import fs from 'fs-extra';
+import {LoggerFactory} from '../../plumbing/logging/loggerFactory';
+import {CorsMiddleware} from '../../plumbing/middleware/corsMiddleware';
+import {ExceptionMiddleware} from '../../plumbing/middleware/exceptionMiddleware';
+import {LoggerMiddleware} from '../../plumbing/middleware/loggerMiddleware';
+import {ResponseWriter} from '../../plumbing/utilities/responseWriter';
 import {Configuration} from '../configuration/configuration';
-import {LoggerFactory} from '../logging/loggerFactory';
-import {CorsMiddleware} from '../middleware/corsMiddleware';
-import {ExceptionMiddleware} from '../middleware/exceptionMiddleware';
-import {LoggerMiddleware} from '../middleware/loggerMiddleware';
-import {ResponseWriter} from '../utilities/responseWriter';
 import {Container} from './container';
 
 /*
@@ -30,7 +30,7 @@ export class LambdaConfiguration {
 
             // Create middleware objects
             const loggerMiddleware = new LoggerMiddleware(loggerFactory);
-            const corsMiddleware = new CorsMiddleware(configuration);
+            const corsMiddleware = new CorsMiddleware(configuration.routes);
             const exceptionMiddleware = new ExceptionMiddleware(loggerFactory);
 
             // Add them to the base handler

@@ -1,10 +1,10 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import {JsonRouter} from '../routing/jsonRouter';
 import {Container} from '../startup/container';
 import {LambdaConfiguration} from '../startup/lambdaConfiguration';
+import {ApiClient} from './apiClient';
 
 /*
- * A simple generic reverse proxy handler
+ * A wildcard lambda to act as a reverse proxy
  */
 const container = new Container();
 const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyResult> => {
@@ -17,8 +17,8 @@ const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProx
     }
 
     // Try to route the incoming HTTP request to the target API
-    const router = new JsonRouter(container.getConfiguration());
-    const response = await router.route(event);
+    const client = new ApiClient(container.getConfiguration());
+    const response = await client.route(event);
 
     // Return the API success or error response
     const lambdaResult = {

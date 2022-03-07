@@ -1,17 +1,17 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import middy from '@middy/core';
-import {Configuration} from '../configuration/configuration';
-import {JsonRouter} from '../routing/jsonRouter';
+import {RouteConfiguration} from '../configuration/routeConfiguration';
+import {PathHelper} from '../utilities/pathHelper';
 
 /*
  * A middleware to add CORS headers during OPTIONS requests
  */
 export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
-    private readonly _configuration: Configuration;
+    private readonly _routes: RouteConfiguration[];
 
-    public constructor(configuration: Configuration) {
-        this._configuration = configuration;
+    public constructor(routes: RouteConfiguration[]) {
+        this._routes = routes;
         this._setupCallbacks();
     }
 
@@ -74,8 +74,10 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
             return false;
         }
 
-        const router = new JsonRouter(this._configuration);
-        const route = router.findRoute(event);
+        const route = PathHelper.findRoute(event, this._routes);
+        if (!route) {
+            return false;
+        }
 
         if (!route.cors) {
             return false;

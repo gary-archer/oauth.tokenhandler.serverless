@@ -35,7 +35,7 @@ path=/badpath \
 | jq > $REQUEST_FILE
 
 echo '1. OPTIONS request for an invalid route ...'
-$SLS invoke local -f reverseProxy -p $REQUEST_FILE > $RESPONSE_FILE
+$SLS invoke local -f lambdaRouter -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo '*** OPTIONS request for an invalid route failed'
   exit
@@ -58,7 +58,7 @@ headers=$(jo origin="https://badsite.com") \
 | jq > $REQUEST_FILE
 
 echo '2. OPTIONS request for an untrusted origin ...'
-$SLS invoke local -f reverseProxy -p $REQUEST_FILE > $RESPONSE_FILE
+$SLS invoke local -f lambdaRouter -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo '*** OPTIONS request for an untrusted origin failed'
   exit
@@ -86,7 +86,7 @@ headers=$(jo origin="$WEB_BASE_URL") \
 | jq > $REQUEST_FILE
 
 echo '3. OPTIONS request for a trusted origin ...'
-$SLS invoke local -f reverseProxy -p $REQUEST_FILE > $RESPONSE_FILE
+$SLS invoke local -f lambdaRouter -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo '*** OPTIONS request for a trusted origin failed'
   exit
@@ -118,7 +118,7 @@ path=/badpath \
 | jq > $REQUEST_FILE
 
 echo '4. GET request with an invalid route ...'
-$SLS invoke local -f reverseProxy -p $REQUEST_FILE > $RESPONSE_FILE
+$SLS invoke local -f lambdaRouter -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo '*** GET request with an invalid route failed'
   exit
@@ -143,7 +143,7 @@ headers=$(jo origin="https://badsite.com") \
 | jq > $REQUEST_FILE
 
 echo '5. GET request with an untrusted origin ...'
-$SLS invoke local -f reverseProxy -p $REQUEST_FILE > $RESPONSE_FILE
+$SLS invoke local -f lambdaRouter -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo 'GET request with an untrusted origin failed'
   exit
@@ -168,7 +168,7 @@ headers=$(jo origin="$WEB_BASE_URL") \
 | jq > $REQUEST_FILE
 
 echo '6. GET request with a trusted origin error response ...'
-$SLS invoke local -f reverseProxy -p $REQUEST_FILE > $RESPONSE_FILE
+$SLS invoke local -f lambdaRouter -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo 'GET request with a trusted origin error response failed'
   exit

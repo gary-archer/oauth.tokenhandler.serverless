@@ -23,8 +23,8 @@ custom:
 
 # A single HTTP endpoint covers all routes, with other logic handled in code
 functions:
-  reverseProxy:
-    handler: dist/lambda/reverseProxy.handler
+  lambdaRouter:
+    handler: dist/host/lambda/lambdaRouter.handler
     events:
       - http: 
           path: /{proxy+}

@@ -1,4 +1,4 @@
-import {RouteConfiguration} from './routeConfiguration';
+import {RouteConfiguration} from '../../plumbing/configuration/routeConfiguration';
 
 /*
  * A holder for reverse proxy configuration

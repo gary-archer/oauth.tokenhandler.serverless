@@ -6,10 +6,10 @@ INVESTIGATE
    - path: /api/{proxy+}
    I think I can only run one or the other, so it will not work
 
-CODE COMPLETION
----------------
+CODE AND TEST COMPLETION
+------------------------
 1. HTTP proxy to implement for better debugging of outgoing messages
-   Fix 502 error with HTTP test 7
+   Fix 502 error with HTTP test 7 - no AT cookie found - needs logging
    Assert JSON result in test number 7
    Forward custom headers from the client and verify they are sent
 
@@ -56,3 +56,7 @@ KUBERNETES INTEGRATION
 1. Will mostly work, but oauth-agent will no longer have CORS support
    I may need to use the Kong cors plugin:
    https://docs.konghq.com/hub/kong-inc/cors
+
+OTHER
+-----
+1. Codacy support for OAuth Agent and Reverse Proxy

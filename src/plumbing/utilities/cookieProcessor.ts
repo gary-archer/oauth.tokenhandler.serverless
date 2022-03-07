@@ -44,7 +44,7 @@ export class CookieProcessor {
      */
     public getAccessToken(event: APIGatewayProxyEvent): string {
 
-        const atName = 'at';
+        const atName = 'atx';
         const accessCookie = this._readCookie(atName, event);
         if (!accessCookie) {
             throw ErrorUtils.fromMissingCookieError(atName);

@@ -27,6 +27,14 @@ function apiError() {
 }
 
 #
+# Check preconditions
+#
+if [ ! -f './test/credentials.json' ]; then
+  echo "*** First execute 'npm run setup' to generate cookie credentials for testing"
+  exit 1
+fi
+
+#
 # Verify that an OPTIONS request for an invalid route returns 204
 #
 jo \

@@ -4,4 +4,5 @@ dist
 request.txt
 response.txt
 lambdatest.log
+credentials.json
 .serverless

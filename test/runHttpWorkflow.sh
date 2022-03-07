@@ -6,11 +6,10 @@
 
 WEB_BASE_URL='https://web.authsamples-dev.com'
 TOKEN_HANDLER_BASE_URL='https://tokenhandler.authsamples-dev.com'
-RESPONSE_FILE=test/response.txt
+RESPONSE_FILE=response.txt
 #export HTTPS_PROXY='http://127.0.0.1:8888'
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
-cd ..
 
 #
 # Read a header value from the response
@@ -35,6 +34,14 @@ function apiError() {
     echo "*** Code: $_CODE, Message: $_MESSAGE"
   fi
 }
+
+#
+# Check preconditions
+#
+if [ ! -f './credentials.json' ]; then
+  echo "*** First execute 'npm run setup' to generate cookie credentials for testing"
+  exit 1
+fi
 
 #
 # Verify an OPTIONS request for an invalid route

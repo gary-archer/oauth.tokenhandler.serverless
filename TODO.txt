@@ -1,11 +1,3 @@
-INVESTIGATE
------------
-1. See if it is possible to simplify via AWS proxy integration
-   Eg Configure a target URL and also run a lambda to alter the request
-   - path: /oauth-agent/{proxy+}
-   - path: /api/{proxy+}
-   I think I can only run one or the other, so it will not work
-
 CODE AND TEST COMPLETION
 ------------------------
 1. HTTP proxy to implement for better debugging of outgoing messages
@@ -60,3 +52,7 @@ KUBERNETES INTEGRATION
 OTHER
 -----
 1. Codacy support for OAuth Agent and Reverse Proxy
+
+DOC
+---
+1. My requirements are to route and also run a lambda, whereas AWS Proxy Integration does not support this

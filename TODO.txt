@@ -1,47 +1,58 @@
+INVESTIGATE
+-----------
+1. See if it is possible to simplify via AWS proxy integration
+   Eg Configure a target URL and also run a lambda to alter the request
+   - path: /oauth-agent/{proxy+}
+   - path: /api/{proxy+}
+   I think I can only run one or the other, so it will not work
+
 CODE COMPLETION
 ---------------
-0. errors and compilation
-   move Container to plumbing/utilities
-   move logEntry to container
-   get tests passing and check in
+1. HTTP proxy to implement for better debugging of outgoing messages
+   Fix 502 error with HTTP test 7
+   Assert JSON result in test number 7
+   Forward custom headers from the client and verify they are sent
 
-1. Basic API routing to finish
-   Get 'npm run setup' done
+2. Add better OPTIONS tests from token handler api
+   Ensure that access-control-request-headers is handled correctly
+   Take care to only test reverse proxy responsibilities
 
-2. Add tests
-   Draw the lines between end-to-end and too much detail for other components
-   This should only verify the reverse proxy responsibilities
-
-3. Forward custom headers from the client
-
-4. Deal with routing to the OAuth Agent
+3. Deal with routing to the OAuth Agent
    This will require forwarding cookies and returning them in responses
+   Update npm run setup to call https://api.authsamples.com/oauth-agent
 
-SPA INTEGRATION
----------------
+LOCAL INTEGRATION
+-----------------
 1. Reduce and deploy a new oauth-agent API on a feature branch of tokenhandlerapi
+   Update tests to represent traffic from the reverse proxy to the OAuth Agent
+   A custom packager may be needed to deploy the correct config
+   They must no longer deal with CORS but to still do CSRF and cookie handling
    Also update README naming, ready for merging
 
-2. Serverless API must no longer deal with cookies, CORS or CSRF
-   Update tests to only receive tokens
+2. Serverless API feature branch that no longer deal with cookies, CORS or CSRF
+   Update tests to represent traffic from the reverse proxy to the API
+   They must only use access tokens, as for a mobile client, and 'npm run setup' will change
+   Build a package and a custom packager may be needed to get the right config
+   Do not deploy, since it will break the deployed system
 
-3. Token handler must no longer deal with CORS
-   Update tests to only receive tokens
+3. SPA repointed on a branch and working on my local PC
+   Do not deploy, since it will break the deployed system
 
-4. SPA repointed on a branch and working on my local PC
+CLOUD INTEGRATION
+-----------------
+1. Request a new AWS cert that includes tokenhandler domain
+   Then see if I can swap certs for existing resources
 
-API INTEGRATION
----------------
-1. No local Docker by default - get it working and see what performance is like
-   Then update deploy.sh with support for a local token handler
-   deploy.sh will need to update local config files
+2. Run 'npm run package && npm run deploy' for reverse proxy to https://tokenhandler.authsamples.com
+   Ensure the correct configuration
+   
+3. Deploy oauth-agent, serverless-api and spa
+   Delete tokenhandlerapi
 
-1. Include tokenhandlerapi and reverseproxy as codacy projects
-   Also document use of console.error for local debugging, to avoid writing to response files
+4. Elasticsearch logs for reverse proxy errors
 
-DEPLOYED ENVIRONMENT UPDATES
-----------------------------
-1. Reverse proxy for deployed SPA
-   Request a new AWS cert that includes tokenhandler domain, then swap certs for existing resources
-   Include Elasticsearch logs for errors, then do curl requests to verify
-   Custom packager may be needed
+KUBERNETES INTEGRATION
+----------------------
+1. Will mostly work, but oauth-agent will no longer have CORS support
+   I may need to use the Kong cors plugin:
+   https://docs.konghq.com/hub/kong-inc/cors

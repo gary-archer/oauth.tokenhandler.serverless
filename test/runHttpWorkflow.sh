@@ -6,7 +6,9 @@
 
 WEB_BASE_URL='https://web.authsamples-dev.com'
 TOKEN_HANDLER_BASE_URL='https://tokenhandler.authsamples-dev.com'
+COOKIE_PREFIX=mycompany
 RESPONSE_FILE=response.txt
+CREDENTIALS_FILE=credentials.json
 #export HTTPS_PROXY='http://127.0.0.1:8888'
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -126,18 +128,39 @@ echo '5. GET request with an untrusted origin was handled correctly'
 #
 # Verify that a GET request with an error returns readable error responses
 #
-echo '6. GET request with a trusted origin error response ...'
+echo '6. GET request with a trusted origin ...'
 HTTP_STATUS=$(curl -i -s -X GET "$TOKEN_HANDLER_BASE_URL/api/companies" \
 -H "origin: $WEB_BASE_URL" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '401' ]; then
-  echo "*** GET request with a trusted origin error response returned an unexpected HTTP status: $HTTP_STATUS"
+  echo "*** GET request with a trusted origin returned an unexpected HTTP status: $HTTP_STATUS"
   apiError "$BODY"
   exit
 fi
 ALLOW_ORIGIN=$(getHeaderValue 'access-control-allow-origin')
 if [ "$ALLOW_ORIGIN" != "$WEB_BASE_URL" ]; then
-  echo '*** GET request with a trusted origin error response returned an unexpected allow-origin header'
+  echo '*** GET request with a trusted origin returned an unexpected allow-origin header'
   exit
 fi
-echo '6. GET request with a trusted origin error response was handled correctly'
+echo '6. GET request with a trusted origin received a readable error response'
+
+#
+# Read credentials created via 'npm run setup'
+#
+JSON=$(cat $CREDENTIALS_FILE)
+ACCESS_COOKIE=$(jq -r .accessCookie <<< "$JSON")
+
+#
+# Verify that a GET request with an error returns readable error responses
+#
+echo '7. GET request with a valid access cookie returns JSON data ...'
+HTTP_STATUS=$(curl -i -s -X GET "$TOKEN_HANDLER_BASE_URL/api/companies" \
+-H "origin: $WEB_BASE_URL" \
+-H "cookie: $COOKIE_PREFIX-at=$ACCESS_COOKIE" \
+-o $RESPONSE_FILE -w '%{http_code}')
+if [ "$HTTP_STATUS" != '200' ]; then
+  echo "*** GET request with a valid access cookie returned an unexpected HTTP status: $HTTP_STATUS"
+  apiError "$BODY"
+  exit
+fi
+echo '7. GET request with a valid access cookie was handled correctly'

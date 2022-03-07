@@ -5,8 +5,10 @@
 ############################################
 
 WEB_BASE_URL='https://web.authsamples-dev.com'
+COOKIE_PREFIX=mycompany
 REQUEST_FILE=test/request.txt
 RESPONSE_FILE=test/response.txt
+CREDENTIALS_FILE=test/credentials.json
 SLS=./node_modules/.bin/sls
 #export HTTPS_PROXY='http://127.0.0.1:8888'
 
@@ -29,7 +31,7 @@ function apiError() {
 #
 # Check preconditions
 #
-if [ ! -f './test/credentials.json' ]; then
+if [ ! -f "$CREDENTIALS_FILE" ]; then
   echo "*** First execute 'npm run setup' to generate cookie credentials for testing"
   exit 1
 fi
@@ -175,23 +177,55 @@ path=/api/companies \
 headers=$(jo origin="$WEB_BASE_URL") \
 | jq > $REQUEST_FILE
 
-echo '6. GET request with a trusted origin error response ...'
+echo '6. GET request with a trusted origin ...'
 $SLS invoke local -f lambdaRouter -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
-  echo 'GET request with a trusted origin error response failed'
+  echo 'GET request with a trusted origin failed'
   exit
 fi
 JSON=$(cat $RESPONSE_FILE)
 HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
 BODY=$(jq -r .body <<< "$JSON")
 if [ "$HTTP_STATUS" != '401' ]; then
-  echo "*** GET request with a trusted origin error response returned an unexpected HTTP status: $HTTP_STATUS"
+  echo "*** GET request with a trusted origin returned an unexpected HTTP status: $HTTP_STATUS"
   apiError "$BODY"
   exit
 fi
 ALLOW_ORIGIN=$(jq -r '.headers."access-control-allow-origin"' <<< "$JSON")
 if [ "$ALLOW_ORIGIN" != "$WEB_BASE_URL" ]; then
-  echo '*** GET request with a trusted origin error response returned an unexpected allow-origin header'
+  echo '*** GET request with a trusted origin returned an unexpected allow-origin header'
   exit
 fi
-echo '6. GET request with a trusted origin error response was handled correctly'
+echo '6. GET request with a trusted origin received a readable error response'
+
+#
+# Read credentials created via 'npm run setup'
+#
+JSON=$(cat $CREDENTIALS_FILE)
+ACCESS_COOKIE=$(jq -r .accessCookie <<< "$JSON")
+
+#
+# Verify that a GET request with a valid access cookie
+#
+jo \
+httpMethod=GET \
+path=/api/companies \
+headers=$(jo origin="$WEB_BASE_URL") \
+multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-at=$ACCESS_COOKIE")) \
+| jq > $REQUEST_FILE
+
+echo '7. GET request with a valid access cookie returns JSON data ...'
+$SLS invoke local -f lambdaRouter -p $REQUEST_FILE > $RESPONSE_FILE
+if [ "$?" != '0' ]; then
+  echo 'GET request with a valid access cookie failed'
+  exit
+fi
+JSON=$(cat $RESPONSE_FILE)
+HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
+BODY=$(jq -r .body <<< "$JSON")
+if [ "$HTTP_STATUS" != '200' ]; then
+  echo "*** GET request with a valid access cookie returned an unexpected HTTP status: $HTTP_STATUS"
+  apiError "$BODY"
+  exit
+fi
+echo '7. GET request with a valid access cookie was handled correctly'

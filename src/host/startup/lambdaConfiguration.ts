@@ -2,6 +2,7 @@ import middy from '@middy/core';
 import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
 import fs from 'fs-extra';
 import {LoggerFactory} from '../../plumbing/logging/loggerFactory';
+import {AuthorizerMiddleware} from '../../plumbing/middleware/authorizerMiddleware';
 import {CorsMiddleware} from '../../plumbing/middleware/corsMiddleware';
 import {ExceptionMiddleware} from '../../plumbing/middleware/exceptionMiddleware';
 import {LoggerMiddleware} from '../../plumbing/middleware/loggerMiddleware';
@@ -29,17 +30,20 @@ export class LambdaConfiguration {
             container.setConfiguration(configuration);
 
             // Create middleware objects
-            const loggerMiddleware = new LoggerMiddleware(loggerFactory);
+            const loggerMiddleware = new LoggerMiddleware(container, loggerFactory);
+            const exceptionMiddleware = new ExceptionMiddleware(container, loggerFactory);
+            const authorizerMiddleware = new AuthorizerMiddleware(container, configuration.routes);
             const corsMiddleware = new CorsMiddleware(configuration.routes);
-            const exceptionMiddleware = new ExceptionMiddleware(loggerFactory);
 
-            // Add them to the base handler
+            // Wrap the base handler and add middleware for cross cutting concerns
+            // This ordering ensures that correct CORS headers are written for error responses
             return middy(async (event: APIGatewayProxyEvent, context: Context) => {
                 return baseHandler(event, context);
 
             })
                 .use(loggerMiddleware)
                 .use(exceptionMiddleware)
+                .use(authorizerMiddleware)
                 .use(corsMiddleware);
 
         } catch (e: any) {

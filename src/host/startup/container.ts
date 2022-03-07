@@ -1,14 +1,20 @@
+import {LogEntry} from '../../plumbing/logging/logEntry';
+import {RequestContainer} from '../../plumbing/utilities/requestContainer';
 import {Configuration} from '../configuration/configuration';
 
 /*
- * A very basic container to return some fixed oblects
+ * A primitive container used during the request lifecycle
  */
-export class Container {
+export class Container implements RequestContainer {
 
     private _configuration: Configuration | null;
+    private _logEntry: LogEntry | null;
+    private _accessToken: string | null;
 
     public constructor() {
         this._configuration = null;
+        this._logEntry = null;
+        this._accessToken = null;
     }
 
     public setConfiguration(configuration: Configuration): void {
@@ -17,5 +23,21 @@ export class Container {
 
     public getConfiguration(): Configuration {
         return this._configuration!;
+    }
+
+    public setLogEntry(logEntry: LogEntry): void {
+        this._logEntry = logEntry;
+    }
+
+    public getLogEntry(): LogEntry {
+        return this._logEntry!;
+    }
+
+    public setAccessToken(accessToken: string): void {
+        this._accessToken = accessToken;
+    }
+
+    public getAccessToken(): string | null {
+        return this._accessToken;
     }
 }

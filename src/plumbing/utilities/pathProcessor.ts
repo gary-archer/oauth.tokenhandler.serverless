@@ -4,7 +4,7 @@ import {RouteConfiguration} from '../configuration/routeConfiguration';
 /*
  * A utility to deal with paths
  */
-export class PathHelper {
+export class PathProcessor {
 
     /*
      * Try to find a reverse proxy route for the current path

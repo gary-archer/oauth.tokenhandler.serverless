@@ -1,14 +1,21 @@
 CODE COMPLETION
 ---------------
-1. Get cookie and CSRF code ported from the OLD folder and working
-   Headers will be tricky and should be done according to convention, to avoid sending bad protocol headers
-   Get 'npm run setup' done
-   Many error codes to handle, from the OLD folder
-   Get end-to-end working against deployed APIs
+0. errors and compilation
+   move Container to plumbing/utilities
+   move logEntry to container
+   get tests passing and check in
 
-2. Test both OAuth-Agent and APIs and run a full workflow
+1. Basic API routing to finish
+   Get 'npm run setup' done
+
+2. Add tests
    Draw the lines between end-to-end and too much detail for other components
    This should only verify the reverse proxy responsibilities
+
+3. Forward custom headers from the client
+
+4. Deal with routing to the OAuth Agent
+   This will require forwarding cookies and returning them in responses
 
 SPA INTEGRATION
 ---------------

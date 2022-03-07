@@ -3,18 +3,20 @@ import middy from '@middy/core';
 import {ClientError} from '../errors/clientError';
 import {ErrorUtils} from '../errors/errorUtils';
 import {ServerError} from '../errors/serverError';
-import {LogEntry} from '../logging/logEntry';
+import {LoggerFactory} from '../logging/loggerFactory';
+import {RequestContainer} from '../utilities/requestContainer';
 import {ResponseWriter} from '../utilities/responseWriter';
-import { LoggerFactory } from '../logging/loggerFactory';
 
 /*
  * The exception middleware coded in a class based manner
  */
 export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
+    private readonly _container: RequestContainer;
     private readonly _apiName: string;
 
-    public constructor(loggerFactory: LoggerFactory) {
+    public constructor(container: RequestContainer, loggerFactory: LoggerFactory) {
+        this._container = container;
         this._apiName = loggerFactory.apiName;
         this._setupCallbacks();
     }
@@ -25,7 +27,7 @@ export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyE
     public onError(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
 
         // Get the log entry
-        const logEntry = request.internal.logEntry as LogEntry;
+        const logEntry = this._container.getLogEntry();
 
         // Get the error into a known object
         const error = ErrorUtils.fromException(request.error);

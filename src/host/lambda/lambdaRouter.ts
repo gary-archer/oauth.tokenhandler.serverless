@@ -10,7 +10,7 @@ const container = new Container();
 const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyResult> => {
 
     // Return immediately for pre-flight OPTIONS requests
-    if (event.httpMethod.toUpperCase() === 'OPTIONS') {
+    if (event.httpMethod.toLowerCase() === 'options') {
         return {
             statusCode: 204,
         } as APIGatewayProxyResult;
@@ -18,18 +18,13 @@ const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProx
 
     // Try to route the incoming HTTP request to the target API
     const client = new ApiClient(container.getConfiguration());
-    const response = await client.route(event);
+    const response = await client.route(event, container.getAccessToken());
 
     // Return the API success or error response
-    const lambdaResult = {
+    return {
         statusCode: response.status,
+        body: response.data,
     } as APIGatewayProxyResult;
-
-    if (event.httpMethod.toUpperCase() !== 'HEAD') {
-        lambdaResult.body = response.data;
-    }
-
-    return lambdaResult;
 };
 
 // Create an enriched handler, which wires up middleware for cross cutting concerns

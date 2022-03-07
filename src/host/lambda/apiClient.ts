@@ -1,8 +1,7 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
-import axios, {AxiosRequestConfig, AxiosResponse, Method} from 'axios';
-import {ClientErrorImpl} from '../../plumbing/errors/clientErrorImpl';
-import {ErrorCodes} from '../../plumbing/errors/errorCodes';
-import {PathHelper} from '../../plumbing/utilities/pathHelper';
+import axios, {AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse, Method} from 'axios';
+import {ErrorUtils} from '../../plumbing/errors/errorUtils';
+import {PathProcessor} from '../../plumbing/utilities/pathProcessor';
 import {Configuration} from '../configuration/configuration';
 
 /*
@@ -19,28 +18,33 @@ export class ApiClient {
     /*
      * Forward to the target API
      */
-    public async route(event: APIGatewayProxyEvent): Promise<AxiosResponse> {
+    public async route(event: APIGatewayProxyEvent, accessToken: string | null): Promise<AxiosResponse> {
 
-        // Try to find the route, or return a 404 if not found
-        const route = PathHelper.findRoute(event, this._configuration.routes);
+        // Get the route, which has been verified by the authorizer middleware
+        const route = PathProcessor.findRoute(event, this._configuration.routes);
         if (!route) {
-            const error = new ClientErrorImpl(404, ErrorCodes.invalidRoute, 'The API route requested does not exist');
-            error.setLogContext(event.path);
-            throw error;
+            throw ErrorUtils.fromInvalidRouteError();
         }
 
-        // Send data and headers received by the proxy
-        const path = PathHelper.getFullPath(event);
+        // Get the full target path
+        const path = PathProcessor.getFullPath(event);
         const targetUrl = `${route.target}${path}`;
 
+        // Set request options to get the JSON data
         const options: AxiosRequestConfig = {
             url: targetUrl,
             method: event.httpMethod as Method,
-            transformResponse: [],
+            headers: {} as AxiosRequestHeaders,
         };
 
+        // Supply a body if required
         if (event.body) {
             options.data = event.body;
+        }
+
+        // Add the access token if required
+        if (accessToken) {
+            options.headers!.authorization = `Bearer ${accessToken}`;
         }
 
         try {

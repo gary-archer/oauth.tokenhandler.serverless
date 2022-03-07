@@ -46,6 +46,113 @@ export class ErrorUtils {
     }
 
     /*
+     * Handle routes that do not exist
+     */
+    public static fromInvalidRouteError(): ClientError {
+        return ErrorFactory.createClientError(404, ErrorCodes.invalidRoute, 'The API route requested does not exist');
+    }
+
+    /*
+     * All standards based browsers should send an origin header
+     */
+    public static fromMissingOriginError(): ClientError {
+
+        const error = ErrorFactory.createClient401Error(
+            'A request from a CORS client was received with no origin header');
+
+        const logContext = error.getLogContext();
+        logContext.code = ErrorCodes.missingWebOrigin;
+
+        return error;
+    }
+
+    /*
+     * Indicate an untrusted web origin
+     */
+    public static fromUntrustedOriginError(): ClientError {
+
+        const error = ErrorFactory.createClient401Error(
+            'A request from a CORS client had an untrusted web origin');
+
+        const logContext = error.getLogContext();
+        logContext.code = ErrorCodes.untrustedWebOrigin;
+
+        return error;
+    }
+
+    /*
+     * Indicate a cookie not sent, which could be a browser issue
+     */
+    public static fromMissingCookieError(name: string): ClientError {
+
+        const error = ErrorFactory.createClient401Error(
+            `The ${name} cookie was not received in an incoming request`);
+
+        const logContext = error.getLogContext();
+        logContext.code = ErrorCodes.cookieNotFoundError;
+
+        return error;
+    }
+
+    /*
+     * This occurs if the anti forgery token was not provided
+     */
+    public static fromMissingAntiForgeryTokenError(): ClientError {
+
+        const error = ErrorFactory.createClient401Error(
+            'An anti forgery request header was not supplied for a data changing command');
+
+        const logContext = error.getLogContext();
+        logContext.code = ErrorCodes.missingAntiForgeryTokenError;
+
+        return error;
+    }
+
+    /*
+     * This occurs if the anti forgery token does not have the expected value
+     */
+    public static fromMismatchedAntiForgeryTokenError(): ClientError {
+
+        const error = ErrorFactory.createClient401Error(
+            'The anti forgery request header value does not match that of the request cookie');
+
+        const logContext = error.getLogContext();
+        logContext.code = ErrorCodes.mismatchedAntiForgeryTokenError;
+
+        return error;
+    }
+
+    /*
+     * Handle failed cookie decryption
+     */
+    public static fromMalformedCookieError(name: string, message: string): ClientError {
+
+        const details = `Malformed cookie received: ${message}`;
+        const error = ErrorFactory.createClient401Error(details);
+
+        const logContext = error.getLogContext();
+        logContext.code = ErrorCodes.cookieDecryptionError;
+        logContext.name = name;
+
+        return error;
+    }
+
+    /*
+     * Handle failed cookie decryption
+     */
+    public static fromCookieDecryptionError(name: string, exception: any): ClientError {
+
+        const details = `Cookie decryption failed: ${ErrorUtils.getExceptionDetailsMessage(exception)}`;
+        const error = ErrorFactory.createClient401Error(details);
+
+        const logContext = error.getLogContext();
+        logContext.code = ErrorCodes.cookieDecryptionError;
+        logContext.name = name;
+
+        return error;
+    }
+
+    /*
      * Try to convert an exception to a server error
      */
     private static tryConvertToServerError(exception: any): ServerError | null {

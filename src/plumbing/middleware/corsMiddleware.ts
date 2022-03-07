@@ -1,10 +1,10 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import middy from '@middy/core';
 import {RouteConfiguration} from '../configuration/routeConfiguration';
-import {PathHelper} from '../utilities/pathHelper';
+import {PathProcessor} from '../utilities/pathProcessor';
 
 /*
- * A middleware to add CORS headers during OPTIONS requests
+ * A middleware to add CORS response headers
  */
 export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
@@ -74,7 +74,7 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
             return false;
         }
 
-        const route = PathHelper.findRoute(event, this._routes);
+        const route = PathProcessor.findRoute(event, this._routes);
         if (!route) {
             return false;
         }

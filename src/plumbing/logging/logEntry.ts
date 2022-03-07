@@ -2,7 +2,7 @@ import {APIGatewayProxyEvent} from 'aws-lambda';
 import fs from 'fs-extra';
 import {ClientError} from '../errors/clientError';
 import {ServerError} from '../errors/serverError';
-import {PathHelper} from '../utilities/pathHelper';
+import {PathProcessor} from '../utilities/pathProcessor';
 import {LogEntryData} from './logEntryData';
 
 export class LogEntry {
@@ -23,7 +23,7 @@ export class LogEntry {
         }
 
         this.setOperationName('route');
-        this._data.path = PathHelper.getFullPath(event);
+        this._data.path = PathProcessor.getFullPath(event);
     }
 
     public setOperationName(name: string): void {

@@ -1,16 +1,18 @@
 import middy from '@middy/core';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import {LogEntry} from '../logging/logEntry';
 import {LoggerFactory} from '../logging/loggerFactory';
+import {RequestContainer} from '../utilities/requestContainer';
 
 /*
  * The middleware coded in a class based manner
  */
 export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
+    private readonly _container: RequestContainer;
     private readonly _loggerFactory: LoggerFactory;
 
-    public constructor(loggerFactory: LoggerFactory) {
+    public constructor(container: RequestContainer, loggerFactory: LoggerFactory) {
+        this._container = container;
         this._loggerFactory = loggerFactory;
         this._setupCallbacks();
     }
@@ -22,7 +24,7 @@ export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEven
 
         // Create the log entry for the current request
         const logEntry = this._loggerFactory.createLogEntry();
-        request.internal.logEntry = logEntry;
+        this._container.setLogEntry(logEntry);
 
         // Start request logging
         logEntry.start(request.event);
@@ -34,7 +36,7 @@ export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEven
     public after(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
 
         // Get the log entry
-        const logEntry = request.internal.logEntry as LogEntry;
+        const logEntry = this._container.getLogEntry();
 
         // End logging
         if (request.response && request.response.statusCode) {

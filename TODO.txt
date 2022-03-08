@@ -1,6 +1,7 @@
 CODE AND TEST COMPLETION
 ------------------------
 1. See how much proxy-agent adds to build size and use a dynamic import if worth reducing the size
+   Current size 1.8MB
 
 2. Test improvements
    Assert JSON result in test number 7
@@ -13,9 +14,11 @@ CODE AND TEST COMPLETION
    https://www.w3.org/TR/ct-guidelines/#sec-ProxyReqest
    https://stackoverflow.com/questions/20820572/under-what-conditions-are-http-request-headers-removed-by-proxies
 
+   Remove crappy AWS headers
+   Debug to see what is received in AWS currently
+
    Add X-Forwarded-For and Via request headers
    RFC2616 modifications - leave other headers alone
-   Remove crappy AWS headers
 
    https://gist.github.com/andris9/8093905
    request.headers.host = origin;

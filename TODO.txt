@@ -1,8 +1,13 @@
 CODE AND TEST COMPLETION
 ------------------------
-1. Fix 502 error with HTTP test 7 - no AT cookie found - needs logging
+0. Minor consolidation
    Assert JSON result in test number 7
-
+   See how much proxy-agent adds to build size and use a dynamic import if worth reducing the size
+   
+1. Fix 502 error with HTTP test 7 - no AT cookie found - needs logging
+   Seems to occur whenever headers are set
+   Debug out the response payload, which may be malformed, since this is a common cause of 502 errors
+   
 2. Forward custom headers from the client and verify they are sent
    Try to do this generically
    https://www.w3.org/TR/ct-guidelines/#sec-ProxyReqest
@@ -21,7 +26,7 @@ CODE AND TEST COMPLETION
    Take care to only test reverse proxy responsibilities
 
 4. Deal with routing to the OAuth Agent
-   This will require forwarding cookies and returning them in responses
+   This will require forwarding cookies / multivalueheaders and returning them in responses
    Update npm run setup to call https://api.authsamples.com/oauth-agent
 
 LOCAL INTEGRATION

@@ -38,31 +38,27 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
             throw ErrorUtils.fromInvalidRouteError();
         }
 
-        // When CORS is enabled we only allow requests from trusted origins
-        if (route.cors) {
+        // When an OAuth proxy is configured for an API route, we decrypt secure cookies and forward access tokens
+        if (route.oauthProxy) {
 
+            // First verify the web origin
             const origin = HeaderProcessor.readHeader('origin', request.event);
             if (!origin) {
                 throw ErrorUtils.fromMissingOriginError();
             }
 
-            const trusted = route.cors.trustedWebOrigins.find(o => o === origin);
+            const trusted = route.oauthProxy.trustedWebOrigins.find(o => o === origin);
             if (!trusted) {
                 throw ErrorUtils.fromUntrustedOriginError();
             }
-        }
-
-        // When an OAuth proxy is configured for an API route, we decrypt secure cookies and forward access tokens
-        if (route.oauthProxy) {
-
-            const cookieProcessor = new CookieProcessor(route.oauthProxy);
 
             // For data changing commands, enforce CSRF checks
+            const cookieProcessor = new CookieProcessor(route.oauthProxy);
             if (method === 'post' || method === 'put' || method === 'patch' || method === 'delete') {
                 cookieProcessor.enforceCsrfChecks(request.event);
             }
 
-            // Get the access token cookie and store it in the request
+            // Decrypt the access token cookie, and the access token will be forwarded to the target API
             const accessToken = cookieProcessor.getAccessToken(request.event);
             this._container.setAccessToken(accessToken);
         }

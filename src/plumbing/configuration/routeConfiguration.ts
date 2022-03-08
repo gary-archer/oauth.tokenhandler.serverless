@@ -1,4 +1,3 @@
-import {CorsConfiguration} from './corsConfiguration';
 import {OAuthProxyConfiguration} from './oauthProxyConfiguration';
 
 /*
@@ -8,6 +7,5 @@ export interface RouteConfiguration {
     name: string;
     path: string;
     target: string;
-    cors: CorsConfiguration | null;
     oauthProxy: OAuthProxyConfiguration | null;
 }

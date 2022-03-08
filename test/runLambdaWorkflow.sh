@@ -10,7 +10,6 @@ REQUEST_FILE=test/request.txt
 RESPONSE_FILE=test/response.txt
 CREDENTIALS_FILE=test/credentials.json
 SLS=./node_modules/.bin/sls
-#export HTTPS_PROXY='http://127.0.0.1:8888'
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 cd ..

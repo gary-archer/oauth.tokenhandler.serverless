@@ -4,4 +4,5 @@
 export interface OAuthProxyConfiguration {
     cookiePrefix: string;
     cookieDecryptionKey: string;
+    trustedWebOrigins: string[];
 }

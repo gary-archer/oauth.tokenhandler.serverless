@@ -1,15 +1,26 @@
 CODE AND TEST COMPLETION
 ------------------------
-1. HTTP proxy to implement for better debugging of outgoing messages
-   Fix 502 error with HTTP test 7 - no AT cookie found - needs logging
+1. Fix 502 error with HTTP test 7 - no AT cookie found - needs logging
    Assert JSON result in test number 7
-   Forward custom headers from the client and verify they are sent
 
-2. Add better OPTIONS tests from token handler api
+2. Forward custom headers from the client and verify they are sent
+   Try to do this generically
+   https://www.w3.org/TR/ct-guidelines/#sec-ProxyReqest
+   https://stackoverflow.com/questions/20820572/under-what-conditions-are-http-request-headers-removed-by-proxies
+
+   Add X-Forwarded-For and Via request headers
+   RFC2616 modifications - leave other headers alone
+   Remove crappy AWS headers
+
+   https://gist.github.com/andris9/8093905
+   request.headers.host = origin;
+   request.headers['x-forwarded-for'] = request.headers['x-forwarded-for'] || request.connection.remoteAddress;
+
+3. Add better OPTIONS tests from token handler api
    Ensure that access-control-request-headers is handled correctly
    Take care to only test reverse proxy responsibilities
 
-3. Deal with routing to the OAuth Agent
+4. Deal with routing to the OAuth Agent
    This will require forwarding cookies and returning them in responses
    Update npm run setup to call https://api.authsamples.com/oauth-agent
 
@@ -43,16 +54,8 @@ CLOUD INTEGRATION
 
 4. Elasticsearch logs for reverse proxy errors
 
-KUBERNETES INTEGRATION
-----------------------
-1. Will mostly work, but oauth-agent will no longer have CORS support
-   I may need to use the Kong cors plugin:
-   https://docs.konghq.com/hub/kong-inc/cors
-
 OTHER
 -----
 1. Codacy support for OAuth Agent and Reverse Proxy
 
-DOC
----
-1. My requirements are to route and also run a lambda, whereas AWS Proxy Integration does not support this
+2. DOC: My requirements are to route and also run a lambda, whereas AWS Proxy Integration does not support this

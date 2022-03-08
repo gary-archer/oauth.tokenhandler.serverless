@@ -1,13 +1,14 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
 import axios, {AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse, Method} from 'axios';
 import {ErrorUtils} from '../../plumbing/errors/errorUtils';
+import {HttpProxy} from '../../plumbing/utilities/httpProxy';
 import {PathProcessor} from '../../plumbing/utilities/pathProcessor';
 import {Configuration} from '../configuration/configuration';
 
 /*
  * A class to manage HTTP routing of JSON based requests
  */
-export class ApiClient {
+export class JsonRouter {
 
     private readonly _configuration: Configuration;
 
@@ -26,6 +27,9 @@ export class ApiClient {
             throw ErrorUtils.fromInvalidRouteError();
         }
 
+        // When configured, use an HTTP proxy to debug outgoing requests
+        const httpProxy = new HttpProxy(this._configuration.api.useProxy, this._configuration.api.proxyUrl);
+
         // Get the full target path
         const path = PathProcessor.getFullPath(event);
         const targetUrl = `${route.target}${path}`;
@@ -35,6 +39,7 @@ export class ApiClient {
             url: targetUrl,
             method: event.httpMethod as Method,
             headers: {} as AxiosRequestHeaders,
+            httpsAgent: httpProxy.agent,
         };
 
         // Supply a body if required

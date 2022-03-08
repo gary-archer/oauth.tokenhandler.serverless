@@ -53,7 +53,7 @@ resources:
   Resources:
 
     # Limit cloudwatch log retention 
-    ReverseProxyLogGroup:
+    LambdaRouterLogGroup:
       Type: 'AWS::Logs::LogGroup'
       Properties:
         RetentionInDays: '5'

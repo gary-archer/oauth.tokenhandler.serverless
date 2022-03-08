@@ -60,8 +60,6 @@ export class JsonRouter {
         } catch (e: any) {
 
             if (e.response && e.response.status && e.response.data) {
-
-                // Return the downstream error response if received
                 return e.response;
             }
 

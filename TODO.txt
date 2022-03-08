@@ -1,14 +1,14 @@
 CODE AND TEST COMPLETION
 ------------------------
-0. Minor consolidation
+1. See how much proxy-agent adds to build size and use a dynamic import if worth reducing the size
+
+2. Test improvements
    Assert JSON result in test number 7
-   See how much proxy-agent adds to build size and use a dynamic import if worth reducing the size
-   
-1. Fix 502 error with HTTP test 7 - no AT cookie found - needs logging
-   Seems to occur whenever headers are set
-   Debug out the response payload, which may be malformed, since this is a common cause of 502 errors
-   
-2. Forward custom headers from the client and verify they are sent
+   Add better OPTIONS tests from token handler api
+   Ensure that access-control-request-headers is handled correctly
+   Take care to only test reverse proxy responsibilities
+
+3. Forward custom headers from the client and verify they are sent
    Try to do this generically
    https://www.w3.org/TR/ct-guidelines/#sec-ProxyReqest
    https://stackoverflow.com/questions/20820572/under-what-conditions-are-http-request-headers-removed-by-proxies
@@ -20,10 +20,6 @@ CODE AND TEST COMPLETION
    https://gist.github.com/andris9/8093905
    request.headers.host = origin;
    request.headers['x-forwarded-for'] = request.headers['x-forwarded-for'] || request.connection.remoteAddress;
-
-3. Add better OPTIONS tests from token handler api
-   Ensure that access-control-request-headers is handled correctly
-   Take care to only test reverse proxy responsibilities
 
 4. Deal with routing to the OAuth Agent
    This will require forwarding cookies / multivalueheaders and returning them in responses
@@ -63,4 +59,6 @@ OTHER
 -----
 1. Codacy support for OAuth Agent and Reverse Proxy
 
-2. DOC: My requirements are to route and also run a lambda, whereas AWS Proxy Integration does not support this
+2. ResponseWriter.objectResponse changes to other Serverless APIs, to prevent cryptic 502 response errors
+
+3. DOC: My requirements are to route and also run a lambda, whereas AWS Proxy Integration does not support this

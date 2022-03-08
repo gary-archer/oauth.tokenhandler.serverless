@@ -1,4 +1,5 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import { ResponseWriter } from '../../plumbing/utilities/responseWriter';
 import {Container} from '../startup/container';
 import {LambdaConfiguration} from '../startup/lambdaConfiguration';
 import {JsonRouter} from './jsonRouter';
@@ -11,9 +12,7 @@ const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProx
 
     // Return immediately for pre-flight OPTIONS requests
     if (event.httpMethod.toLowerCase() === 'options') {
-        return {
-            statusCode: 204,
-        } as APIGatewayProxyResult;
+        return ResponseWriter.objectResponse(204, null);
     }
 
     // Try to route the incoming HTTP request to the target API
@@ -21,10 +20,7 @@ const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProx
     const response = await router.route(event, container.getAccessToken());
 
     // Return the API success or error response
-    return {
-        statusCode: response.status,
-        body: response.data,
-    } as APIGatewayProxyResult;
+    return ResponseWriter.objectResponse(response.status, response.data);
 };
 
 // Create an enriched handler, which wires up middleware for cross cutting concerns

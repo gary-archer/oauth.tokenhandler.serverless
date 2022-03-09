@@ -6,16 +6,15 @@ STRATEGY
 
 TASKS
 -----
-1. Create 2 new AWS clients for the new web URLs and update config
+1. Use a dynamic import for proxy-agent
+   Create 2 new AWS clients for the new web URLs and update config
    Get 'npm run setup' working, then other tests passing
-   Test consolidation
+
+2. Test consolidation
    Assert JSON result in test number 7
    Port better OPTIONS tests from token handler api
    Ensure that access-control-request-headers is handled correctly
    Ensure that custom headers are sent through correctly
-
-2. See how much proxy-agent adds to build size and use a dynamic import if worth reducing the size
-   Current size 1.8MB
 
 3. Implement OAuth Agent work by porting from token handler API
 

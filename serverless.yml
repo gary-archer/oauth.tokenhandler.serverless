@@ -23,7 +23,7 @@ custom:
 
 # A single HTTP endpoint covers all routes, with other logic handled in code
 functions:
-  default:
+  wildcard:
     handler: dist/host/lambda/lambda.handler
     events:
       - http: 
@@ -51,7 +51,7 @@ resources:
   Resources:
 
     # Limit cloudwatch log retention 
-    DefaultLogGroup:
+    WildcardLogGroup:
       Type: 'AWS::Logs::LogGroup'
       Properties:
         RetentionInDays: '5'

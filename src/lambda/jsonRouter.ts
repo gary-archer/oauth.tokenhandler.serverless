@@ -1,9 +1,9 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
 import axios, {AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse, Method} from 'axios';
-import {ErrorUtils} from '../../plumbing/errors/errorUtils';
-import {HttpProxy} from '../../plumbing/utilities/httpProxy';
-import {PathProcessor} from '../../plumbing/utilities/pathProcessor';
 import {Configuration} from '../configuration/configuration';
+import {ErrorUtils} from '../errors/errorUtils';
+import {HttpProxy} from '../utilities/httpProxy';
+import {PathProcessor} from '../utilities/pathProcessor';
 
 /*
  * A class to manage HTTP routing of JSON based requests
@@ -28,7 +28,7 @@ export class JsonRouter {
         }
 
         // When configured, use an HTTP proxy to debug outgoing requests
-        const httpProxy = new HttpProxy(this._configuration.api.useProxy, this._configuration.api.proxyUrl);
+        const httpProxy = new HttpProxy(this._configuration.host.useProxy, this._configuration.host.proxyUrl);
 
         // Get the full target path
         const path = PathProcessor.getFullPath(event);

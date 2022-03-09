@@ -1,11 +1,10 @@
-import {LogEntry} from '../../plumbing/logging/logEntry';
-import {RequestContainer} from '../../plumbing/utilities/requestContainer';
+import {LogEntry} from '../logging/logEntry';
 import {Configuration} from '../configuration/configuration';
 
 /*
  * A primitive container used during the request lifecycle
  */
-export class Container implements RequestContainer {
+export class Container {
 
     private _configuration: Configuration | null;
     private _logEntry: LogEntry | null;

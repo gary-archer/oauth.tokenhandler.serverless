@@ -2,7 +2,7 @@ import {APIGatewayProxyEvent} from 'aws-lambda';
 import base64url from 'base64url';
 import cookie from 'cookie';
 import crypto from 'crypto';
-import {OAuthProxyConfiguration} from '../configuration/oauthProxyConfiguration';
+import {CookieConfiguration} from '../configuration/cookieConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
 import {HeaderProcessor} from './headerProcessor';
 
@@ -11,9 +11,9 @@ import {HeaderProcessor} from './headerProcessor';
  */
 export class CookieProcessor {
 
-    private readonly _configuration: OAuthProxyConfiguration;
+    private readonly _configuration: CookieConfiguration;
 
-    public constructor(configuration: OAuthProxyConfiguration) {
+    public constructor(configuration: CookieConfiguration) {
         this._configuration = configuration;
     }
 
@@ -28,7 +28,7 @@ export class CookieProcessor {
             throw ErrorUtils.fromMissingCookieError(csrfName);
         }
 
-        const csrfHeader = HeaderProcessor.readHeader(`x-${this._configuration.cookiePrefix}-${csrfName}`, event);
+        const csrfHeader = HeaderProcessor.readHeader(`x-${this._configuration.prefix}-${csrfName}`, event);
         if (!csrfHeader) {
             throw ErrorUtils.fromMissingAntiForgeryTokenError();
         }
@@ -60,7 +60,7 @@ export class CookieProcessor {
     private _readCookie(name: string, event: APIGatewayProxyEvent): string | null {
 
         let result = null;
-        const cookieName = `${this._configuration.cookiePrefix}-${name}`;
+        const cookieName = `${this._configuration.prefix}-${name}`;
 
         const headers = HeaderProcessor.readMultiValueHeader('cookie', event);
         headers.forEach((h) => {
@@ -107,7 +107,7 @@ export class CookieProcessor {
 
         try {
 
-            const encKeyBytes = Buffer.from(this._configuration.cookieDecryptionKey, 'hex');
+            const encKeyBytes = Buffer.from(this._configuration.encryptionKey, 'hex');
             const decipher = crypto.createDecipheriv('aes-256-gcm', encKeyBytes, ivBytes);
             decipher.setAuthTag(tagBytes);
 

@@ -1,25 +1,40 @@
 {
-    "api": {
+    "host": {
         "useProxy": false,
         "proxyUrl": "http://127.0.0.1:8888"
     },
+    "cors": {
+        "trustedWebOrigins": ["https://web.authsamples-dev.com"]
+    },
+    "cookie": {
+        "domain": "tokenhandler.authsamples-dev.com",
+        "prefix": "mycompany",
+        "encryptionKey": "7312725575a3789d43bd41e592d1042226bc0d1a5d9bd9c4e8e58f121a1d5550"
+    },
+    "oauthAgent": {
+        "api": {
+            "authorizeEndpoint": "https://login.authsamples.com/oauth2/authorize",
+            "tokenEndpoint": "https://login.authsamples.com/oauth2/token",
+            "endSessionEndpoint": "https://login.authsamples.com/logout",
+            "provider": "cognito"
+        },
+        "client": {
+            "clientId": "1hofhrb15jb9adqitlkec9s5ag",
+            "clientSecret": "4766go5m19shkbujtdp8n9hlcea0ef26h3tso2sf6g3qr3cnqq4",
+            "redirectUri": "https://web.authsamples-dev.com/spa/",
+            "postLogoutRedirectUri": "https://web.authsamples-dev.com/spa/loggedout.html",
+            "scope": "openid profile email https://api.authsamples.com/api/transactions_read"
+        }
+    },
     "routes": [
         {
-            "name": "oauthAgent",
             "path": "/oauth-agent",
-            "target": "https://api.authsamples.com"
+            "cors": ["cors", "oauthAgent"]
         },
         {
-            "name": "api",
             "path": "/api",
             "target": "https://api.authsamples.com",
-            "oauthProxy": {
-                "cookiePrefix": "mycompany",
-                "cookieDecryptionKey": "7312725575a3789d43bd41e592d1042226bc0d1a5d9bd9c4e8e58f121a1d5550",
-                "trustedWebOrigins": [
-                    "https://web.authsamples-dev.com"
-                ]
-            }
+            "plugins": ["cors", "oauthProxy"]
         }
     ]
 }

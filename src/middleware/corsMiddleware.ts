@@ -1,6 +1,6 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import middy from '@middy/core';
-import {RouteConfiguration} from '../configuration/routeConfiguration';
+import {Configuration} from '../configuration/configuration';
 import {PathProcessor} from '../utilities/pathProcessor';
 
 /*
@@ -8,10 +8,10 @@ import {PathProcessor} from '../utilities/pathProcessor';
  */
 export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
-    private readonly _routes: RouteConfiguration[];
+    private readonly _configuration: Configuration;
 
-    public constructor(routes: RouteConfiguration[]) {
-        this._routes = routes;
+    public constructor(configuration: Configuration) {
+        this._configuration = configuration;
         this._setupCallbacks();
     }
 
@@ -74,16 +74,17 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
             return false;
         }
 
-        const route = PathProcessor.findRoute(event, this._routes);
+        const route = PathProcessor.findRoute(event, this._configuration.routes);
         if (!route) {
             return false;
         }
 
-        if (!route.oauthProxy) {
+        const cors = route.plugins.find((p) => p === 'cors');
+        if (!cors) {
             return false;
         }
 
-        if (!route.oauthProxy.trustedWebOrigins.find(o => o.toLowerCase() === origin.toLowerCase())) {
+        if (!this._configuration.cors.trustedWebOrigins.find(o => o.toLowerCase() === origin.toLowerCase())) {
             return false;
         }
 

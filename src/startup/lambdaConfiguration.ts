@@ -1,14 +1,14 @@
 import middy from '@middy/core';
 import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
 import fs from 'fs-extra';
-import {LoggerFactory} from '../../plumbing/logging/loggerFactory';
-import {AuthorizerMiddleware} from '../../plumbing/middleware/authorizerMiddleware';
-import {CorsMiddleware} from '../../plumbing/middleware/corsMiddleware';
-import {ExceptionMiddleware} from '../../plumbing/middleware/exceptionMiddleware';
-import {LoggerMiddleware} from '../../plumbing/middleware/loggerMiddleware';
-import {ResponseWriter} from '../../plumbing/utilities/responseWriter';
 import {Configuration} from '../configuration/configuration';
-import {Container} from './container';
+import {LoggerFactory} from '../logging/loggerFactory';
+import {AuthorizerMiddleware} from '../middleware/authorizerMiddleware';
+import {CorsMiddleware} from '../middleware/corsMiddleware';
+import {ExceptionMiddleware} from '../middleware/exceptionMiddleware';
+import {LoggerMiddleware} from '../middleware/loggerMiddleware';
+import {Container} from '../utilities/container';
+import {ResponseWriter} from '../utilities/responseWriter';
 
 /*
  * A shorthand type for this module
@@ -32,8 +32,8 @@ export class LambdaConfiguration {
             // Create middleware objects
             const loggerMiddleware = new LoggerMiddleware(container, loggerFactory);
             const exceptionMiddleware = new ExceptionMiddleware(container, loggerFactory);
-            const authorizerMiddleware = new AuthorizerMiddleware(container, configuration.routes);
-            const corsMiddleware = new CorsMiddleware(configuration.routes);
+            const authorizerMiddleware = new AuthorizerMiddleware(container, configuration);
+            const corsMiddleware = new CorsMiddleware(configuration);
 
             // Wrap the base handler and add middleware for cross cutting concerns
             // This ordering ensures that correct CORS headers are written for error responses

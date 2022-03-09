@@ -4,7 +4,7 @@ import {ClientError} from '../errors/clientError';
 import {ErrorUtils} from '../errors/errorUtils';
 import {ServerError} from '../errors/serverError';
 import {LoggerFactory} from '../logging/loggerFactory';
-import {RequestContainer} from '../utilities/requestContainer';
+import {Container} from '../utilities/container';
 import {ResponseWriter} from '../utilities/responseWriter';
 
 /*
@@ -12,10 +12,10 @@ import {ResponseWriter} from '../utilities/responseWriter';
  */
 export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
-    private readonly _container: RequestContainer;
+    private readonly _container: Container;
     private readonly _apiName: string;
 
-    public constructor(container: RequestContainer, loggerFactory: LoggerFactory) {
+    public constructor(container: Container, loggerFactory: LoggerFactory) {
         this._container = container;
         this._apiName = loggerFactory.apiName;
         this._setupCallbacks();

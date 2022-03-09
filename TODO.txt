@@ -1,15 +1,25 @@
-CODE AND TEST COMPLETION
-------------------------
-1. See how much proxy-agent adds to build size and use a dynamic import if worth reducing the size
+OAUTH AGENT IMPLEMENTATION
+--------------------------
+1. Fix up existing code so that it builds and lints
+   - authorizerMiddleware
+   
+2. Create 2 new AWS clients for the new web URLs and update config
+   Get 'npm run setup' working, then other tests passing
+
+3. See how much proxy-agent adds to build size and use a dynamic import if worth reducing the size
    Current size 1.8MB
 
-2. Test improvements
+4. Implement OAuth Agent work by porting from token handler API
+
+CODE AND TEST COMPLETION
+------------------------
+1. Test improvements
    Assert JSON result in test number 7
    Add better OPTIONS tests from token handler api
    Ensure that access-control-request-headers is handled correctly
    Take care to only test reverse proxy responsibilities
 
-3. Forward custom headers from the client and verify they are sent
+2. Forward custom headers from the client and verify they are sent
    Try to do this generically
    https://www.w3.org/TR/ct-guidelines/#sec-ProxyReqest
    https://stackoverflow.com/questions/20820572/under-what-conditions-are-http-request-headers-removed-by-proxies
@@ -24,7 +34,7 @@ CODE AND TEST COMPLETION
    request.headers.host = origin;
    request.headers['x-forwarded-for'] = request.headers['x-forwarded-for'] || request.connection.remoteAddress;
 
-4. Deal with routing to the OAuth Agent
+3. Deal with routing to the OAuth Agent
    This will require forwarding cookies / multivalueheaders and returning them in responses
    Update npm run setup to call https://api.authsamples.com/oauth-agent
 

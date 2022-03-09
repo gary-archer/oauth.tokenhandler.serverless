@@ -1,17 +1,17 @@
 import middy from '@middy/core';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {LoggerFactory} from '../logging/loggerFactory';
-import {RequestContainer} from '../utilities/requestContainer';
+import {Container} from '../utilities/container';
 
 /*
  * The middleware coded in a class based manner
  */
 export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
-    private readonly _container: RequestContainer;
+    private readonly _container: Container;
     private readonly _loggerFactory: LoggerFactory;
 
-    public constructor(container: RequestContainer, loggerFactory: LoggerFactory) {
+    public constructor(container: Container, loggerFactory: LoggerFactory) {
         this._container = container;
         this._loggerFactory = loggerFactory;
         this._setupCallbacks();

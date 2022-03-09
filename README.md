@@ -1,20 +1,20 @@
-# OAuth Serverless Reverse Proxy
+# Serverless Token Handler
 
-A demo level reverse proxy to deal with cookie concerns for a Single Page Application.\
-The goal of the repo is to demonstrate the preferred architectural routing, to separate concerns.
+A back end for front end to support my [Final SPA](https://github.com/gary-archer/oauth.websample.final) code sample.
+The result is to keep OAuth tokens out of the browser, in line with current best practices.
 
-## Modern Web Security
+## Token Handler Pattern
 
-The [Final SPA](https://github.com/gary-archer/oauth.websample.final) uses Curity's [Token Handler Pattern](https://github.com/curityio/web-oauth-via-bff) and makes OAuth and API requests via the reverse proxy.\
-All CORS and cookie related logic is implemented here before routing requests to the target API.
+Curity's [Token Handler Pattern](https://github.com/curityio/spa-using-token-handler) is used, to separate web and API concerns.\
 
-## OAuth Proxy
+## OpenID Connect
 
-For API routes, some `OAuth Proxy` logic runs to decrypt cookies, then forwards an access token to the API.\
-For data changing requests, the OAuth Proxy also makes additional CSRF checks.
+`OAuth Agent` logic implements this in an API driven manner, then returns `SameSite=strict` cookies to the browser.
 
-## Quick Start
+## API Calls
+
+During API calls `OAuth Proxy` logic executes in order to decrypt cookies and forward access tokens to APIs. 
 
 ## Blog Post
 
-See the `Reverse Proxy SPA Architecture` blog post for further details on the overall setup.
+See the `Serverless Token Handler` blog post for further details on the AWS setup.

@@ -29,7 +29,7 @@
     "routes": [
         {
             "path": "/oauth-agent",
-            "cors": ["cors", "oauthAgent"]
+            "plugins": ["cors", "oauthAgent"]
         },
         {
             "path": "/api",

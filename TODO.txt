@@ -1,59 +1,29 @@
-OAUTH AGENT IMPLEMENTATION
---------------------------
-1. Fix up existing code so that it builds and lints
-   - authorizerMiddleware
-   
-2. Create 2 new AWS clients for the new web URLs and update config
-   Get 'npm run setup' working, then other tests passing
+STRATEGY
+--------
+1. This should be my only token handler repo, to avoid work conflicts
+   Later: replace tokenhandlerapi to keep GitHub stars
+   Can I avoid an Express OAuth Agent for Kubernetes?
 
-3. See how much proxy-agent adds to build size and use a dynamic import if worth reducing the size
+TASKS
+-----
+1. Create 2 new AWS clients for the new web URLs and update config
+   Get 'npm run setup' working, then other tests passing
+   Test consolidation
+   Assert JSON result in test number 7
+   Port better OPTIONS tests from token handler api
+   Ensure that access-control-request-headers is handled correctly
+   Ensure that custom headers are sent through correctly
+
+2. See how much proxy-agent adds to build size and use a dynamic import if worth reducing the size
    Current size 1.8MB
 
-4. Implement OAuth Agent work by porting from token handler API
+3. Implement OAuth Agent work by porting from token handler API
 
-CODE AND TEST COMPLETION
-------------------------
-1. Test improvements
-   Assert JSON result in test number 7
-   Add better OPTIONS tests from token handler api
-   Ensure that access-control-request-headers is handled correctly
-   Take care to only test reverse proxy responsibilities
-
-2. Forward custom headers from the client and verify they are sent
-   Try to do this generically
-   https://www.w3.org/TR/ct-guidelines/#sec-ProxyReqest
-   https://stackoverflow.com/questions/20820572/under-what-conditions-are-http-request-headers-removed-by-proxies
-
-   Remove crappy AWS headers
-   Debug to see what is received in AWS currently
-
-   Add X-Forwarded-For and Via request headers
-   RFC2616 modifications - leave other headers alone
-
-   https://gist.github.com/andris9/8093905
-   request.headers.host = origin;
-   request.headers['x-forwarded-for'] = request.headers['x-forwarded-for'] || request.connection.remoteAddress;
-
-3. Deal with routing to the OAuth Agent
-   This will require forwarding cookies / multivalueheaders and returning them in responses
-   Update npm run setup to call https://api.authsamples.com/oauth-agent
-
-LOCAL INTEGRATION
------------------
-1. Reduce and deploy a new oauth-agent API on a feature branch of tokenhandlerapi
-   Update tests to represent traffic from the reverse proxy to the OAuth Agent
-   A custom packager may be needed to deploy the correct config
-   They must no longer deal with CORS but to still do CSRF and cookie handling
-   Also update README naming, ready for merging
-
-2. Serverless API feature branch that no longer deal with cookies, CORS or CSRF
+4. Serverless API feature branch that no longer deal with cookies, CORS or CSRF
    Update tests to represent traffic from the reverse proxy to the API
    They must only use access tokens, as for a mobile client, and 'npm run setup' will change
    Build a package and a custom packager may be needed to get the right config
-   Do not deploy, since it will break the deployed system
-
-3. SPA repointed on a branch and working on my local PC
-   Do not deploy, since it will break the deployed system
+   Do not deploy, since it will break the live system
 
 CLOUD INTEGRATION
 -----------------
@@ -63,15 +33,12 @@ CLOUD INTEGRATION
 2. Run 'npm run package && npm run deploy' for reverse proxy to https://tokenhandler.authsamples.com
    Ensure the correct configuration
    
-3. Deploy oauth-agent, serverless-api and spa
-   Delete tokenhandlerapi
-
-4. Elasticsearch logs for reverse proxy errors
+3. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
 
 OTHER
 -----
-1. Codacy support for OAuth Agent and Reverse Proxy
+1. Codacy support
 
-2. ResponseWriter.objectResponse changes to other Serverless APIs, to prevent cryptic 502 response errors
+2. ResponseWriter.objectResponse changes to Serverless API, to prevent cryptic 502 response errors
 
 3. DOC: My requirements are to route and also run a lambda, whereas AWS Proxy Integration does not support this

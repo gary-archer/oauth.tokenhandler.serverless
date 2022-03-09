@@ -1,7 +1,6 @@
 # Serverless Token Handler
 
-A back end for front end to support my [Final SPA](https://github.com/gary-archer/oauth.websample.final) code sample.\
-The result is to keep OAuth tokens out of the browser, in line with current best practices.
+A back end for front end to support my [Final SPA](https://github.com/gary-archer/oauth.websample.final) code sample, in line with current best practices.
 
 ## Token Handler Pattern
 

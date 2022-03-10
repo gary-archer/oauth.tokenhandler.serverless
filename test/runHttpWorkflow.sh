@@ -4,8 +4,8 @@
 # A script to test the token handler running in AWS
 ###################################################
 
-WEB_BASE_URL='https://web.authsamples.com'
-TOKEN_HANDLER_BASE_URL='https://api.authsamples.com/tokenhandler'
+WEB_BASE_URL='https://web.authsamples-dev.com'
+TOKEN_HANDLER_BASE_URL='https://tokenhandler.authsamples-dev.com'
 COOKIE_PREFIX=mycompany
 RESPONSE_FILE=response.txt
 CREDENTIALS_FILE=credentials.json

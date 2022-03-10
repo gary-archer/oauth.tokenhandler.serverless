@@ -29,6 +29,7 @@ export class JsonRouter {
 
         // When configured, use an HTTP proxy to debug outgoing requests
         const httpProxy = new HttpProxy(this._configuration.host.useProxy, this._configuration.host.proxyUrl);
+        await httpProxy.initialize();
 
         // Get the full target path
         const path = PathProcessor.getFullPath(event);

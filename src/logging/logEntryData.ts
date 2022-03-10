@@ -13,7 +13,7 @@ export class LogEntryData {
     // The time when the API received the request
     public utcTime: Date;
 
-    // The name of the API, to represent the reverse proxy
+    // The name of the API
     public apiName: string;
 
     // The name of the operation

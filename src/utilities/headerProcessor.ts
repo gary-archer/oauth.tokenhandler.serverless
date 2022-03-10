@@ -6,7 +6,7 @@ import {APIGatewayProxyEvent} from 'aws-lambda';
 export class HeaderProcessor {
 
     /*
-     * Try to find a reverse proxy route for the current path
+     * Read a single value header
      */
     public static readHeader(name: string, event: APIGatewayProxyEvent): string | null {
 

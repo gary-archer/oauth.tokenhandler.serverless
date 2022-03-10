@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###################################################
-# A script to test the reverse proxy running in AWS
+# A script to test the token handler running in AWS
 ###################################################
 
 WEB_BASE_URL='https://web.authsamples.com'

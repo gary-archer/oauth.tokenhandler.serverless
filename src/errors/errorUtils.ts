@@ -33,7 +33,7 @@ export class ErrorUtils {
 
         // Default details
         const defaultErrorCode = ErrorCodes.serverError;
-        const defaultMessage = 'An unexpected exception occurred in the reverse proxy';
+        const defaultMessage = 'An unexpected exception occurred in the token handler';
 
         // Create the error
         const error = ErrorFactory.createServerError(

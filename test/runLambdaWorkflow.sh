@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ############################################
-# A script to test the reverse proxy locally
+# A script to test the token handler locally
 ############################################
 
 WEB_BASE_URL='https://web.authsamples-dev.com'

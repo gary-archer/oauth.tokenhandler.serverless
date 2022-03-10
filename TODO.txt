@@ -4,11 +4,11 @@ STRATEGY
    Later: replace tokenhandlerapi to keep GitHub stars
    Can I avoid an Express OAuth Agent for Kubernetes?
 
-TASKS
------
-1. Use a dynamic import for proxy-agent
-   Create 2 new AWS clients for the new web URLs and update config
-   Get 'npm run setup' working, then other tests passing
+LOCAL SPA
+---------
+1. Implement OAuth Agent work by porting from token handler API
+   Get SPA end-to-end connectivity working
+   Then get SPA fully working
 
 2. Test consolidation
    Assert JSON result in test number 7
@@ -16,26 +16,29 @@ TASKS
    Ensure that access-control-request-headers is handled correctly
    Ensure that custom headers are sent through correctly
 
-3. Implement OAuth Agent work by porting from token handler API
-
-4. Serverless API feature branch that no longer deal with cookies, CORS or CSRF
-   Update tests to represent traffic from the reverse proxy to the API
+LOCAL API
+---------
+1. Serverless API feature branch that no longer deal with cookies, CORS or CSRF
+   Update tests to represent traffic from the token handler to the API
    They must only use access tokens, as for a mobile client, and 'npm run setup' will change
    Build a package and a custom packager may be needed to get the right config
    Do not deploy, since it will break the live system
 
-CLOUD INTEGRATION
------------------
+2. Local token handler repo branch
+
+3. New Express token handler repo
+
+4. Cloud native updates on a branch
+
+DEPLOYED ENVIRONMENT
+--------------------
 1. Request a new AWS cert that includes tokenhandler domain
    Then see if I can swap certs for existing resources
-
-2. Run 'npm run package && npm run deploy' for reverse proxy to https://tokenhandler.authsamples.com
-   Ensure the correct configuration
    
-3. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
+2. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
 
-OTHER
------
+MISCELLANEOUS
+-------------
 1. Codacy support
 
 2. ResponseWriter.objectResponse changes to Serverless API, to prevent cryptic 502 response errors

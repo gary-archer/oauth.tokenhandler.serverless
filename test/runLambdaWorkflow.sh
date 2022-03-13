@@ -1,18 +1,54 @@
 #!/bin/bash
 
-############################################
-# A script to test the token handler locally
-############################################
+#########################################################################
+# A script to test lambda logic running locally on a development computer
+#########################################################################
 
 WEB_BASE_URL='https://web.authsamples-dev.com'
+LOGIN_BASE_URL='https://login.authsamples.com'
 COOKIE_PREFIX=mycompany
+TEST_USERNAME='guestuser@mycompany.com'
+TEST_PASSWORD=GuestPassword1
+SESSION_ID=$(uuidgen)
 REQUEST_FILE=test/request.txt
 RESPONSE_FILE=test/response.txt
-CREDENTIALS_FILE=test/credentials.json
 SLS=./node_modules/.bin/sls
+#export HTTPS_PROXY='http://127.0.0.1:8888'
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 cd ..
+
+#
+# A simple routine to get a header value from an HTTP response file in a direct Cognito request
+# The sed expression matches everything after the colon, after which we return this in group 1
+#
+function getCognitoHeaderValue(){
+  local _HEADER_NAME=$1
+  local _HEADER_VALUE=$(cat $RESPONSE_FILE | grep -i "^$_HEADER_NAME" | sed -r "s/^$_HEADER_NAME: (.*)$/\1/i")
+  local _HEADER_VALUE=${_HEADER_VALUE%$'\r'}
+  echo $_HEADER_VALUE
+}
+
+#
+# Similar to the above except that we read a cookie value from an HTTP response file in a direct Cognito request
+# This currently only supports a single cookie in each set-cookie header, which is good enough for my purposes
+#
+function getCognitoCookieValue(){
+  local _COOKIE_NAME=$1
+  local _COOKIE_VALUE=$(cat $RESPONSE_FILE | grep -i "set-cookie: $_COOKIE_NAME" | sed -r "s/^set-cookie: $_COOKIE_NAME=(.[^;]*)(.*)$/\1/i")
+  local _COOKIE_VALUE=${_COOKIE_VALUE%$'\r'}
+  echo $_COOKIE_VALUE
+}
+
+#
+# Get a cookie name passed in the first argument from the multi value headers passed in the second
+#
+function getLambdaResponseCookieValue(){
+  
+  local _COOKIE_TEXT=$(jq -r --arg NAME "$1" '."set-cookie"[] | select(. | contains($NAME))' <<< "$2")
+  local _COOKIE_VALUE=$(echo $_COOKIE_TEXT | sed -r "s/^$1=(.[^;]*)(.*)$/\1/")
+  echo $_COOKIE_VALUE
+}
 
 #
 # Render an error result returned from the API
@@ -28,203 +64,358 @@ function apiError() {
 }
 
 #
-# Check preconditions
+# Start by creating a session and the logs folder
 #
-if [ ! -f "$CREDENTIALS_FILE" ]; then
-  echo "*** First execute 'npm run setup' to generate cookie credentials for testing"
-  exit 1
-fi
+echo "*** Session ID is $SESSION_ID"
+rm -rf test/logs
+mkdir test/logs
 
 #
-# Verify that an OPTIONS request for an invalid route returns 204
+# Write the input file for the startLogin request
 #
-jo \
-httpMethod=OPTIONS \
-path=/badpath \
-| jq > $REQUEST_FILE
+jo -p \
+path=/oauth-agent/login/start \
+httpMethod=POST \
+headers=$(jo origin="$WEB_BASE_URL" \
+accept=application/json \
+x-mycompany-api-client=lambdaTest \
+x-mycompany-session-id=$SESSION_ID) \
+> $REQUEST_FILE
 
-echo '1. OPTIONS request for an invalid route ...'
+#
+# Call startLogin
+#
+echo "*** Creating login URL ..."
 $SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
-  echo '*** OPTIONS request for an invalid route failed'
+  echo "*** Problem encountered invoking the startLogin lambda"
   exit
 fi
-JSON=$(cat $RESPONSE_FILE)
-HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
-if [ "$HTTP_STATUS" != '204' ]; then
-  echo "*** OPTIONS request for an invalid route returned an unexpected HTTP status: $HTTP_STATUS"
-  exit
-fi
-echo '1. OPTIONS request for an invalid route was handled correctly'
 
 #
-# Verify that an OPTIONS request for an untrusted origin does not return CORS headers
+# Read the response data and handle failures
 #
-jo \
-httpMethod=OPTIONS \
-path=/api/companies \
-headers=$(jo origin="https://badsite.com") \
-| jq > $REQUEST_FILE
-
-echo '2. OPTIONS request for an untrusted origin ...'
-$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
-if [ "$?" != '0' ]; then
-  echo '*** OPTIONS request for an untrusted origin failed'
-  exit
-fi
-JSON=$(cat $RESPONSE_FILE)
-HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
-if [ "$HTTP_STATUS" != '204' ]; then
-  echo "*** OPTIONS request for an untrusted origin returned an unexpected HTTP status: $HTTP_STATUS"
-  exit
-fi
-ALLOW_ORIGIN=$(jq -r '.headers."access-control-allow-origin"' <<< "$JSON")
-if [ "$ALLOW_ORIGIN" != 'null' ]; then
-  echo '*** OPTIONS request for an untrusted origin returned CORS headers unexpectedly'
-  exit
-fi
-echo '2. OPTIONS request for an untrusted origin was handled correctly'
-
-#
-# Verify that an OPTIONS request for a trusted origin returns correct CORS headers
-#
-jo \
-httpMethod=OPTIONS \
-path=/api/companies \
-headers=$(jo origin="$WEB_BASE_URL") \
-| jq > $REQUEST_FILE
-
-echo '3. OPTIONS request for a trusted origin ...'
-$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
-if [ "$?" != '0' ]; then
-  echo '*** OPTIONS request for a trusted origin failed'
-  exit
-fi
-JSON=$(cat $RESPONSE_FILE)
-HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
-if [ "$HTTP_STATUS" != '204' ]; then
-  echo "*** OPTIONS request for a trusted origin returned an unexpected HTTP status: $HTTP_STATUS"
-  exit
-fi
-ALLOW_ORIGIN=$(jq -r '.headers."access-control-allow-origin"' <<< "$JSON")
-if [ "$ALLOW_ORIGIN" != "$WEB_BASE_URL" ]; then
-  echo '*** OPTIONS request for an untrusted origin returned an unexpected allow-origin header'
-  exit
-fi
-ALLOW_CREDENTIALS=$(jq -r '.headers."access-control-allow-credentials"' <<< "$JSON")
-if [ "$ALLOW_CREDENTIALS" != 'true' ]; then
-  echo '*** OPTIONS request for an untrusted origin returned an unexpected allow-credentials header'
-  exit
-fi
-echo '3. OPTIONS request for an trusted origin was handled correctly'
-
-#
-# Verify that a GET request for an invalid route returns a 404 error
-#
-jo \
-httpMethod=GET \
-path=/badpath \
-| jq > $REQUEST_FILE
-
-echo '4. GET request with an invalid route ...'
-$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
-if [ "$?" != '0' ]; then
-  echo '*** GET request with an invalid route failed'
-  exit
-fi
 JSON=$(cat $RESPONSE_FILE)
 HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
 BODY=$(jq -r .body <<< "$JSON")
-if [ $HTTP_STATUS -ne '404' ]; then
-  echo "*** GET request with an invalid route returned an unexpected HTTP status: $HTTP_STATUS"
+MULTI_VALUE_HEADERS=$(jq -r .multiValueHeaders <<< "$JSON")
+if [ "$HTTP_STATUS" != '200' ]; then
+  echo "*** Problem encountered starting a login, status: $HTTP_STATUS"
   apiError "$BODY"
   exit
 fi
-echo '4. GET request with an invalid route was handled correctly'
 
 #
-# Verify that a GET request for an untrusted origin returns a 401 error
+# Get values we will use later
 #
-jo \
-httpMethod=GET \
-path=/api/companies \
-headers=$(jo origin="https://badsite.com") \
-| jq > $REQUEST_FILE
+AUTHORIZATION_REQUEST_URL=$(jq -r .authorizationRequestUri <<< "$BODY")
+STATE_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-state" "$MULTI_VALUE_HEADERS")
 
-echo '5. GET request with an untrusted origin ...'
-$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
-if [ "$?" != '0' ]; then
-  echo 'GET request with an untrusted origin failed'
+#
+# Next invoke the redirect URI to start a login
+#
+echo "*** Following login redirect ..."
+HTTP_STATUS=$(curl -i -L -s "$AUTHORIZATION_REQUEST_URL" -o $RESPONSE_FILE -w '%{http_code}')
+if [ "$HTTP_STATUS" != '200' ]; then
+  echo "*** Problem encountered using the OpenID Connect authorization URL, status: $HTTP_STATUS"
   exit
 fi
+
+#
+# Get data we will use in order to post test credentials and automate a login
+# The Cognito CSRF cookie is written twice due to following the redirect, so get the second occurrence
+#
+LOGIN_POST_LOCATION=$(getCognitoHeaderValue 'location')
+COGNITO_XSRF_TOKEN=$(getCognitoCookieValue 'XSRF-TOKEN' | cut -d ' ' -f 2)
+
+#
+# We can now post a password credential, and the form fields used are Cognito specific
+#
+echo "*** Posting credentials to sign in the test user ..."
+HTTP_STATUS=$(curl -i -s -X POST "$LOGIN_POST_LOCATION" \
+-H "origin: $LOGIN_BASE_URL" \
+--cookie "XSRF-TOKEN=$COGNITO_XSRF_TOKEN" \
+--data-urlencode "_csrf=$COGNITO_XSRF_TOKEN" \
+--data-urlencode "username=$TEST_USERNAME" \
+--data-urlencode "password=$TEST_PASSWORD" \
+-o $RESPONSE_FILE -w '%{http_code}')
+if [ "$HTTP_STATUS" != '302' ]; then
+  echo "*** Problem encountered posting a credential to AWS Cognito, status: $HTTP_STATUS"
+  exit
+fi
+
+#
+# Next get the response
+#
+AUTHORIZATION_RESPONSE_URL=$(getCognitoHeaderValue 'location')
+
+#
+# Next write the input file for the end login request, and it is tricky to write body parameters as lambda expects
+#
+jo \
+path=/oauth-agent/login/end \
+httpMethod=POST \
+headers=$(jo origin="$WEB_BASE_URL" \
+accept=application/json \
+content-type=application/json \
+x-mycompany-api-client=lambdaTest \
+x-mycompany-session-id=$SESSION_ID) \
+multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-state=$STATE_COOKIE")) \
+body="{\\\""url\\\"":\\\""$AUTHORIZATION_RESPONSE_URL\\\""}" \
+| sed 's/\\\\\\/\\/g' \
+| jq > $REQUEST_FILE
+
+#
+# Call the endLogin lambda and redirect the output
+#
+echo "*** Finishing the login by processing the authorization code ..."
+$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
+if [ "$?" != '0' ]; then
+  echo "*** Problem encountered invoking the endLogin lambda"
+  exit
+fi
+
+#
+# Read the response data and handle failures
+#
 JSON=$(cat $RESPONSE_FILE)
 HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
+MULTI_VALUE_HEADERS=$(jq -r .multiValueHeaders <<< "$JSON")
+BODY=$(jq -r .body <<< "$JSON")
+if [ "$HTTP_STATUS" != '200' ]; then
+  echo "*** Problem encountered ending a login, status: $HTTP_STATUS"
+  apiError "$BODY"
+  exit
+fi
+
+#
+# Get values we will use shortly
+#
+ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_HEADERS")
+REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_HEADERS")
+ID_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-id" "$MULTI_VALUE_HEADERS")
+CSRF_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-csrf" "$MULTI_VALUE_HEADERS")
+ANTI_FORGERY_TOKEN=$(jq -r .antiForgeryToken <<< "$BODY")
+
+#
+# Create the request to call the expire endpoint, then expire the access token
+#
+jo -p \
+path='/oauth-agent/expire' \
+httpMethod=POST \
+headers=$(jo origin="$WEB_BASE_URL" \
+accept=application/json \
+content-type=application/json \
+x-mycompany-api-client=lambdaTest \
+x-mycompany-session-id=$SESSION_ID \
+"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+multiValueHeaders=$(jo cookie=$(jo -a \
+"$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
+"$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
+"$COOKIE_PREFIX-id=$ID_COOKIE" \
+"$COOKIE_PREFIX-csrf=$CSRF_COOKIE")) \
+body="{\\\""type\\\"":\\\""access\\\""}" \
+| sed 's/\\\\\\/\\/g' \
+| jq > $REQUEST_FILE
+
+#
+# Ask the API to write the access token in the cookie with extra characters, then get the updated cookie
+#
+echo "*** Expiring the access token ..."
+$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
+if [ "$?" != '0' ]; then
+  echo "*** Problem encountered expiring the access token"
+  exit
+fi
+
+#
+# Handle failures then read the response data
+#
+JSON=$(cat $RESPONSE_FILE)
+HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
+MULTI_VALUE_HEADERS=$(jq -r .multiValueHeaders <<< "$JSON")
+BODY=$(jq -r .body <<< "$JSON")
+if [ "$HTTP_STATUS" != '204' ]; then
+  echo "*** Problem encountered expiring the access token, status: $HTTP_STATUS"
+  apiError "$BODY"
+  exit
+fi
+ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_HEADERS")
+
+#
+# Write a request to refresh the access token
+#
+jo -p \
+path='/oauth-agent/refresh' \
+httpMethod=POST \
+headers=$(jo origin="$WEB_BASE_URL" \
+accept=application/json \
+content-type=application/json \
+x-mycompany-api-client=lambdaTest \
+x-mycompany-session-id=$SESSION_ID \
+"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+multiValueHeaders=$(jo cookie=$(jo -a \
+"$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
+"$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
+"$COOKIE_PREFIX-id=$ID_COOKIE" \
+"$COOKIE_PREFIX-csrf=$CSRF_COOKIE")) \
+| jq > $REQUEST_FILE
+
+#
+# Send a request to refresh the access token in the secure cookie
+#
+echo "*** Refreshing the access token ..."
+$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
+if [ "$?" != '0' ]; then
+  echo "*** Problem encountered expiring the access token"
+  exit
+fi
+
+#
+# Handle failures then read the response data
+#
+JSON=$(cat $RESPONSE_FILE)
+HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
+MULTI_VALUE_HEADERS=$(jq -r .multiValueHeaders <<< "$JSON")
+BODY=$(jq -r .body <<< "$JSON")
+if [ "$HTTP_STATUS" != '204' ]; then
+  echo "*** Problem encountered expiring the access token, status: $HTTP_STATUS"
+  apiError "$BODY"
+  exit
+fi
+ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_HEADERS")
+REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_HEADERS")
+
+#
+# Create the request to call the expire endpoint, then expire both the refresh token and the access token
+#
+jo -p \
+path='/oauth-agent/expire' \
+httpMethod=POST \
+headers=$(jo origin="$WEB_BASE_URL" \
+accept=application/json \
+content-type=application/json \
+x-mycompany-api-client=lambdaTest \
+x-mycompany-session-id=$SESSION_ID \
+"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+multiValueHeaders=$(jo cookie=$(jo -a \
+"$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
+"$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
+"$COOKIE_PREFIX-id=$ID_COOKIE" \
+"$COOKIE_PREFIX-csrf=$CSRF_COOKIE")) \
+body="{\\\""type\\\"":\\\""refresh\\\""}" \
+| sed 's/\\\\\\/\\/g' \
+| jq > $REQUEST_FILE
+
+#
+# Ask the API to make both the refresh token and secure token act expired
+#
+echo "*** Expiring the refresh token ..."
+$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
+if [ "$?" != '0' ]; then
+  echo "*** Problem encountered expiring the refresh token"
+  exit
+fi
+
+#
+# Handle failures then read the response data
+#
+JSON=$(cat $RESPONSE_FILE)
+HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
+MULTI_VALUE_HEADERS=$(jq -r .multiValueHeaders <<< "$JSON")
+BODY=$(jq -r .body <<< "$JSON")
+if [ "$HTTP_STATUS" != '204' ]; then
+  echo "*** Problem encountered expiring the refresh token, status: $HTTP_STATUS"
+  apiError "$BODY"
+  exit
+fi
+ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_HEADERS")
+REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_HEADERS")
+
+#
+# Write a request to refresh the access token
+#
+jo -p \
+path='/oauth-agent/refresh' \
+httpMethod=POST \
+headers=$(jo origin="$WEB_BASE_URL" \
+accept=application/json \
+content-type=application/json \
+x-mycompany-api-client=lambdaTest \
+x-mycompany-session-id=$SESSION_ID \
+"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+multiValueHeaders=$(jo cookie=$(jo -a \
+"$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
+"$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
+"$COOKIE_PREFIX-id=$ID_COOKIE" \
+"$COOKIE_PREFIX-csrf=$CSRF_COOKIE")) \
+| jq > $REQUEST_FILE
+
+#
+# Send a request to refresh the access token in the secure cookie
+#
+echo "*** Trying to refresh the access token when the session is expired ..."
+$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
+if [ "$?" != '0' ]; then
+  echo "*** Problem encountered expiring the access token"
+  exit
+fi
+
+#
+# Handle failures then read the response data
+#
+JSON=$(cat $RESPONSE_FILE)
+HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
+MULTI_VALUE_HEADERS=$(jq -r .multiValueHeaders <<< "$JSON")
 BODY=$(jq -r .body <<< "$JSON")
 if [ "$HTTP_STATUS" != '401' ]; then
-  echo "*** GET request with an untrusted origin returned an unexpected HTTP status: $HTTP_STATUS"
+  echo "*** Problem encountered invoking the access lambda, status: $HTTP_STATUS"
   apiError "$BODY"
   exit
 fi
-echo '5. GET request with an untrusted origin was handled correctly'
 
 #
-# Verify that a GET request with an error returns readable error responses
+# Next write a request to get an end session request from the API
 #
-jo \
-httpMethod=GET \
-path=/api/companies \
-headers=$(jo origin="$WEB_BASE_URL") \
+jo -p \
+path='/oauth-agent/logout' \
+httpMethod=POST \
+headers=$(jo origin="$WEB_BASE_URL" \
+accept=application/json \
+content-type=application/json \
+x-mycompany-api-client=lambdaTest \
+x-mycompany-session-id=$SESSION_ID \
+"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+multiValueHeaders=$(jo cookie=$(jo -a \
+"$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
+"$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
+"$COOKIE_PREFIX-id=$ID_COOKIE" \
+"$COOKIE_PREFIX-csrf=$CSRF_COOKIE")) \
 | jq > $REQUEST_FILE
 
-echo '6. GET request with a trusted origin ...'
+#
+# Next start a logout request
+#
+echo "*** Calling logout to clear cookies and get the end session request URL ..."
 $SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
-  echo 'GET request with a trusted origin failed'
+  echo "*** Problem encountered invoking the startLogout lambda"
   exit
 fi
-JSON=$(cat $RESPONSE_FILE)
-HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
-BODY=$(jq -r .body <<< "$JSON")
-if [ "$HTTP_STATUS" != '401' ]; then
-  echo "*** GET request with a trusted origin returned an unexpected HTTP status: $HTTP_STATUS"
-  apiError "$BODY"
-  exit
-fi
-ALLOW_ORIGIN=$(jq -r '.headers."access-control-allow-origin"' <<< "$JSON")
-if [ "$ALLOW_ORIGIN" != "$WEB_BASE_URL" ]; then
-  echo '*** GET request with a trusted origin returned an unexpected allow-origin header'
-  exit
-fi
-echo '6. GET request with a trusted origin received a readable error response'
 
 #
-# Read credentials created via 'npm run setup'
+# Check for the expected result
 #
-JSON=$(cat $CREDENTIALS_FILE)
-ACCESS_COOKIE=$(jq -r .accessCookie <<< "$JSON")
-
-#
-# Verify that a GET request with a valid access cookie
-#
-jo \
-httpMethod=GET \
-path=/api/companies \
-headers=$(jo origin="$WEB_BASE_URL") \
-multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-at=$ACCESS_COOKIE")) \
-| jq > $REQUEST_FILE
-
-echo '7. GET request with a valid access cookie returns JSON data ...'
-$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
-if [ "$?" != '0' ]; then
-  echo 'GET request with a valid access cookie failed'
-  exit
-fi
 JSON=$(cat $RESPONSE_FILE)
 HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
 BODY=$(jq -r .body <<< "$JSON")
 if [ "$HTTP_STATUS" != '200' ]; then
-  echo "*** GET request with a valid access cookie returned an unexpected HTTP status: $HTTP_STATUS"
+  echo "*** Problem encountered starting a logout, status: $HTTP_STATUS"
   apiError "$BODY"
   exit
 fi
-echo '7. GET request with a valid access cookie was handled correctly'
+
+#
+# The real SPA will then do a logout redirect with this URL
+#
+END_SESSION_REQUEST_URL=$(jq -r .endSessionRequestUri <<< "$BODY")

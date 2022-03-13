@@ -64,6 +64,7 @@ if [ "$HTTP_STATUS" != '200'  ] && [ "$HTTP_STATUS" != '204' ]; then
   echo "*** Problem encountered requesting cross origin access, status: $HTTP_STATUS"
   exit
 fi
+exit
 
 #
 # Act as the SPA by calling the token handler to start a login and get the request URI

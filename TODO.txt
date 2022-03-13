@@ -1,10 +1,10 @@
 IMPL
 ----
-1. Port tests from token handler api
-   Ensure that access-control-request-headers is handled correctly
-   Test logging has all useful fields
+1. Add tests from Serverless API that deal with cookies and CORS
+   Ensure CORS OPTIONS tests, including access-control-request-headers
 
-2. Ensure that custom headers are sent through correctly
+2. Test logging has all useful fields
+   Ensure that custom headers are sent through correctly
    Do full logging for OAuth Agent requests, including performance breakdowns
    Think about how to represent this in configuration
 
@@ -28,9 +28,10 @@ LOCAL API
 
 DEPLOYED ENVIRONMENT
 --------------------
-1. Update existing resources to use new certs, then delete the old one once working
+1. Update existing resources to use new certs, then delete old certs once working
 
 2. Deploy and verify the new token handler
+   Deal with a packager that selects a different config file
    
 3. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
 
@@ -39,5 +40,6 @@ MISCELLANEOUS
 1. Codacy support
 
 2. ResponseWriter.objectResponse changes to Serverless API, to prevent cryptic 502 response errors
+   Check for typeof object
 
 3. DOC: My requirements are to route and also run a lambda, whereas AWS Proxy Integration does not support this

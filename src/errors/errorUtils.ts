@@ -124,6 +124,20 @@ export class ErrorUtils {
     }
 
     /*
+     * This occurs if a required field was not found in a form post
+     */
+    public static fromMissingJsonFieldError(name: string): ClientError {
+
+        const error = ErrorFactory.createClient401Error(
+            `The ${name} field was missing in an incoming request`);
+
+        const logContext = error.getLogContext();
+        logContext.code = ErrorCodes.fieldNotFoundError;
+
+        return error;
+    }
+
+    /*
      * Indicate a cookie not sent, which could be a browser issue
      */
     public static fromMissingCookieError(name: string): ClientError {

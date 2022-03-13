@@ -1,13 +1,16 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import base64url from 'base64url';
 import crypto from 'crypto';
 import {CookieConfiguration} from '../configuration/cookieConfiguration';
 import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
 import {CookieProcessor} from '../http/cookieProcessor';
+import {FormProcessor} from '../http/formProcessor';
 import {QueryProcessor} from '../http/queryProcessor';
 import {Container} from '../utilities/container';
 import {HttpProxy} from '../utilities/httpProxy';
 import {AuthorizationServerClient} from './authorizationServerClient';
+import {PageLoadResponse} from './pageLoadResponse';
 
 /*
  * The entry point for OAuth Agent handling
@@ -79,8 +82,8 @@ export class OAuthAgent {
         const loginState = authorizationServerClient.generateLoginState();
 
         // Get the full authorization URL as response data
-        const data = {} as any;
-        data.authorizationRequestUri = authorizationServerClient.getAuthorizationRequestUri(loginState);
+        const body = {} as any;
+        body.authorizationRequestUri = authorizationServerClient.getAuthorizationRequestUri(loginState);
 
         // Create a temporary state cookie
         const cookiePayload = {
@@ -89,10 +92,10 @@ export class OAuthAgent {
         };
         const cookie = this._cookieProcessor.writeStateCookie(cookiePayload);
 
-        // Return the cookie as a multi value header
+        // Return data in the AWS format
         return {
             statusCode: 200,
-            body: data,
+            body,
             multiValueHeaders: {
                 'set-cookie': [cookie]
             }
@@ -106,14 +109,16 @@ export class OAuthAgent {
     /* eslint-disable @typescript-eslint/no-unused-vars */
     public async endLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        /*
         this._container.getLogEntry().setOperationName('endLogin');
 
         // Get the URL posted by the SPA
-        const url = request.getJsonField('url');
+        const url = FormProcessor.readJsonField(event, 'url');
         if (!url) {
-            throw ErrorUtils.fromFormFieldNotFoundError('url');
+            throw ErrorUtils.fromMissingJsonFieldError('url');
         }
+
+        /*
+        const pageLoadData = this._getPageLoadData(event);
 
         // Get data from the SPA
         const query = QueryProcessor.getQueryParameters(url);
@@ -124,10 +129,11 @@ export class OAuthAgent {
 
         // Handle normal page loads, which can occur frequently during a user session
         if (!(state && code) && !(state && error)) {
-            this._handlePageLoad(request, response);
-            return;
-        }
+            
+            return this._getPageLoadData(event);
+        }*/
 
+        /*
         // Report Authorization Server errors back to the SPA, such as those sending an invalid scope
         if (state && error) {
             throw ErrorUtils.fromLoginResponseError(error, errorDescription);
@@ -336,30 +342,26 @@ export class OAuthAgent {
     /*
      * Give the SPA the data it needs when it loads or the page is refreshed or a new browser tab is opened
      */
-    /*private _handlePageLoad(event: APIGatewayProxyEvent): APIGatewayProxyResult {
+    private _getPageLoadData(event: APIGatewayProxyEvent): PageLoadResponse {
 
         // Inform the SPA that this is a normal page load and not a login response
         const pageLoadData = {
+            isLoggedIn: false,
             handled: false,
         } as any;
 
-        const existingIdToken = this._cookieService.readIdCookie(request);
-        const antiForgeryToken = this._cookieService.readAntiForgeryCookie(request);
+        const existingIdToken = this._cookieProcessor.readIdCookie(event);
+        const antiForgeryToken = this._cookieProcessor.readAntiForgeryCookie(event);
         if (existingIdToken && antiForgeryToken) {
 
-            // Return data for the case where the user is already logged in
             pageLoadData.isLoggedIn = true;
             pageLoadData.antiForgeryToken = antiForgeryToken;
-            this._logUserId(request, existingIdToken);
+            this._logUserId(existingIdToken);
 
-        } else {
-
-            // Return data for the case where the user is not logged in
-            pageLoadData.isLoggedIn = false;
         }
 
-        response.setBody(pageLoadData);
-    }*/
+        return pageLoadData;
+    }
 
     /*
      * Add anti forgery details to the response after signing in
@@ -379,11 +381,13 @@ export class OAuthAgent {
     /*
      * Parse the id token then include the user id in logs
      */
-    /*private _logUserId(event: APIGatewayProxyEvent, idToken: string): void {
+    private _logUserId(idToken: string): void {
 
-        const decoded = decode(idToken, {complete: true});
-        if (decoded && decoded.payload.sub) {
-            request.getLogEntry().setUserId(decoded.payload.sub as string);
+        const parts = idToken.split('.');
+        if (parts.length === 3) {
+            
+            const payload = base64url.decode(parts[1]) as any;
+            this._container.getLogEntry().setUserId(payload.sub)
         }
-    }*/
+    }
 }

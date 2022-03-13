@@ -1,7 +1,7 @@
 IMPL
 ----
 1. Finish OAuthAgent class
-   Use base64url instead of JWT library for decoding
+   Log entry needs a user ID and other fields
 
 2. Port tests from token handler api
    Ensure that access-control-request-headers is handled correctly

@@ -11,6 +11,8 @@ export class ErrorCodes {
 
     public static readonly httpRequestError = 'http_request_error';
 
+    public static readonly fieldNotFoundError = 'field_not_found';
+
     public static readonly cookieNotFoundError = 'cookie_not_found';
 
     public static readonly cookieDecryptionError = 'cookie_decryption_error';

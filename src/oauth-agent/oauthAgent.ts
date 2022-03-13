@@ -6,6 +6,7 @@ import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration'
 import {ErrorUtils} from '../errors/errorUtils';
 import {CookieProcessor} from '../http/cookieProcessor';
 import {FormProcessor} from '../http/formProcessor';
+import {HeaderProcessor} from '../http/headerProcessor';
 import {QueryProcessor} from '../http/queryProcessor';
 import {ResponseWriter} from '../http/responseWriter';
 import {Container} from '../utilities/container';
@@ -180,9 +181,9 @@ export class OAuthAgent {
                 handled: true,
                 antiForgeryToken: crypto.randomBytes(32).toString('base64'),
             } as PageLoadResponse;
-            const response = ResponseWriter.objectResponse(200, body);
 
-            // Write secure cookies to the response
+            // Write the response and attach secure cookies
+            const response = ResponseWriter.objectResponse(200, body);
             response.multiValueHeaders = {
                 'set-cookie': [
                     this._cookieProcessor.expireStateCookie(),
@@ -204,44 +205,41 @@ export class OAuthAgent {
 
         this._container.getLogEntry().setOperationName('refresh');
 
-        /*
         // Check incoming details
-        this._validateAntiForgeryCookie(request);
+        this._validateAntiForgeryCookie(event);
 
         // Get the refresh token from the cookie
-        const refreshToken = this._cookieService.readRefreshCookie(request);
+        const refreshToken = this._cookieProcessor.readRefreshCookie(event);
         if (!refreshToken) {
             throw ErrorUtils.fromMissingCookieError('rt');
         }
 
         // Get the id token from the id cookie
-        const idToken = this._cookieService.readIdCookie(request);
+        const idToken = this._cookieProcessor.readIdCookie(event);
         if (!idToken) {
             throw ErrorUtils.fromMissingCookieError('id');
         }
 
         // Include the OAuth user id in API logs
-        this._logUserId(request, idToken);
+        this._logUserId(idToken);
 
         // Send the request for a new access token to the Authorization Server
         const refreshTokenGrantData =
-            await this._oauthService.sendRefreshTokenGrant(refreshToken);
+            await this._authorizationServerClient.sendRefreshTokenGrant(refreshToken);
 
-        // Rewrite cookies
         const newRefreshToken = refreshTokenGrantData.refresh_token;
         const newIdToken = refreshTokenGrantData.id_token;
-        this._cookieService.writeAccessCookie(refreshTokenGrantData.access_token, response);
-        this._cookieService.writeRefreshCookie(newRefreshToken ?? refreshToken, response);
-        this._cookieService.writeIdCookie(newIdToken ?? idToken, response);
 
-        // Return an empty response to the browser
-        response.setStatusCode(204);
-        */
-
-        return {
-            statusCode: 200,
-            body: '',
+        // Return an empty response to the browser, with attached cookies
+        const response = ResponseWriter.objectResponse(204, null);
+        response.multiValueHeaders = {
+            'set-cookie': [
+                this._cookieProcessor.writeAccessCookie(refreshTokenGrantData.access_token),
+                this._cookieProcessor.writeRefreshCookie(newRefreshToken ?? refreshToken),
+                this._cookieProcessor.writeIdCookie(newIdToken ?? idToken),
+            ]
         };
+        return response;
     }
 
     /*
@@ -250,55 +248,51 @@ export class OAuthAgent {
     /* eslint-disable @typescript-eslint/no-unused-vars */
     public async expire(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this._container.getLogEntry().setOperationName('expire');
-
-        /*
         // Get whether to expire the access or refresh token
-        const type = request.getJsonField('type');
+        const type = FormProcessor.readJsonField(event, 'type');
         const operation = type === 'access' ? 'expireAccessToken' : 'expireRefreshToken';
+        this._container.getLogEntry().setOperationName(operation);
 
         // Check incoming details
-        request.getLogEntry().setOperationName(operation);
-        this._validateAntiForgeryCookie(request);
+        this._validateAntiForgeryCookie(event);
 
         // Get the current refresh token
-        const accessToken = this._cookieService.readAccessCookie(request);
+        const accessToken = this._cookieProcessor.readAccessCookie(event);
         if (!accessToken) {
             throw ErrorUtils.fromMissingCookieError('at');
         }
 
         // Get the current refresh token
-        const refreshToken = this._cookieService.readRefreshCookie(request);
+        const refreshToken = this._cookieProcessor.readRefreshCookie(event);
         if (!refreshToken) {
             throw ErrorUtils.fromMissingCookieError('rt');
         }
 
         // Get the id token from the id cookie
-        const idToken = this._cookieService.readIdCookie(request);
+        const idToken = this._cookieProcessor.readIdCookie(event);
         if (!idToken) {
             throw ErrorUtils.fromMissingCookieError('id');
         }
 
         // Include the OAuth user id in API logs
-        this._logUserId(request, idToken);
+        this._logUserId(idToken);
 
         // Always make the access cookie act expired to cause an API 401
-        const expiredAccessToken = `${accessToken}x`;
-        this._cookieService.writeAccessCookie(expiredAccessToken, response);
+        const cookies: string[] = [
+            this._cookieProcessor.writeAccessCookie(`${accessToken}x`),
+        ];
 
         // If requested, make the refresh cookie act expired, to cause a permanent API 401
         if (type === 'refresh') {
-            const expiredRefreshToken = `${refreshToken}x`;
-            this._cookieService.writeRefreshCookie(expiredRefreshToken, response);
+            cookies.push(this._cookieProcessor.writeRefreshCookie(`${refreshToken}x`));
         }
 
-        response.setStatusCode(204);
-        */
-
-        return {
-            statusCode: 200,
-            body: '',
+        // Return the response with the expired header
+        const response = ResponseWriter.objectResponse(204, null);
+        response.multiValueHeaders = {
+            'set-cookie': cookies
         };
+        return response;
     }
 
     /*
@@ -309,33 +303,53 @@ export class OAuthAgent {
 
         this._container.getLogEntry().setOperationName('logout');
 
-        /*
         // Check incoming details
-        this._validateAntiForgeryCookie(request);
+        this._validateAntiForgeryCookie(event);
 
         // Get the id token from the id cookie
-        const idToken = this._cookieService.readIdCookie(request);
+        const idToken = this._cookieProcessor.readIdCookie(event);
         if (!idToken) {
             throw ErrorUtils.fromMissingCookieError('id');
         }
 
         // Include the OAuth user id in API logs
-        this._logUserId(request, idToken);
-
-        // Clear all cookies for the caller
-        this._cookieService.clearAll(response);
+        this._logUserId(idToken);
 
         // Write the full end session URL to the response body
-        const data = {} as any;
-        data.endSessionRequestUri = this._oauthService.getEndSessionRequestUri(idToken);
-        response.setBody(data);
-        response.setStatusCode(200);
-        */
-
-        return {
-            statusCode: 200,
-            body: '',
+        const body = {
+            endSessionRequestUri: this._authorizationServerClient.getEndSessionRequestUri(idToken),
         };
+
+        // Clear all cookies in the browser
+        const response = ResponseWriter.objectResponse(200, body);
+        response.multiValueHeaders = {
+            'set-cookie': this._cookieProcessor.expireAllCookies()
+        };
+        return response;
+    }
+
+    /*
+     * Extra cookies checks for data changing requests in line with OWASP
+     */
+    private _validateAntiForgeryCookie(event: APIGatewayProxyEvent): void {
+
+        // Get the cookie value
+        const cookieValue = this._cookieProcessor.readAntiForgeryCookie(event);
+        if (!cookieValue) {
+            throw ErrorUtils.fromMissingCookieError('csrf');
+        }
+
+        // Check the client has sent a matching anti forgery request header
+        const headerName = this._cookieProcessor.getAntiForgeryRequestHeaderName();
+        const headerValue = HeaderProcessor.readHeader(headerName, event);
+        if (!headerValue) {
+            throw ErrorUtils.fromMissingAntiForgeryTokenError();
+        }
+
+        // Check that the values match
+        if (cookieValue !== headerValue) {
+            throw ErrorUtils.fromMismatchedAntiForgeryTokenError();
+        }
     }
 
     /*

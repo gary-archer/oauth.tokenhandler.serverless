@@ -1,8 +1,7 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import {LambdaConfiguration} from '../startup/lambdaConfiguration';
 import {Container} from '../utilities/container';
 import {ResponseWriter} from '../utilities/responseWriter';
-import {JsonRouter} from './jsonRouter';
+import {LambdaConfiguration} from './lambdaConfiguration';
 
 /*
  * A wildcard lambda to act as a reverse proxy
@@ -15,12 +14,8 @@ const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProx
         return ResponseWriter.objectResponse(204, null);
     }
 
-    // Try to route the incoming HTTP request to the target API
-    const router = new JsonRouter(container.getConfiguration());
-    const response = await router.route(event, container.getAccessToken());
-
-    // Return the API success or error response
-    return ResponseWriter.objectResponse(response.status, response.data);
+    // Otherwise return the response that middleware wrote to the container
+    return container.getResponse();
 };
 
 // Create an enriched handler, which wires up middleware for cross cutting concerns

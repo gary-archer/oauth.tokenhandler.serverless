@@ -1,3 +1,4 @@
+import {APIGatewayProxyResult} from 'aws-lambda';
 import {LogEntry} from '../logging/logEntry';
 import {Configuration} from '../configuration/configuration';
 
@@ -9,11 +10,13 @@ export class Container {
     private _configuration: Configuration | null;
     private _logEntry: LogEntry | null;
     private _accessToken: string | null;
+    private _response: APIGatewayProxyResult | null;
 
     public constructor() {
         this._configuration = null;
         this._logEntry = null;
         this._accessToken = null;
+        this._response = null;
     }
 
     public setConfiguration(configuration: Configuration): void {
@@ -38,5 +41,13 @@ export class Container {
 
     public getAccessToken(): string | null {
         return this._accessToken;
+    }
+
+    public setResponse(response: APIGatewayProxyResult): void {
+        this._response = response;
+    }
+
+    public getResponse(): APIGatewayProxyResult {
+        return this._response!;
     }
 }

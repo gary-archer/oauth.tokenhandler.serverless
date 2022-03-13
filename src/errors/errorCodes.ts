@@ -9,6 +9,8 @@ export class ErrorCodes {
 
     public static readonly untrustedWebOrigin = 'untrusted_web_origin';
 
+    public static readonly httpRequestError = 'http_request_error';
+
     public static readonly cookieNotFoundError = 'cookie_not_found';
 
     public static readonly cookieDecryptionError = 'cookie_decryption_error';

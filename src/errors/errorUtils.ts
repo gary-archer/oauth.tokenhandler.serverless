@@ -81,6 +81,49 @@ export class ErrorUtils {
     }
 
     /*
+     * Throw an exception for the SPA when there is a back channel response error from the Authorization Server
+     */
+    public static fromTokenResponseError(errorCode: string, errorDescription: string | null, url: string): ClientError {
+
+        const description = errorDescription || 'A token error response was received from the Authorization Server';
+
+        const error = ErrorFactory.createClientError(401, errorCode, description);
+        error.setLogContext({
+            url,
+        });
+
+        return error;
+    }
+
+    /*
+     * Handle failed HTTP connectivity problems in OAuth requests
+     */
+    public static fromOAuthHttpRequestError(exception: any, url: string): ServerError {
+
+        const error = ErrorFactory.createServerError(
+            ErrorCodes.httpRequestError,
+            'Problem encountered connecting to the Authorization Server',
+            exception.stack);
+
+        error.setDetails(`${ErrorUtils.getExceptionDetailsMessage(exception)}, URL: ${url}`);
+        return error;
+    }
+
+    /*
+     * Handle failed HTTP connectivity problems in API requests
+     */
+    public static fromApiHttpRequestError(exception: any, url: string): ServerError {
+
+        const error = ErrorFactory.createServerError(
+            ErrorCodes.httpRequestError,
+            'Problem encountered connecting to a target API',
+            exception.stack);
+
+        error.setDetails(`${ErrorUtils.getExceptionDetailsMessage(exception)}, URL: ${url}`);
+        return error;
+    }
+
+    /*
      * Indicate a cookie not sent, which could be a browser issue
      */
     public static fromMissingCookieError(name: string): ClientError {

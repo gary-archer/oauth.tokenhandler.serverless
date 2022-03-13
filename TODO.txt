@@ -1,20 +1,27 @@
-STRATEGY
---------
-1. This should be my only token handler repo, to avoid work conflicts
-   Later: replace tokenhandlerapi to keep GitHub stars
-   Can I avoid an Express OAuth Agent for Kubernetes?
+CODE RESTRUCTURING
+------------------
+1. Get code compiling, run existing OAuth Proxy tests and check in
+   Verify the change to an async before handler in middleware is OK
 
-LOCAL SPA
----------
-1. Implement OAuth Agent work by porting from token handler API
-   Get SPA end-to-end connectivity working
-   Then get SPA fully working
+2. Get base lambda right
+   HTTP error to consolidate with OAuth requests, for API forwarding
+   Rename JSON Router to OAuthProxy
 
-2. Test consolidation
-   Assert JSON result in test number 7
-   Port better OPTIONS tests from token handler api
+3. Use base64url instead of JWT library for decoding
+
+4. Rename utilities folder to http
+
+TEST CONSOLIDATION
+------------------
+1. Port tests from token handler api
    Ensure that access-control-request-headers is handled correctly
-   Ensure that custom headers are sent through correctly
+
+2. Ensure that custom headers are sent through correctly
+   But drop cookie headers or problematic request headers
+
+END-TO-END
+----------
+1. Verify that full SPA works
 
 LOCAL API
 ---------
@@ -32,10 +39,11 @@ LOCAL API
 
 DEPLOYED ENVIRONMENT
 --------------------
-1. Request a new AWS cert that includes tokenhandler domain
-   Then see if I can swap certs for existing resources
+1. Update existing resources to use new certs, then delete the old one once working
+
+2. Deploy and verify the new token handler
    
-2. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
+3. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
 
 MISCELLANEOUS
 -------------

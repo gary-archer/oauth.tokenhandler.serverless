@@ -1,7 +1,7 @@
 {
   "name": "reverseproxy",
   "version": "1.0.0",
-  "description": "A Serverless token handler to manage cookie routing in an API driven SPA architecture",
+  "description": "Manage cookie routing in an SPA that uses API driven OpenID Connect",
   "scripts": {
     "lint": "npx eslint . --ext .ts,.tsx",
     "build": "rimraf dist && tsc --sourceMap true",

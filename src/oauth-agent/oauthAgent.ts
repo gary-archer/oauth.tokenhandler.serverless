@@ -139,17 +139,17 @@ export class OAuthAgent {
                 handled: false,
             } as PageLoadResponse;
 
-            // Update the logged in state
+            // See if there are existing cookies
             const existingIdToken = this._cookieProcessor.readIdCookie(event);
             const existingAntiForgeryToken = this._cookieProcessor.readAntiForgeryCookie(event);
             if (existingIdToken && existingAntiForgeryToken) {
 
+                // Update the response fields and log the user ID
                 body.isLoggedIn = true;
                 body.antiForgeryToken = existingAntiForgeryToken;
+                this._logUserId(existingIdToken);
             }
 
-            // Include the OAuth User ID in API logs, then return the response
-            this._logUserId(existingIdToken!);
             return ResponseWriter.objectResponse(200, body);
 
         } else {
@@ -278,7 +278,7 @@ export class OAuthAgent {
         this._logUserId(idToken);
 
         // Always make the access cookie act expired to cause an API 401
-        const cookies: string[] = [
+        const cookies = [
             this._cookieProcessor.writeAccessCookie(`${accessToken}x`),
         ];
 

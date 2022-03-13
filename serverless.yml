@@ -1,4 +1,4 @@
-service: tokenhandler
+service: reverseproxy
 
 # Base details for AWS deployment
 provider:

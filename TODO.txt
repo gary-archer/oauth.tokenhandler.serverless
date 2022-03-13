@@ -1,16 +1,13 @@
 IMPL
 ----
-1. Add tests from Serverless API that deal with cookies and CORS
+1. Add tests from Serverless API that deal with API requests, cookies and CORS
    Ensure CORS OPTIONS tests, including access-control-request-headers
+   Move setup.sh to a branch of Serverless API
 
 2. Test logging has all useful fields
    Ensure that custom headers are sent through correctly
    Do full logging for OAuth Agent requests, including performance breakdowns
    Think about how to represent this in configuration
-
-END-TO-END
-----------
-1. Verify that full SPA works locally
 
 LOCAL API
 ---------
@@ -32,7 +29,7 @@ DEPLOYED ENVIRONMENT
 
 2. Deploy and verify the new token handler
    Deal with a packager that selects a different config file
-   
+
 3. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
 
 MISCELLANEOUS

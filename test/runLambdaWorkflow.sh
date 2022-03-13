@@ -63,12 +63,7 @@ function apiError() {
   fi
 }
 
-#
-# Start by creating a session and the logs folder
-#
 echo "*** Session ID is $SESSION_ID"
-rm -rf test/logs
-mkdir test/logs
 
 #
 # Write the input file for the startLogin request

@@ -1,6 +1,6 @@
-# Serverless Token Handler
+# Serverless Reverse Proxy
 
-A back end for front end to support my [Final SPA](https://github.com/gary-archer/oauth.websample.final) code sample, in line with current best practices.
+A reverse proxy hosting a back end for front end to support my [Final SPA](https://github.com/gary-archer/oauth.websample.final) code sample.
 
 ## Token Handler Pattern
 
@@ -16,4 +16,4 @@ During API calls, `OAuth Proxy` logic executes, to decrypt cookies and forward a
 
 ## Blog Post
 
-See the `Serverless Token Handler` blog post for further details on the AWS setup.
+See the `Serverless Reverse Prroy` blog post for further details on the AWS setup.

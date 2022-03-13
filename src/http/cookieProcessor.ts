@@ -178,9 +178,7 @@ export class CookieProcessor {
      * Clear the temporary state cookie used during login
      */
     public expireStateCookie(): string {
-
-        const name =this._getCookieName(STATE_COOKIE);
-        return cookie.serialize(name, '', this._getExpireCookieOptions(STATE_COOKIE));
+        return cookie.serialize(this._getCookieName(STATE_COOKIE), '', this._getExpireCookieOptions(STATE_COOKIE));
     }
 
     /*
@@ -208,6 +206,7 @@ export class CookieProcessor {
      */
     private _getCookieOptions(type: string): CookieSerializeOptions {
 
+        const isOAuthOnlyCookie = (type === STATE_COOKIE || type === REFRESH_COOKIE || type === ID_COOKIE);
         return {
 
             // The cookie cannot be read by Javascript code
@@ -220,7 +219,7 @@ export class CookieProcessor {
             domain: this._configuration.domain,
 
             // The refresh cookie is restricted to the refresh endpoint
-            path: (type === REFRESH_COOKIE) ? '/refresh' : '/',
+            path: isOAuthOnlyCookie ? '/oauth-agent' : '/',
 
             // Other domains cannot send the cookie, which reduces cross site request forgery risks
             sameSite: 'strict',

@@ -2,8 +2,8 @@ import axios, {AxiosRequestConfig} from 'axios';
 import {URLSearchParams} from 'url';
 import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
+import {QueryProcessor} from '../http/queryProcessor';
 import {HttpProxy} from '../utilities/httpProxy';
-import {QueryProcessor} from '../utilities/queryProcessor';
 import {OAuthLoginState} from './oauthLoginState';
 
 /*

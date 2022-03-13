@@ -1,9 +1,12 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import crypto from 'crypto';
+import {CookieConfiguration} from '../configuration/cookieConfiguration';
 import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
+import {CookieProcessor} from '../http/cookieProcessor';
+import {QueryProcessor} from '../http/queryProcessor';
 import {Container} from '../utilities/container';
 import {HttpProxy} from '../utilities/httpProxy';
-import {QueryProcessor} from '../utilities/queryProcessor';
 import {AuthorizationServerClient} from './authorizationServerClient';
 
 /*
@@ -13,93 +16,98 @@ export class OAuthAgent {
 
     private readonly _container: Container;
     private readonly _configuration: OAuthAgentConfiguration;
+    private readonly _cookieProcessor: CookieProcessor;
     private readonly _httpProxy: HttpProxy;
 
-    public constructor(container: Container, configuration: OAuthAgentConfiguration, httpProxy: HttpProxy) {
+    public constructor(
+        container: Container,
+        agentConfiguration: OAuthAgentConfiguration,
+        cookieConfiguration: CookieConfiguration,
+        httpProxy: HttpProxy) {
+
         this._container = container;
-        this._configuration = configuration;
+        this._configuration = agentConfiguration;
         this._httpProxy = httpProxy;
+        this._cookieProcessor = new CookieProcessor(cookieConfiguration);
     }
 
     /*
      * The entry point for processing of OAuth requests on behalf of the SPA
      */
-    public async handleRequest(request: APIGatewayProxyEvent): Promise<void> {
+    public async handleRequest(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        const method = request.httpMethod.toLowerCase();
-        const path = request.path.toLowerCase();
-        let response: APIGatewayProxyResult | null = null;
+        const method = event.httpMethod.toLowerCase();
+        const path = event.path.toLowerCase();
 
         if (method === 'post' && path === '/oauth-agent/login/start') {
 
-            response = await this.startLogin(request);
+            return this.startLogin(event);
 
         } else if (method === 'post' && path === '/oauth-agent/login/end') {
 
-            response = await this.endLogin(request);
+            return this.endLogin(event);
 
         } else if (method === 'post' && path === '/oauth-agent/refresh') {
 
-            response = await this.refresh(request);
+            return this.refresh(event);
 
         } else if (method === 'post' && path === '/oauth-agent/expire') {
 
-            response = await this.expire(request);
+            return this.expire(event);
 
         } else if (method === 'post' && path === '/oauth-agent/logout') {
 
-            response = await this.logout(request);
+            return this.logout(event);
 
         } else {
 
             // Each route should either do OAuth or API work
             throw ErrorUtils.fromInvalidRouteError();
         }
-
-        // Write the response to the container
-        this._container.setResponse(response);
     }
 
     /*
      * Calculate the authorization redirect URL and write a state cookie
      */
-    public async startLogin(request: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    public async startLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        // Check incoming details
-        // request.getLogEntry().setOperationName('startLogin');
+        this._container.getLogEntry().setOperationName('startLogin');
 
         // First create a random login state
         const authorizationServerClient = new AuthorizationServerClient(this._configuration, this._httpProxy);
         const loginState = authorizationServerClient.generateLoginState();
 
-        // Get the full authorization URL and write it to the response body
+        // Get the full authorization URL as response data
         const data = {} as any;
         data.authorizationRequestUri = authorizationServerClient.getAuthorizationRequestUri(loginState);
 
-        const response: APIGatewayProxyResult = {
-            statusCode: 200,
-            body: data,
-        };
-
-        // Also write a temporary state cookie
-        const cookieData = {
+        // Create a temporary state cookie
+        const cookiePayload = {
             state: loginState.state,
             codeVerifier: loginState.codeVerifier,
         };
-        // this._cookieService.writeStateCookie(cookieData, response);
-        return response;
+        const cookie = this._cookieProcessor.writeStateCookie(cookiePayload);
 
+        // Return the cookie as a multi value header
+        return {
+            statusCode: 200,
+            body: data,
+            multiValueHeaders: {
+                'set-cookie': [cookie]
+            }
+        };
     }
 
     /*
      * The SPA sends us the full URL when the page loads, and it may contain an authorization result
      * Complete login if required, by swapping the authorization code for tokens and storing tokens in secure cookies
      */
-    public async endLogin(request: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    public async endLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
         /*
-        // First do basic validation
-        // request.getLogEntry().setOperationName('endLogin');
+        this._container.getLogEntry().setOperationName('endLogin');
 
         // Get the URL posted by the SPA
         const url = request.getJsonField('url');
@@ -175,8 +183,7 @@ export class OAuthAgent {
 
         // Create an anti forgery cookie which will last for the duration of the multi tab browsing session
         this._createAntiForgeryResponseData(request, response, endLoginData);
-        response.setBody(endLoginData);
-        */
+        response.setBody(endLoginData);*/
 
         return {
             statusCode: 200,
@@ -187,11 +194,13 @@ export class OAuthAgent {
     /*
      * Write a new access token into the access token cookie
      */
-    public async refresh(request: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    public async refresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('refresh');
 
         /*
         // Check incoming details
-        request.getLogEntry().setOperationName('refresh');
         this._validateAntiForgeryCookie(request);
 
         // Get the refresh token from the cookie
@@ -233,7 +242,10 @@ export class OAuthAgent {
     /*
      * Make the refresh and / or the access token inside secure cookies act expired, for testing purposes
      */
-    public async expire(request: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    public async expire(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('expire');
 
         /*
         // Get whether to expire the access or refresh token
@@ -287,11 +299,13 @@ export class OAuthAgent {
     /*
      * Return the logout URL and clear cookies
      */
-    public async logout(request: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    public async logout(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('logout');
 
         /*
         // Check incoming details
-        request.getLogEntry().setOperationName('logout');
         this._validateAntiForgeryCookie(request);
 
         // Get the id token from the id cookie
@@ -322,7 +336,7 @@ export class OAuthAgent {
     /*
      * Give the SPA the data it needs when it loads or the page is refreshed or a new browser tab is opened
      */
-    /*private _handlePageLoad(request: APIGatewayProxyEvent): APIGatewayProxyResult {
+    /*private _handlePageLoad(event: APIGatewayProxyEvent): APIGatewayProxyResult {
 
         // Inform the SPA that this is a normal page load and not a login response
         const pageLoadData = {
@@ -350,10 +364,10 @@ export class OAuthAgent {
     /*
      * Add anti forgery details to the response after signing in
      */
-    /*private _createAntiForgeryResponseData(request: APIGatewayProxyEvent, data: any): void {
+    /*private _createAntiForgeryResponseData(event: APIGatewayProxyEvent, data: any): void {
 
         // Get a random value
-        const newCookieValue = this._cookieService.generateAntiForgeryValue();
+        const newCookieValue = crypto.randomBytes(32).toString('base64');
 
         // Set an anti forgery HTTP Only encrypted cookie
         this._cookieService.writeAntiForgeryCookie(response, newCookieValue);
@@ -365,7 +379,7 @@ export class OAuthAgent {
     /*
      * Parse the id token then include the user id in logs
      */
-    /*private _logUserId(request: APIGatewayProxyEvent, idToken: string): void {
+    /*private _logUserId(event: APIGatewayProxyEvent, idToken: string): void {
 
         const decoded = decode(idToken, {complete: true});
         if (decoded && decoded.payload.sub) {

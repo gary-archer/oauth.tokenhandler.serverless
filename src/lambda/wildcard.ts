@@ -1,6 +1,6 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {ResponseWriter} from '../http/responseWriter';
 import {Container} from '../utilities/container';
-import {ResponseWriter} from '../utilities/responseWriter';
 import {LambdaConfiguration} from './lambdaConfiguration';
 
 /*

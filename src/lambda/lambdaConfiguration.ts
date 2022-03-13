@@ -2,13 +2,13 @@ import middy from '@middy/core';
 import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
 import fs from 'fs-extra';
 import {Configuration} from '../configuration/configuration';
+import {ResponseWriter} from '../http/responseWriter';
 import {LoggerFactory} from '../logging/loggerFactory';
 import {AuthorizerMiddleware} from '../middleware/authorizerMiddleware';
 import {CorsMiddleware} from '../middleware/corsMiddleware';
 import {ExceptionMiddleware} from '../middleware/exceptionMiddleware';
 import {LoggerMiddleware} from '../middleware/loggerMiddleware';
 import {Container} from '../utilities/container';
-import {ResponseWriter} from '../utilities/responseWriter';
 
 /*
  * A shorthand type for this module

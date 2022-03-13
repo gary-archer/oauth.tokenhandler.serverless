@@ -1,53 +1,51 @@
-import {APIGatewayProxyEvent} from 'aws-lambda';
+import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import axios, {AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse, Method} from 'axios';
 import {CookieConfiguration} from '../configuration/cookieConfiguration';
 import {RouteConfiguration} from '../configuration/routeConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
-import {Container} from '../utilities/container';
-import {CookieProcessor} from '../utilities/cookieProcessor';
+import {CookieProcessor} from '../http/cookieProcessor';
+import {PathProcessor} from '../http/pathProcessor';
+import {ResponseWriter} from '../http/responseWriter';
 import {HttpProxy} from '../utilities/httpProxy';
-import {PathProcessor} from '../utilities/pathProcessor';
-import {ResponseWriter} from '../utilities/responseWriter';
 
 /*
  * A demo level class to manage HTTP forwarding of API requests
  */
 export class OAuthProxy {
 
-    private readonly _container: Container;
-    private readonly _configuration: CookieConfiguration;
     private readonly _routes: RouteConfiguration[];
+    private readonly _cookieProcessor: CookieProcessor;
     private readonly _httpProxy: HttpProxy;
 
     public constructor(
-        container: Container,
-        configuration: CookieConfiguration,
         routes: RouteConfiguration[],
+        cookieConfiguration: CookieConfiguration,
         httpProxy: HttpProxy) {
 
-        this._container = container;
-        this._configuration = configuration;
         this._routes = routes;
         this._httpProxy = httpProxy;
+        this._cookieProcessor = new CookieProcessor(cookieConfiguration);
     }
 
-    public async handleRequest(event: APIGatewayProxyEvent): Promise<void> {
-
-        const cookieProcessor = new CookieProcessor(this._configuration);
+    public async handleRequest(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
         // For data changing commands, enforce CSRF checks
         const method = event.httpMethod.toLowerCase();
         if (method === 'post' || method === 'put' || method === 'patch' || method === 'delete') {
-            cookieProcessor.enforceCsrfChecks(event);
+            this._cookieProcessor.enforceAntiForgeryChecks(event);
         }
 
-        // Decrypt the access token cookie, and the access token will be forwarded to the target API
-        const accessToken = cookieProcessor.getAccessToken(event);
+        // Decrypt the access token cookie
+        const accessToken = this._cookieProcessor.readAccessCookie(event);
+        if (!accessToken) {
+            throw ErrorUtils.fromMissingCookieError('access token');
+        }
+
+        // Forward the access token to the target API
         const apiResponse = await this._callApi(event, accessToken);
 
         // Write the response to the container
-        const response = ResponseWriter.objectResponse(apiResponse.status, apiResponse.data);
-        this._container.setResponse(response);
+        return ResponseWriter.objectResponse(apiResponse.status, apiResponse.data);
     }
 
     /*

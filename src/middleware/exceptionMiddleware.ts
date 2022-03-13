@@ -3,9 +3,9 @@ import middy from '@middy/core';
 import {ClientError} from '../errors/clientError';
 import {ErrorUtils} from '../errors/errorUtils';
 import {ServerError} from '../errors/serverError';
+import {ResponseWriter} from '../http/responseWriter';
 import {LoggerFactory} from '../logging/loggerFactory';
 import {Container} from '../utilities/container';
-import {ResponseWriter} from '../utilities/responseWriter';
 
 /*
  * The exception middleware coded in a class based manner

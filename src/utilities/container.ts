@@ -35,14 +35,6 @@ export class Container {
         return this._logEntry!;
     }
 
-    public setAccessToken(accessToken: string): void {
-        this._accessToken = accessToken;
-    }
-
-    public getAccessToken(): string | null {
-        return this._accessToken;
-    }
-
     public setResponse(response: APIGatewayProxyResult): void {
         this._response = response;
     }

@@ -4,10 +4,10 @@ import {OAuthAgent} from '../oauth-agent/oauthAgent';
 import {OAuthProxy} from '../oauth-proxy/oauthProxy';
 import {Configuration} from '../configuration/configuration';
 import {ErrorUtils} from '../errors/errorUtils';
+import {HeaderProcessor} from '../http/headerProcessor';
+import {PathProcessor} from '../http/pathProcessor';
 import {Container} from '../utilities/container';
-import {HeaderProcessor} from '../utilities/headerProcessor';
 import {HttpProxy} from '../utilities/httpProxy';
-import {PathProcessor} from '../utilities/pathProcessor';
 
 /*
  * The entry point for authorization
@@ -54,8 +54,12 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
             const oauthAgent = new OAuthAgent(
                 this._container,
                 this._configuration.oauthAgent,
+                this._configuration.cookie,
                 httpProxy);
-            await oauthAgent.handleRequest(request.event);
+
+            const response = await oauthAgent.handleRequest(request.event);
+            this._container.setResponse(response);
+
         }
 
         // When an OAuth proxy is configured for an API route, decrypt secure cookies and forward access tokens
@@ -63,11 +67,12 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
         if (oauthProxyPlugin) {
 
             const oauthProxy = new OAuthProxy(
-                this._container,
-                this._configuration.cookie,
                 this._configuration.routes,
+                this._configuration.cookie,
                 httpProxy);
-            await oauthProxy.handleRequest(request.event);
+
+            const response = await oauthProxy.handleRequest(request.event);
+            this._container.setResponse(response);
         }
 
         // Each route should either do OAuth or API work

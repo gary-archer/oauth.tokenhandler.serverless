@@ -1,7 +1,7 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import middy from '@middy/core';
 import {Configuration} from '../configuration/configuration';
-import {PathProcessor} from '../utilities/pathProcessor';
+import {PathProcessor} from '../http/pathProcessor';
 
 /*
  * A middleware to add CORS response headers

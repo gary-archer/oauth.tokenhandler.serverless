@@ -1,31 +1,22 @@
-CODE RESTRUCTURING
-------------------
-1. Get code compiling, run existing OAuth Proxy tests and check in
-   Verify the change to an async before handler in middleware is OK
+IMPL
+----
+1. Finish OAuthAgent class
+   Use base64url instead of JWT library for decoding
 
-2. Get base lambda right
-   HTTP error to consolidate with OAuth requests, for API forwarding
-   Rename JSON Router to OAuthProxy
-
-3. Use base64url instead of JWT library for decoding
-
-4. Rename utilities folder to http
-
-TEST CONSOLIDATION
-------------------
-1. Port tests from token handler api
+2. Port tests from token handler api
    Ensure that access-control-request-headers is handled correctly
+   Test logging has all useful fields
 
-2. Ensure that custom headers are sent through correctly
+3. Ensure that custom headers are sent through correctly
    But drop cookie headers or problematic request headers
 
 END-TO-END
 ----------
-1. Verify that full SPA works
+1. Verify that full SPA works locally
 
 LOCAL API
 ---------
-1. Serverless API feature branch that no longer deal with cookies, CORS or CSRF
+1. Serverless API feature branch that no longer deals with cookies, CORS or CSRF
    Update tests to represent traffic from the token handler to the API
    They must only use access tokens, as for a mobile client, and 'npm run setup' will change
    Build a package and a custom packager may be needed to get the right config
@@ -35,7 +26,7 @@ LOCAL API
 
 3. New Express token handler repo
 
-4. Cloud native updates on a branch
+4. Cloud native updates
 
 DEPLOYED ENVIRONMENT
 --------------------

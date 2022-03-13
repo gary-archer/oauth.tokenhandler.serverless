@@ -2,7 +2,7 @@ import {APIGatewayProxyEvent} from 'aws-lambda';
 import fs from 'fs-extra';
 import {ClientError} from '../errors/clientError';
 import {ServerError} from '../errors/serverError';
-import {PathProcessor} from '../utilities/pathProcessor';
+import {PathProcessor} from '../http/pathProcessor';
 import {LogEntryData} from './logEntryData';
 
 export class LogEntry {

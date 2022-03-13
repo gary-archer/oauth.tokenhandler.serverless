@@ -1,14 +1,14 @@
 IMPL
 ----
 1. Finish OAuthAgent class
-   Log entry needs a user ID and other fields
 
 2. Port tests from token handler api
    Ensure that access-control-request-headers is handled correctly
    Test logging has all useful fields
 
 3. Ensure that custom headers are sent through correctly
-   But drop cookie headers or problematic request headers
+   Do full logging for OAuth Agent requests, including performance breakdowns
+   Think about how to represent this in configuration
 
 END-TO-END
 ----------

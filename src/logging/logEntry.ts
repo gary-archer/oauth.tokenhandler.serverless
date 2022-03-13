@@ -22,12 +22,15 @@ export class LogEntry {
             this._data.method = event.httpMethod;
         }
 
-        this.setOperationName('route');
         this._data.path = PathProcessor.getFullPath(event);
     }
 
     public setOperationName(name: string): void {
         this._data.operationName = name;
+    }
+
+    public setUserId(userId: string): void {
+        this._data.userId = userId;
     }
 
     public setResponseStatus(statusCode: number): void {

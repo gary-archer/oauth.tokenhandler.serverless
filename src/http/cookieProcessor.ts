@@ -177,7 +177,7 @@ export class CookieProcessor {
     /*
      * Clear the temporary state cookie used during login
      */
-    public expireState(): string {
+    public expireStateCookie(): string {
 
         const name =this._getCookieName(STATE_COOKIE);
         return cookie.serialize(name, '', this._getExpireCookieOptions(STATE_COOKIE));
@@ -186,7 +186,7 @@ export class CookieProcessor {
     /*
      * Clear all cookies when the user session expires
      */
-    public expireAll(): string[] {
+    public expireAllCookies(): string[] {
 
         return [
             cookie.serialize(this._getCookieName(REFRESH_COOKIE), '', this._getExpireCookieOptions(REFRESH_COOKIE)),

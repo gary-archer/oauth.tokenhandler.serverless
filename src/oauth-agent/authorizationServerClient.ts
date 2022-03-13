@@ -62,7 +62,24 @@ export class AuthorizationServerClient {
         formData.append('code', code);
         formData.append('redirect_uri', this._configuration.client.redirectUri);
         formData.append('code_verifier', codeVerifier);
-        return this._postGrantMessage(formData);
+
+        const authCodeGrantData = await this._postGrantMessage(formData);
+
+        if (!authCodeGrantData.refresh_token) {
+            throw ErrorUtils.createInvalidOAuthResponseError(
+                'No refresh token was received in an authorization code grant response');
+        }
+
+        if (!authCodeGrantData.access_token) {
+            throw ErrorUtils.createInvalidOAuthResponseError(
+                'No access token was received in an authorization code grant response');
+        }
+
+        // We do not validate the id token since it is received in a direct HTTPS request
+        if (!authCodeGrantData.id_token) {
+            throw ErrorUtils.createInvalidOAuthResponseError(
+                'No id token was received in an authorization code grant response');
+        }
     }
 
     /*

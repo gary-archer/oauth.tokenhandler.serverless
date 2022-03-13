@@ -9,6 +9,8 @@ export class ErrorCodes {
 
     public static readonly untrustedWebOrigin = 'untrusted_web_origin';
 
+    public static readonly invalidStateError = 'invalid_state';
+
     public static readonly httpRequestError = 'http_request_error';
 
     public static readonly fieldNotFoundError = 'field_not_found';
@@ -21,7 +23,7 @@ export class ErrorCodes {
 
     public static readonly mismatchedAntiForgeryTokenError = 'mismatched_csrf_token';
 
-    public static readonly formFieldNotFoundError = 'form_field_not_found';
+    public static readonly invalidOAuthResponse = 'invalid_oauth_response';
 
     public static readonly unauthorizedRequest = 'unauthorized';
 

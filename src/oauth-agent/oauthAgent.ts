@@ -7,6 +7,7 @@ import {ErrorUtils} from '../errors/errorUtils';
 import {CookieProcessor} from '../http/cookieProcessor';
 import {FormProcessor} from '../http/formProcessor';
 import {QueryProcessor} from '../http/queryProcessor';
+import {ResponseWriter} from '../http/responseWriter';
 import {Container} from '../utilities/container';
 import {HttpProxy} from '../utilities/httpProxy';
 import {AuthorizationServerClient} from './authorizationServerClient';
@@ -19,8 +20,9 @@ export class OAuthAgent {
 
     private readonly _container: Container;
     private readonly _configuration: OAuthAgentConfiguration;
-    private readonly _cookieProcessor: CookieProcessor;
     private readonly _httpProxy: HttpProxy;
+    private readonly _cookieProcessor: CookieProcessor;
+    private readonly _authorizationServerClient: AuthorizationServerClient;
 
     public constructor(
         container: Container,
@@ -31,6 +33,8 @@ export class OAuthAgent {
         this._container = container;
         this._configuration = agentConfiguration;
         this._httpProxy = httpProxy;
+
+        this._authorizationServerClient = new AuthorizationServerClient(this._configuration, this._httpProxy);
         this._cookieProcessor = new CookieProcessor(cookieConfiguration);
     }
 
@@ -78,12 +82,11 @@ export class OAuthAgent {
         this._container.getLogEntry().setOperationName('startLogin');
 
         // First create a random login state
-        const authorizationServerClient = new AuthorizationServerClient(this._configuration, this._httpProxy);
-        const loginState = authorizationServerClient.generateLoginState();
+        const loginState = this._authorizationServerClient.generateLoginState();
 
         // Get the full authorization URL as response data
         const body = {} as any;
-        body.authorizationRequestUri = authorizationServerClient.getAuthorizationRequestUri(loginState);
+        body.authorizationRequestUri = this._authorizationServerClient.getAuthorizationRequestUri(loginState);
 
         // Create a temporary state cookie
         const cookiePayload = {
@@ -93,13 +96,11 @@ export class OAuthAgent {
         const cookie = this._cookieProcessor.writeStateCookie(cookiePayload);
 
         // Return data in the AWS format
-        return {
-            statusCode: 200,
-            body,
-            multiValueHeaders: {
-                'set-cookie': [cookie]
-            }
+        const response = ResponseWriter.objectResponse(200, body);
+        response.multiValueHeaders = {
+            'set-cookie': [cookie]
         };
+        return response;
     }
 
     /*
@@ -117,84 +118,82 @@ export class OAuthAgent {
             throw ErrorUtils.fromMissingJsonFieldError('url');
         }
 
-        /*
-        const pageLoadData = this._getPageLoadData(event);
-
-        // Get data from the SPA
+        // Get data sent up from the SPA
         const query = QueryProcessor.getQueryParameters(url);
         const code = query['code'];
         const state = query['state'];
         const error = query['error'];
         const errorDescription = query['error_description'];
 
-        // Handle normal page loads, which can occur frequently during a user session
-        if (!(state && code) && !(state && error)) {
-            
-            return this._getPageLoadData(event);
-        }*/
-
-        /*
-        // Report Authorization Server errors back to the SPA, such as those sending an invalid scope
         if (state && error) {
+
+            // Report Authorization Server front channel errors back to the SPA
             throw ErrorUtils.fromLoginResponseError(error, errorDescription);
+
+        } else if (!(state && code)) {
+
+            // Handle normal page loads, such as loading a new browser tab
+            const body = {
+                isLoggedIn: false,
+                handled: false,
+            } as PageLoadResponse;
+
+            // Update the logged in state
+            const existingIdToken = this._cookieProcessor.readIdCookie(event);
+            const existingAntiForgeryToken = this._cookieProcessor.readAntiForgeryCookie(event);
+            if (existingIdToken && existingAntiForgeryToken) {
+
+                body.isLoggedIn = true;
+                body.antiForgeryToken = existingAntiForgeryToken;
+            }
+
+            // Include the OAuth User ID in API logs, then return the response
+            this._logUserId(existingIdToken!);
+            return ResponseWriter.objectResponse(200, body);
+
+        } else {
+
+            // Start processing a login response by checking the state matches that in the cookie
+            const stateCookie = this._cookieProcessor.readStateCookie(event);
+            if (!stateCookie) {
+                throw ErrorUtils.fromMissingCookieError('state');
+            }
+
+            if (state !== stateCookie.state) {
+                throw ErrorUtils.fromInvalidStateError();
+            }
+
+            // Send the Authorization Code Grant message to the Authorization Server
+            const authCodeGrantData = await this._authorizationServerClient.sendAuthorizationCodeGrant(
+                code,
+                stateCookie.codeVerifier);
+
+            // Get tokens and include the OAuth User ID in API logs
+            const refreshToken = authCodeGrantData.refresh_token;
+            const accessToken = authCodeGrantData.access_token;
+            const idToken = authCodeGrantData.id_token;
+            this._logUserId(idToken);
+
+            // Inform the SPA that that a login response was handled, and generate a new anti forgery token
+            const body = {
+                isLoggedIn: true,
+                handled: true,
+                antiForgeryToken: crypto.randomBytes(32).toString('base64'),
+            } as PageLoadResponse;
+            const response = ResponseWriter.objectResponse(200, body);
+
+            // Write secure cookies to the response
+            response.multiValueHeaders = {
+                'set-cookie': [
+                    this._cookieProcessor.expireStateCookie(),
+                    this._cookieProcessor.writeRefreshCookie(refreshToken),
+                    this._cookieProcessor.writeAccessCookie(accessToken),
+                    this._cookieProcessor.writeIdCookie(idToken),
+                    this._cookieProcessor.writeAntiForgeryCookie(body.antiForgeryToken!)
+                ]
+            };
+            return response;
         }
-
-        // Read the state cookie and then clear it
-        const stateCookie = this._cookieService.readStateCookie(request);
-        if (!stateCookie) {
-            throw ErrorUtils.fromMissingCookieError('state');
-        }
-        this._cookieService.clearStateCookie(response);
-
-        // Check that the value posted matches that in the cookie
-        if (state !== stateCookie.state) {
-            throw ErrorUtils.fromInvalidStateError();
-        }
-
-        // Send the Authorization Code Grant message to the Authorization Server
-        const authCodeGrantData = await this._oauthService.sendAuthorizationCodeGrant(code, stateCookie.codeVerifier);
-
-        const refreshToken = authCodeGrantData.refresh_token;
-        if (!refreshToken) {
-            throw ErrorUtils.createGenericError(
-                'No refresh token was received in an authorization code grant response');
-        }
-
-        const accessToken = authCodeGrantData.access_token;
-        if (!accessToken) {
-            throw ErrorUtils.createGenericError(
-                'No access token was received in an authorization code grant response');
-        }
-
-        // We do not validate the id token since it is received in a direct HTTPS request
-        const idToken = authCodeGrantData.id_token;
-        if (!idToken) {
-            throw ErrorUtils.createGenericError(
-                'No id token was received in an authorization code grant response');
-        }
-
-        // Include the OAuth User ID in API logs
-        this._logUserId(request, idToken);
-
-        // Write tokens to separate HTTP only encrypted same site cookies
-        this._cookieService.writeRefreshCookie(refreshToken, response);
-        this._cookieService.writeAccessCookie(accessToken, response);
-        this._cookieService.writeIdCookie(idToken, response);
-
-        // Inform the SPA that that a login response was handled
-        const endLoginData = {
-            isLoggedIn: true,
-            handled: true,
-        } as any;
-
-        // Create an anti forgery cookie which will last for the duration of the multi tab browsing session
-        this._createAntiForgeryResponseData(request, response, endLoginData);
-        response.setBody(endLoginData);*/
-
-        return {
-            statusCode: 200,
-            body: '',
-        };
     }
 
     /*
@@ -340,54 +339,15 @@ export class OAuthAgent {
     }
 
     /*
-     * Give the SPA the data it needs when it loads or the page is refreshed or a new browser tab is opened
-     */
-    private _getPageLoadData(event: APIGatewayProxyEvent): PageLoadResponse {
-
-        // Inform the SPA that this is a normal page load and not a login response
-        const pageLoadData = {
-            isLoggedIn: false,
-            handled: false,
-        } as any;
-
-        const existingIdToken = this._cookieProcessor.readIdCookie(event);
-        const antiForgeryToken = this._cookieProcessor.readAntiForgeryCookie(event);
-        if (existingIdToken && antiForgeryToken) {
-
-            pageLoadData.isLoggedIn = true;
-            pageLoadData.antiForgeryToken = antiForgeryToken;
-            this._logUserId(existingIdToken);
-
-        }
-
-        return pageLoadData;
-    }
-
-    /*
-     * Add anti forgery details to the response after signing in
-     */
-    /*private _createAntiForgeryResponseData(event: APIGatewayProxyEvent, data: any): void {
-
-        // Get a random value
-        const newCookieValue = crypto.randomBytes(32).toString('base64');
-
-        // Set an anti forgery HTTP Only encrypted cookie
-        this._cookieService.writeAntiForgeryCookie(response, newCookieValue);
-
-        // Also give the UI the anti forgery token in the response body
-        data.antiForgeryToken = newCookieValue;
-    }*/
-
-    /*
      * Parse the id token then include the user id in logs
      */
     private _logUserId(idToken: string): void {
 
         const parts = idToken.split('.');
         if (parts.length === 3) {
-            
+
             const payload = base64url.decode(parts[1]) as any;
-            this._container.getLogEntry().setUserId(payload.sub)
+            this._container.getLogEntry().setUserId(payload.sub);
         }
     }
 }

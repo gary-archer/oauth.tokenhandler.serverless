@@ -28,6 +28,12 @@ export class LogEntryData {
     // The request path
     public path: string;
 
+    // The calling application name
+    public clientApplicationName: string;
+
+    // The subject claim from the OAuth 2.0 access token
+    public userId: string;
+
     // The status code returned
     public statusCode: number;
 
@@ -36,6 +42,12 @@ export class LogEntryData {
 
     // The specific error instance id, for 500 errors
     public errorId: number;
+
+    // The correlation id, used to link related API requests together
+    public correlationId: string;
+
+    // A session id, to group related calls from a client together
+    public sessionId: string;
 
     // An object containing error data, written for failed requests
     public errorData: any;
@@ -53,9 +65,13 @@ export class LogEntryData {
         this.hostName = os.hostname();
         this.method = '';
         this.path = '';
+        this.clientApplicationName = '';
+        this.userId = '';
         this.statusCode = 0;
         this.errorCode = '';
         this.errorId = 0;
+        this.correlationId = '';
+        this.sessionId = '';
 
         // Objects that are not directly queryable
         this.errorData = null;
@@ -75,9 +91,13 @@ export class LogEntryData {
         this._outputString((x) => output.hostName = x, this.hostName);
         this._outputString((x) => output.method = x, this.method);
         this._outputString((x) => output.path = x, this.path);
+        this._outputString((x) => output.clientApplicationName = x, this.clientApplicationName);
+        this._outputString((x) => output.userId = x, this.userId);
         this._outputNumber((x) => output.statusCode = x, this.statusCode);
         this._outputString((x) => output.errorCode = x, this.errorCode);
         this._outputNumber((x) => output.errorId = x, this.errorId);
+        this._outputString((x) => output.correlationId = x, this.correlationId);
+        this._outputString((x) => output.sessionId = x, this.sessionId);
 
         // Output errors as an object
         this._outputError(output);

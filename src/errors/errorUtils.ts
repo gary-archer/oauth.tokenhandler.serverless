@@ -81,6 +81,28 @@ export class ErrorUtils {
     }
 
     /*
+     * Throw an exception for the SPA when there is a login response error from the Authorization Server
+     */
+    public static fromLoginResponseError(errorCode: string, errorDescription: string | null): ClientError {
+
+        const description = errorDescription || 'A login error response was received from the Authorization Server';
+        return ErrorFactory.createClientError(401, errorCode, description);
+    }
+
+    /*
+     * This occurs if the state does not have the expected value
+     */
+    public static fromInvalidStateError(): ClientError {
+
+        const error = ErrorFactory.createClient401Error('OAuth response state did not match the cookie request state');
+        error.setLogContext({
+            code: ErrorCodes.invalidStateError,
+        });
+
+        return error;
+    }
+
+    /*
      * Throw an exception for the SPA when there is a back channel response error from the Authorization Server
      */
     public static fromTokenResponseError(errorCode: string, errorDescription: string | null, url: string): ClientError {
@@ -93,6 +115,13 @@ export class ErrorUtils {
         });
 
         return error;
+    }
+
+    /*
+     * Indicate if a token is missing, which most commonly would be caused by a configuration problem
+     */
+    public static createInvalidOAuthResponseError(message: string): ServerError {
+        return ErrorFactory.createServerError(ErrorCodes.invalidOAuthResponse, message);
     }
 
     /*

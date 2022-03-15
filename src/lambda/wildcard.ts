@@ -4,7 +4,7 @@ import {Container} from '../utilities/container';
 import {LambdaConfiguration} from './lambdaConfiguration';
 
 /*
- * A wildcard lambda to act as a reverse proxy
+ * A wildcard lambda through which the SPA calls APIs and the Authorization Server
  */
 const container = new Container();
 const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyResult> => {

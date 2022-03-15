@@ -10,7 +10,7 @@ export class LoggerFactory {
     private _name: string;
 
     public constructor() {
-        this._name = 'ReverseProxy';
+        this._name = 'TokenHandler';
     }
 
     public get apiName(): string {

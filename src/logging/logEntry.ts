@@ -11,6 +11,7 @@ export class LogEntry {
 
     public constructor(apiName: string) {
         this._data = new LogEntryData(apiName);
+        this._data.operationName = 'api';
     }
 
     /*

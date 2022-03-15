@@ -54,12 +54,7 @@ function apiError() {
 }
 
 #
-# Start an authenticated user session
-#
-echo "*** Session ID is $SESSION_ID"
-
-#
-# First make an OPTIONS request for an invalid route
+# 1. Verify that an OPTIONS request for an invalid route returns 204
 #
 echo '1. OPTIONS request for an invalid route ...'
 HTTP_STATUS=$(curl -i -s -X OPTIONS "$TOKEN_HANDLER_BASE_URL/badpath" \
@@ -71,7 +66,7 @@ if [ "$HTTP_STATUS" != '204' ]; then
 fi
 
 #
-# Next verify that an OPTIONS request for an untrusted origin does not return CORS headers
+# 2. Next verify that an OPTIONS request for an untrusted origin does not return CORS headers
 #
 echo '2. OPTIONS request for an untrusted origin ...'
 HTTP_STATUS=$(curl -i -s -X OPTIONS "$TOKEN_HANDLER_BASE_URL/api/companies" \
@@ -87,12 +82,12 @@ if [ "$ALLOW_ORIGIN" != '' ]; then
 fi
 
 #
-# Act as the SPA by sending an OPTIONS request, then verifying that we get the expected results
+# 3. Act as the SPA by sending an OPTIONS request, then verifying that we get the expected results
 #
-echo '3. Requesting cross origin access'
+echo '3. OPTIONS request for a trusted origin ...'
 HTTP_STATUS=$(curl -i -s -X OPTIONS "$TOKEN_HANDLER_BASE_URL/oauth-agent/login/start" \
 -H "origin: $WEB_BASE_URL" \
--H "access-control-request-headers: x-mycompany-api-client, x-mycompany-session-id" \
+-H "access-control-request-headers: x-mycompany-api-client,x-mycompany-session-id" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204'  ]; then
   echo "*** Problem encountered requesting cross origin access, status: $HTTP_STATUS"
@@ -100,22 +95,22 @@ if [ "$HTTP_STATUS" != '204'  ]; then
 fi
 ALLOW_ORIGIN=$(getHeaderValue 'access-control-allow-origin')
 if [ "$ALLOW_ORIGIN" != "$WEB_BASE_URL" ]; then
-  echo '*** OPTIONS request for an untrusted origin returned an unexpected allow-origin header'
+  echo '*** OPTIONS request for a trusted origin returned an unexpected allow-origin header'
   exit
 fi
 ALLOW_CREDENTIALS=$(getHeaderValue 'access-control-allow-credentials')
 if [ "$ALLOW_CREDENTIALS" != 'true' ]; then
-  echo '*** OPTIONS request for an untrusted origin returned an unexpected allow-credentials header'
+  echo '*** OPTIONS request for a trusted origin returned an unexpected allow-credentials header'
   exit
 fi
 ALLOWED_HEADERS=$(getHeaderValue 'access-control-allow-headers')
-if [ "$ALLOWED_HEADERS" != 'x-mycompany-api-client, x-mycompany-session-id' ]; then
-  echo '*** OPTIONS request for an untrusted origin returned an unexpected allow-headers header'
+if [ "$ALLOWED_HEADERS" != 'x-mycompany-api-client,x-mycompany-session-id' ]; then
+  echo '*** OPTIONS request for a trusted origin returned an unexpected allow-headers header'
   exit
 fi
 
 #
-# Verify that a GET request for an invalid route returns a 404 error
+# 4. Verify that a GET request for an invalid route returns a 404 error
 #
 echo '4. GET request with an invalid route ...'
 HTTP_STATUS=$(curl -i -s -X GET "$TOKEN_HANDLER_BASE_URL/badpath" \
@@ -127,7 +122,7 @@ if [ $HTTP_STATUS -ne '404' ]; then
 fi
 
 #
-# Act as the SPA by calling the OAuth Agent to start a login and get the request URI
+# 5. Act as the SPA by calling the OAuth Agent to start a login and get the request URI
 #
 echo '5. Creating login URL ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/login/start" \
@@ -141,15 +136,13 @@ if [ "$HTTP_STATUS" != '200' ]; then
   exit
 fi
 
-#
-# Get data we will use later
-#
 JSON=$(tail -n 1 $RESPONSE_FILE)
 AUTHORIZATION_REQUEST_URL=$(jq -r .authorizationRequestUri <<< "$JSON")
 STATE_COOKIE=$(getCookieValue "$COOKIE_PREFIX-state")
 
 #
-# Next invoke the redirect URI to start a login
+# 6. Next invoke the redirect URI to start a login
+#    The Cognito CSRF cookie is written twice due to following the redirect, so get the second occurrence
 #
 echo '6. Following login redirect ...'
 HTTP_STATUS=$(curl -i -L -s "$AUTHORIZATION_REQUEST_URL" -o $RESPONSE_FILE -w '%{http_code}')
@@ -158,15 +151,11 @@ if [ "$HTTP_STATUS" != '200' ]; then
   exit
 fi
 
-#
-# Get data we will use in order to post test credentials and automate a login
-# The Cognito CSRF cookie is written twice due to following the redirect, so get the second occurrence
-#
 LOGIN_POST_LOCATION=$(getHeaderValue 'location')
 COGNITO_XSRF_TOKEN=$(getCookieValue 'XSRF-TOKEN' | cut -d ' ' -f 2)
 
 #
-# We can now post a password credential, and the form fields used are Cognito specific
+# 7. We can now post a password credential, and the form fields used are Cognito specific
 #
 echo '7. Posting credentials to sign in the test user ...'
 HTTP_STATUS=$(curl -i -s -X POST "$LOGIN_POST_LOCATION" \
@@ -181,13 +170,10 @@ if [ "$HTTP_STATUS" != '302' ]; then
   exit
 fi
 
-#
-# Next get the response URL
-#
 AUTHORIZATION_RESPONSE_URL=$(getHeaderValue 'location')
 
 #
-# Next we end the login by asking the server to do an authorization code grant
+# 8. Next we end the login by asking the server to do an authorization code grant
 #
 echo '8. Finishing the login by processing the authorization code ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/login/end" \
@@ -205,9 +191,6 @@ if [ "$HTTP_STATUS" != '200' ]; then
   exit
 fi
 
-#
-# Get data that we will use later
-#
 JSON=$(tail -n 1 $RESPONSE_FILE)
 ANTI_FORGERY_TOKEN=$(jq -r .antiForgeryToken <<< "$JSON")
 ACCESS_COOKIE=$(getCookieValue "$COOKIE_PREFIX-at")
@@ -216,12 +199,14 @@ ID_COOKIE=$(getCookieValue "$COOKIE_PREFIX-id")
 CSRF_COOKIE=$(getCookieValue "$COOKIE_PREFIX-csrf")
 
 #
-# Verify that a GET request with an error returns readable error responses
+# 9. Verify that a GET request to APIs returns valid data
 #
 echo '9. GET request with a valid access cookie returns JSON data ...'
 HTTP_STATUS=$(curl -i -s -X GET "$TOKEN_HANDLER_BASE_URL/api/companies" \
 -H "origin: $WEB_BASE_URL" \
 -H "cookie: $COOKIE_PREFIX-at=$ACCESS_COOKIE" \
+-H 'x-mycompany-api-client: httpTest' \
+-H "x-mycompany-session-id: $SESSION_ID" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
   echo "*** GET request with a valid access cookie returned an unexpected HTTP status: $HTTP_STATUS"
@@ -230,7 +215,7 @@ if [ "$HTTP_STATUS" != '200' ]; then
 fi
 
 #
-# Next expire the access token in the secure cookie, for test purposes
+# 10. Next expire the access token in the secure cookie, for test purposes
 #
 echo '10. Expiring the access token ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/expire" \
@@ -251,7 +236,7 @@ fi
 ACCESS_COOKIE=$(getCookieValue "$COOKIE_PREFIX-at")
 
 #
-# Next try to refresh the access token
+# 11. Next try to refresh the access token
 #
 echo '11. Calling refresh to get a new access token ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/refresh" \
@@ -272,7 +257,7 @@ REFRESH_COOKIE=$(getCookieValue "$COOKIE_PREFIX-rt")
 ID_COOKIE=$(getCookieValue "$COOKIE_PREFIX-id")
 
 #
-# Next expire both the access token and refresh token in the secure cookies, for test purposes
+# 12. Next expire both the access token and refresh token in the secure cookies, for test purposes
 #
 echo '12. Expiring the refresh token ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/expire" \
@@ -294,7 +279,7 @@ ACCESS_COOKIE=$(getCookieValue "$COOKIE_PREFIX-at")
 REFRESH_COOKIE=$(getCookieValue "$COOKIE_PREFIX-rt")
 
 #
-# Next try to refresh the token and we should get an invalid_grant error
+# 13. Next try to refresh the token and we should get an invalid_grant error
 #
 echo '13. Trying to refresh the access token when the session is expired ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/refresh" \
@@ -312,7 +297,7 @@ if [ "$HTTP_STATUS" != '401' ]; then
 fi
 
 #
-# Next make a logout request
+# 14. Next make a logout request
 #
 echo '14. Calling logout to clear cookies and get the end session request URL ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/logout" \
@@ -329,8 +314,5 @@ if [ "$HTTP_STATUS" != '200' ]; then
   exit
 fi
 
-#
-# The real SPA will then do a logout redirect with this URL
-#
 JSON=$(tail -n 1 $RESPONSE_FILE)
 END_SESSION_REQUEST_URL=$(jq -r .endSessionRequestUri <<< "$JSON")

@@ -1,13 +1,12 @@
 IMPL
 ----
-1. Add tests from Serverless API that deal with API requests, cookies and CORS
-   Ensure CORS OPTIONS tests, including access-control-request-headers
-   Move setup.sh to a branch of Serverless API
+1. Do full logging for OAuth Agent requests, including milliseconds taken
 
-2. Test logging has all useful fields
-   Ensure that custom headers are sent through correctly
-   Do full logging for OAuth Agent requests, including performance breakdowns
-   Think about how to represent this in configuration
+2. Fix up proxying of request headers
+   Add a 500 error response test
+
+3. ResponseWriter.objectResponse changes to Serverless API, to prevent cryptic 502 response errors
+   Check for typeof object
 
 LOCAL API
 ---------
@@ -15,17 +14,14 @@ LOCAL API
    Call it oauth.tokenhandler.kubernetes
    Get rid of caching of config and aim to update to express.static
 
-2. Ensure that cloud native repo still works
+2. Ensure that cloud native deployment repo still works
 
-DEPLOYED ENVIRONMENT
---------------------
-1. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
+3. Merge and deploy all, deleting TODO files and backing up notes
 
-MISCELLANEOUS
+4. Codacy updates for changed repos
+
+5. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
+
+DOC
 -------------
-1. Codacy support
-
-2. ResponseWriter.objectResponse changes to Serverless API, to prevent cryptic 502 response errors
-   Check for typeof object
-
-3. DOC: My requirements are to route and also run a lambda, whereas AWS Proxy Integration does not support this
+1. My requirements are to route and also run a lambda, whereas AWS Proxy Integration does not support this

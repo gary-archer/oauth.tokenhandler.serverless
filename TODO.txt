@@ -11,26 +11,15 @@ IMPL
 
 LOCAL API
 ---------
-1. Serverless API feature branch that no longer deals with cookies, CORS or CSRF
-   Update tests to represent traffic from the token handler to the API
-   They must only use access tokens, as for a mobile client, and 'npm run setup' will change
-   Build a package and a custom packager may be needed to get the right config
-   Do not deploy, since it will break the live system
+1. Local token handler repo branch to merge with local token handler deployment
+   Call it oauth.tokenhandler.kubernetes
+   Get rid of caching of config and aim to update to express.static
 
-2. Local token handler repo branch
-
-3. New Express token handler repo
-
-4. Cloud native updates
+2. Ensure that cloud native repo still works
 
 DEPLOYED ENVIRONMENT
 --------------------
-1. Update existing resources to use new certs, then delete old certs once working
-
-2. Deploy and verify the new token handler
-   Deal with a packager that selects a different config file
-
-3. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
+1. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
 
 MISCELLANEOUS
 -------------

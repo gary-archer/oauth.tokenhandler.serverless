@@ -9,6 +9,8 @@
     "setup": "./test/setup.sh",
     "http": "./test/runHttpWorkflow.sh",
     "lambda": "./test/runLambdaWorkflow.sh",
+    "packageConfig": "./environments/packageConfig.sh",
+    "restoreConfig": "./environments/restoreConfig.sh",
     "packageLocal": "npm run buildRelease && rimraf .serverless && sls package --stage local",
     "deployLocal": "sls deploy --stage local --package .serverless",
     "removeLocal": "sls remove --stage local",
@@ -40,6 +42,7 @@
     "rimraf": "^3.0.2",
     "serverless": "^3.0.1",
     "serverless-domain-manager": "4.1.0",
+    "serverless-plugin-scripts": "^1.0.2",
     "typescript": "4.5.5"
   }
 }

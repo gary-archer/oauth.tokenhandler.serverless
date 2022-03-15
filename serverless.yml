@@ -11,15 +11,22 @@ provider:
     shouldStartNameWithService: true
 
 custom:
-  # Each environment can have its own configuration file
+  # Load the environment specific YAML configuration into this shared configuration
   config: ${file(environments/${opt:stage, 'local'}.yml)}
   
   # API gateway domain details
   customDomain:
-    domainName: ${self:custom.config.settings.proxyHostName}
+    #domainName: ${self:custom.config.settings.domainName}
+    domainName: tokenhandler.authsamples.com
     certificateName: '*.${self:custom.config.settings.certificateDomainName}'
     stage: ${self:custom.config.settings.stage}
     endpointType: regional
+
+  # Scripts used when building the AWS deployment package
+  scripts:
+    hooks:
+      'before:package:createDeploymentArtifacts': STAGE=${opt:stage} npm run packageConfig
+      'after:package:createDeploymentArtifacts':  STAGE=${opt:stage} npm run restoreConfig
 
 # A single HTTP endpoint covers all routes, with other logic handled in code
 functions:
@@ -30,7 +37,7 @@ functions:
           path: /{proxy+}
           method: ANY
 
-# By default all files are included so remove files we don't need for any lambda
+# Include the correct config file for the stage, and exclude unwanted files
 package:
   patterns:
   - '!.codacy.yaml'
@@ -43,8 +50,9 @@ package:
   - '!package*.json'
   - '!README.md'
   - '!LICENSE.txt'
-
+  
 plugins:
+  - serverless-plugin-scripts
   - serverless-domain-manager
 
 resources:

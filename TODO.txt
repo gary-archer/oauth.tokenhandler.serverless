@@ -1,26 +1,29 @@
 IMPL
 ----
-1. Do full logging for OAuth Agent requests, including milliseconds taken
+1. Fix up -dev deployment
 
-2. Fix up proxying of request headers
-   Add a 500 error response test
-
-3. ResponseWriter.objectResponse changes to Serverless API, to prevent cryptic 502 response errors
+2. ResponseWriter.objectResponse changes to Serverless API, to prevent cryptic 502 response errors
    Check for typeof object
 
-LOCAL API
----------
-1. Local token handler repo branch to merge with local token handler deployment
-   Call it oauth.tokenhandler.kubernetes
-   Get rid of caching of config and aim to update to express.static
+3. Merge token handler and SPA + update blog
 
-2. Ensure that cloud native deployment repo still works
+OTHER WORKING SAMPLES
+---------------------
+1. Local APIs and Cloud SPA
+   Do bash updates to get this working without any renames and make some notes
 
-3. Merge and deploy all, deleting TODO files and backing up notes
+2. Kubernetes
+   Do bash updates to get cloud native repo working without any renames and make some notes
 
-4. Codacy updates for changed repos
+3. Rename tokenhandlerapi to oauth.tokenhandler.docker and revamp the above
 
-5. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
+4. Bash updates for localtokenhandler deployment
+
+5. Get rid of caching of config and aim to update to express.static
+
+6. Codacy updates for changed repos
+
+7. Elasticsearch logs - all OAuth Agent requests and only internal errors for OAuth Proxy
 
 DOC
 -------------

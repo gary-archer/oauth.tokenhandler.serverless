@@ -1,7 +1,9 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
 import fs from 'fs-extra';
+import {Guid} from 'guid-typescript';
 import {ClientError} from '../errors/clientError';
 import {ServerError} from '../errors/serverError';
+import {HeaderProcessor} from '../http/headerProcessor';
 import {PathProcessor} from '../http/pathProcessor';
 import {LogEntryData} from './logEntryData';
 
@@ -19,11 +21,26 @@ export class LogEntry {
      */
     public start(event: APIGatewayProxyEvent): void {
 
-        if (event.httpMethod) {
-            this._data.method = event.httpMethod;
+        this._data.performance.start();
+        this._data.path = PathProcessor.getFullPath(event);
+        this._data.method = event.httpMethod;
+
+        const clientApplicationName = HeaderProcessor.readHeader(event, 'x-mycompany-api-client');
+        if (clientApplicationName) {
+            this._data.clientApplicationName = clientApplicationName;
         }
 
-        this._data.path = PathProcessor.getFullPath(event);
+        const correlationId = HeaderProcessor.readHeader(event, 'x-mycompany-correlation-id');
+        this._data.correlationId = correlationId ? correlationId : Guid.create().toString();
+
+        const sessionId = HeaderProcessor.readHeader(event, 'x-mycompany-session-id');
+        if (sessionId) {
+            this._data.sessionId = sessionId;
+        }
+    }
+
+    public getCorrelationId(): string {
+        return this._data.correlationId;
     }
 
     public setOperationName(name: string): void {
@@ -54,11 +71,14 @@ export class LogEntry {
     }
 
     /*
-     * Output data at the end of a request, but only when there is an error
+     * Output data at the end of a request
      */
     public write(): void {
 
-        if (this._data.errorData) {
+        this._data.performance.dispose();
+        this._data.millisecondsTaken = this._data.performance.millisecondsTaken;
+
+        if (this._willLog()) {
 
             if (process.env.IS_LOCAL) {
 
@@ -73,5 +93,22 @@ export class LogEntry {
                 process.stdout.write(JSON.stringify(this._data.toLogFormat()) + '\n');
             }
         }
+    }
+
+    /*
+     * The OAuth Agent acts like an API, so all requests are logged except preflight OPTIONS requests
+     * OAuth Proxy requests are not logged unless there are errors, since the request is logged by the target API
+     */
+    private _willLog(): boolean {
+
+        if (this._data.errorData) {
+            return true;
+        }
+
+        if (this._data.path.toLowerCase().startsWith('/oauth-agent') && this._data.method.toLowerCase() !== 'options') {
+            return true;
+        }
+
+        return false;
     }
 }

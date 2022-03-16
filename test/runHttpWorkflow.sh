@@ -215,9 +215,26 @@ if [ "$HTTP_STATUS" != '200' ]; then
 fi
 
 #
-# 10. Next expire the access token in the secure cookie, for test purposes
+# 10. Verify that a GET request to APIs returns valid data
 #
-echo '10. Expiring the access token ...'
+echo '10. Failed GET request returns expected 500 error response ...'
+HTTP_STATUS=$(curl -i -s -X GET "$TOKEN_HANDLER_BASE_URL/api/companies" \
+-H "origin: $WEB_BASE_URL" \
+-H "cookie: $COOKIE_PREFIX-at=$ACCESS_COOKIE" \
+-H 'x-mycompany-api-client: httpTest' \
+-H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-mycompany-test-exception: SampleApi' \
+-o $RESPONSE_FILE -w '%{http_code}')
+if [ "$HTTP_STATUS" != '500' ]; then
+  echo "*** Failed GET request returned an unexpected HTTP status: $HTTP_STATUS"
+  apiError "$BODY"
+  exit
+fi
+
+#
+# 11. Next expire the access token in the secure cookie, for test purposes
+#
+echo '11. Expiring the access token ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/expire" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
@@ -236,9 +253,9 @@ fi
 ACCESS_COOKIE=$(getCookieValue "$COOKIE_PREFIX-at")
 
 #
-# 11. Next try to refresh the access token
+# 12. Next try to refresh the access token
 #
-echo '11. Calling refresh to get a new access token ...'
+echo '12. Calling refresh to get a new access token ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/refresh" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
@@ -257,9 +274,9 @@ REFRESH_COOKIE=$(getCookieValue "$COOKIE_PREFIX-rt")
 ID_COOKIE=$(getCookieValue "$COOKIE_PREFIX-id")
 
 #
-# 12. Next expire both the access token and refresh token in the secure cookies, for test purposes
+# 13. Next expire both the access token and refresh token in the secure cookies, for test purposes
 #
-echo '12. Expiring the refresh token ...'
+echo '13. Expiring the refresh token ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/expire" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
@@ -279,9 +296,9 @@ ACCESS_COOKIE=$(getCookieValue "$COOKIE_PREFIX-at")
 REFRESH_COOKIE=$(getCookieValue "$COOKIE_PREFIX-rt")
 
 #
-# 13. Next try to refresh the token and we should get an invalid_grant error
+# 14. Next try to refresh the token and we should get an invalid_grant error
 #
-echo '13. Trying to refresh the access token when the session is expired ...'
+echo '14. Trying to refresh the access token when the session is expired ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/refresh" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
@@ -297,9 +314,9 @@ if [ "$HTTP_STATUS" != '401' ]; then
 fi
 
 #
-# 14. Next make a logout request
+# 15. Next make a logout request
 #
-echo '14. Calling logout to clear cookies and get the end session request URL ...'
+echo '15. Calling logout to clear cookies and get the end session request URL ...'
 HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/logout" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \

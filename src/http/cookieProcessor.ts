@@ -38,7 +38,7 @@ export class CookieProcessor {
     public readStateCookie(event: APIGatewayProxyEvent): any {
 
         const name = this._getCookieName(STATE_COOKIE);
-        const ciphertext = HeaderProcessor.readCookieValue(name, event);
+        const ciphertext = HeaderProcessor.readCookieValue(event, name);
         if (ciphertext) {
 
             const serialized = CookieEncrypter.decryptCookie(name, ciphertext, this._configuration.encryptionKey);
@@ -64,7 +64,7 @@ export class CookieProcessor {
     public readRefreshCookie(event: APIGatewayProxyEvent): string | null {
 
         const name = this._getCookieName(REFRESH_COOKIE);
-        const ciphertext = HeaderProcessor.readCookieValue(name, event);
+        const ciphertext = HeaderProcessor.readCookieValue(event, name);
         if (ciphertext) {
             return CookieEncrypter.decryptCookie(name, ciphertext, this._configuration.encryptionKey);
         }
@@ -88,7 +88,7 @@ export class CookieProcessor {
     public readAccessCookie(event: APIGatewayProxyEvent): string | null {
 
         const name = this._getCookieName(ACCESS_COOKIE);
-        const ciphertext = HeaderProcessor.readCookieValue(name, event);
+        const ciphertext = HeaderProcessor.readCookieValue(event, name);
         if (ciphertext) {
             return CookieEncrypter.decryptCookie(name, ciphertext, this._configuration.encryptionKey);
         }
@@ -112,7 +112,7 @@ export class CookieProcessor {
     public readIdCookie(event: APIGatewayProxyEvent): string | null {
 
         const name = this._getCookieName(ID_COOKIE);
-        const ciphertext = HeaderProcessor.readCookieValue(name, event);
+        const ciphertext = HeaderProcessor.readCookieValue(event, name);
         if (ciphertext) {
             return CookieEncrypter.decryptCookie(name, ciphertext, this._configuration.encryptionKey);
         }
@@ -136,7 +136,7 @@ export class CookieProcessor {
     public readAntiForgeryCookie(event: APIGatewayProxyEvent): string | null {
 
         const name = this._getCookieName(CSRF_COOKIE);
-        const ciphertext = HeaderProcessor.readCookieValue(name, event);
+        const ciphertext = HeaderProcessor.readCookieValue(event, name);
         if (ciphertext) {
             return CookieEncrypter.decryptCookie(name, ciphertext, this._configuration.encryptionKey);
         }
@@ -163,7 +163,7 @@ export class CookieProcessor {
             throw ErrorUtils.fromMissingCookieError(CSRF_COOKIE);
         }
 
-        const csrfHeader = HeaderProcessor.readHeader(`x-${this._configuration.prefix}-${CSRF_COOKIE}`, event);
+        const csrfHeader = HeaderProcessor.readHeader(event, `x-${this._configuration.prefix}-${CSRF_COOKIE}`);
         if (!csrfHeader) {
             throw ErrorUtils.fromMissingAntiForgeryTokenError();
         }

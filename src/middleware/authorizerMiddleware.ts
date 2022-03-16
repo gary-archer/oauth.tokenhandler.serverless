@@ -67,6 +67,7 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
         if (oauthProxyPlugin) {
 
             const oauthProxy = new OAuthProxy(
+                this._container,
                 this._configuration.routes,
                 this._configuration.cookie,
                 httpProxy);
@@ -86,7 +87,7 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
      */
     private _verifyWebOrigin(event: APIGatewayProxyEvent) {
 
-        const origin = HeaderProcessor.readHeader('origin', event);
+        const origin = HeaderProcessor.readHeader(event, 'origin');
         if (!origin) {
             throw ErrorUtils.fromMissingOriginError();
         }

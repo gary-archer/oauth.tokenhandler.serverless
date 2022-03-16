@@ -48,8 +48,8 @@ export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyE
 
         // In some cases we return a generic error code to the client and log a more specific one
         const logContext = clientError.getLogContext();
-        if (logContext && logContext.code) {
-            logEntry.setErrorCodeOverride(logContext.code);
+        if (logContext && logContext.errorCode) {
+            logEntry.setErrorCodeOverride(logContext.errorCode);
         }
 
         // Finish the log entry for the exception case

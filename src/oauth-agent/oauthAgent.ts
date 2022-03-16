@@ -341,7 +341,7 @@ export class OAuthAgent {
 
         // Check the client has sent a matching anti forgery request header
         const headerName = this._cookieProcessor.getAntiForgeryRequestHeaderName();
-        const headerValue = HeaderProcessor.readHeader(headerName, event);
+        const headerValue = HeaderProcessor.readHeader(event, headerName);
         if (!headerValue) {
             throw ErrorUtils.fromMissingAntiForgeryTokenError();
         }
@@ -360,8 +360,13 @@ export class OAuthAgent {
         const parts = idToken.split('.');
         if (parts.length === 3) {
 
-            const payload = base64url.decode(parts[1]) as any;
-            this._container.getLogEntry().setUserId(payload.sub);
+            const payload = base64url.decode(parts[1]);
+            if (payload) {
+                const claims = JSON.parse(payload);
+                if (claims.sub) {
+                    this._container.getLogEntry().setUserId(claims.sub);
+                }
+            }
         }
     }
 }

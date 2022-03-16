@@ -1,11 +1,12 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import axios, {AxiosRequestConfig, AxiosRequestHeaders, AxiosResponse, Method} from 'axios';
+import axios, {AxiosRequestConfig, AxiosResponse, Method} from 'axios';
 import {CookieConfiguration} from '../configuration/cookieConfiguration';
 import {RouteConfiguration} from '../configuration/routeConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
 import {CookieProcessor} from '../http/cookieProcessor';
 import {PathProcessor} from '../http/pathProcessor';
 import {ResponseWriter} from '../http/responseWriter';
+import {Container} from '../utilities/container';
 import {HttpProxy} from '../utilities/httpProxy';
 
 /*
@@ -13,17 +14,21 @@ import {HttpProxy} from '../utilities/httpProxy';
  */
 export class OAuthProxy {
 
+    private readonly _container: Container;
     private readonly _routes: RouteConfiguration[];
     private readonly _cookieProcessor: CookieProcessor;
     private readonly _httpProxy: HttpProxy;
 
     public constructor(
+        container: Container,
         routes: RouteConfiguration[],
         cookieConfiguration: CookieConfiguration,
         httpProxy: HttpProxy) {
 
+        this._container = container;
         this._routes = routes;
         this._httpProxy = httpProxy;
+
         this._cookieProcessor = new CookieProcessor(cookieConfiguration);
     }
 
@@ -70,10 +75,23 @@ export class OAuthProxy {
             method: event.httpMethod as Method,
             headers: {
                 authorization: `Bearer ${accessToken}`,
-            } as AxiosRequestHeaders,
+            },
 
             httpsAgent: this._httpProxy.agent,
         };
+
+        // Add any custom headers we have received from the client
+        if (event.headers) {
+
+            Object.keys(event.headers).forEach((name) => {
+                if (name.startsWith('x-mycompany')) {
+                    options.headers![name] = event.headers[name] as string;
+                }
+            });
+        }
+
+        // Ensure that the correlation id from the log entry is forwarded
+        options.headers!['x-mycompany-correlation-id'] = this._container.getLogEntry().getCorrelationId();
 
         // Supply a body if required
         if (event.body) {

@@ -64,11 +64,6 @@ function apiError() {
 }
 
 #
-# Start an authenticated user session
-#
-echo "*** Session ID is $SESSION_ID"
-
-#
 # 1. Verify that an OPTIONS request for an invalid route returns 204
 #
 jo \
@@ -308,7 +303,35 @@ if [ "$HTTP_STATUS" != '200' ]; then
 fi
 
 #
-# 10. Next expire the access token in the secure cookie, for test purposes
+# 10. Use the error simulation custom header to verify that 500 errors return the expected data
+#
+jo \
+httpMethod=GET \
+path=/api/companies \
+headers=$(jo origin="$WEB_BASE_URL" \
+x-mycompany-api-client=lambdaTest \
+x-mycompany-test-exception='SampleApi' \
+x-mycompany-session-id=$SESSION_ID) \
+multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-at=$ACCESS_COOKIE")) \
+| jq > $REQUEST_FILE
+
+echo '10. Failed GET request returns expected 500 error response ...'
+$SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
+if [ "$?" != '0' ]; then
+  echo 'GET request for a 500 error failed to execute'
+  exit
+fi
+JSON=$(cat $RESPONSE_FILE)
+HTTP_STATUS=$(jq -r .statusCode <<< "$JSON")
+BODY=$(jq -r .body <<< "$JSON")
+if [ "$HTTP_STATUS" != '500' ]; then
+  echo "*** Failed GET request returned an unexpected HTTP status: $HTTP_STATUS"
+  apiError "$BODY"
+  exit
+fi
+
+#
+# 11. Next expire the access token in the secure cookie, for test purposes
 #
 jo -p \
 path='/oauth-agent/expire' \
@@ -328,7 +351,7 @@ body="{\\\""type\\\"":\\\""access\\\""}" \
 | sed 's/\\\\\\/\\/g' \
 | jq > $REQUEST_FILE
 
-echo '10. Expiring the access token ...'
+echo '11. Expiring the access token ...'
 $SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo "*** Problem encountered expiring the access token"
@@ -347,7 +370,7 @@ fi
 ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_HEADERS")
 
 #
-# 11. Next try to refresh the access token
+# 12. Next try to refresh the access token
 #
 jo -p \
 path='/oauth-agent/refresh' \
@@ -365,7 +388,7 @@ multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-csrf=$CSRF_COOKIE")) \
 | jq > $REQUEST_FILE
 
-echo '11. Calling refresh to get a new access token ...'
+echo '12. Calling refresh to get a new access token ...'
 $SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo "*** Problem encountered expiring the access token"
@@ -385,7 +408,7 @@ ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_H
 REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_HEADERS")
 
 #
-# 12. Next expire both the access token and refresh token in the secure cookies, for test purposes
+# 13. Next expire both the access token and refresh token in the secure cookies, for test purposes
 #
 jo -p \
 path='/oauth-agent/expire' \
@@ -405,7 +428,7 @@ body="{\\\""type\\\"":\\\""refresh\\\""}" \
 | sed 's/\\\\\\/\\/g' \
 | jq > $REQUEST_FILE
 
-echo '12. Expiring the refresh token ...'
+echo '13. Expiring the refresh token ...'
 $SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo "*** Problem encountered expiring the refresh token"
@@ -425,7 +448,7 @@ ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_H
 REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_HEADERS")
 
 #
-# 13. Next try to refresh the token and we should get an invalid_grant error
+# 14. Next try to refresh the token and we should get an invalid_grant error
 #
 jo -p \
 path='/oauth-agent/refresh' \
@@ -443,7 +466,7 @@ multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-csrf=$CSRF_COOKIE")) \
 | jq > $REQUEST_FILE
 
-echo '13. Trying to refresh the access token when the session is expired ...'
+echo '14. Trying to refresh the access token when the session is expired ...'
 $SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo "*** Problem encountered expiring the access token"
@@ -461,7 +484,7 @@ if [ "$HTTP_STATUS" != '401' ]; then
 fi
 
 #
-# 14. Next make a logout request
+# 15. Next make a logout request
 #
 jo -p \
 path='/oauth-agent/logout' \
@@ -479,7 +502,7 @@ multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-csrf=$CSRF_COOKIE")) \
 | jq > $REQUEST_FILE
 
-echo '14. Calling logout to clear cookies and get the end session request URL ...'
+echo '15. Calling logout to clear cookies and get the end session request URL ...'
 $SLS invoke local -f wildcard -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
   echo "*** Problem encountered invoking the startLogout lambda"

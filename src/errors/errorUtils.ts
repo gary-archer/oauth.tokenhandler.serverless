@@ -61,7 +61,7 @@ export class ErrorUtils {
             'A request from a CORS client was received with no origin header');
 
         const logContext = error.getLogContext();
-        logContext.code = ErrorCodes.missingWebOrigin;
+        logContext.errorCode = ErrorCodes.missingWebOrigin;
 
         return error;
     }
@@ -75,7 +75,7 @@ export class ErrorUtils {
             'A request from a CORS client had an untrusted web origin');
 
         const logContext = error.getLogContext();
-        logContext.code = ErrorCodes.untrustedWebOrigin;
+        logContext.errorCode = ErrorCodes.untrustedWebOrigin;
 
         return error;
     }
@@ -161,7 +161,7 @@ export class ErrorUtils {
             `The ${name} field was missing in an incoming request`);
 
         const logContext = error.getLogContext();
-        logContext.code = ErrorCodes.fieldNotFoundError;
+        logContext.errorCode = ErrorCodes.fieldNotFoundError;
 
         return error;
     }
@@ -175,7 +175,7 @@ export class ErrorUtils {
             `The ${name} cookie was not received in an incoming request`);
 
         const logContext = error.getLogContext();
-        logContext.code = ErrorCodes.cookieNotFoundError;
+        logContext.errorCode = ErrorCodes.cookieNotFoundError;
 
         return error;
     }
@@ -189,7 +189,7 @@ export class ErrorUtils {
             'An anti forgery request header was not supplied for a data changing command');
 
         const logContext = error.getLogContext();
-        logContext.code = ErrorCodes.missingAntiForgeryTokenError;
+        logContext.errorCode = ErrorCodes.missingAntiForgeryTokenError;
 
         return error;
     }
@@ -203,7 +203,7 @@ export class ErrorUtils {
             'The anti forgery request header value does not match that of the request cookie');
 
         const logContext = error.getLogContext();
-        logContext.code = ErrorCodes.mismatchedAntiForgeryTokenError;
+        logContext.errorCode = ErrorCodes.mismatchedAntiForgeryTokenError;
 
         return error;
     }
@@ -217,7 +217,7 @@ export class ErrorUtils {
         const error = ErrorFactory.createClient401Error(details);
 
         const logContext = error.getLogContext();
-        logContext.code = ErrorCodes.cookieDecryptionError;
+        logContext.errorCode = ErrorCodes.cookieDecryptionError;
         logContext.name = name;
 
         return error;
@@ -232,7 +232,7 @@ export class ErrorUtils {
         const error = ErrorFactory.createClient401Error(details);
 
         const logContext = error.getLogContext();
-        logContext.code = ErrorCodes.cookieDecryptionError;
+        logContext.errorCode = ErrorCodes.cookieDecryptionError;
         logContext.name = name;
 
         return error;

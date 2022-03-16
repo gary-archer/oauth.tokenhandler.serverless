@@ -1,5 +1,6 @@
 import {Guid} from 'guid-typescript';
 import os from 'os';
+import {PerformanceBreakdown} from './performanceBreakdown';
 
 /*
  * Each API request writes a structured log entry containing fields we will query by
@@ -37,6 +38,12 @@ export class LogEntryData {
     // The status code returned
     public statusCode: number;
 
+    // The time taken in API code
+    public millisecondsTaken: number;
+
+    // A time beyond which performance is considered 'slow'
+    public performanceThresholdMilliseconds: number;
+
     // The error code for requests that failed
     public errorCode: string;
 
@@ -48,6 +55,9 @@ export class LogEntryData {
 
     // A session id, to group related calls from a client together
     public sessionId: string;
+
+    // An object containing performance data, written when performance is slow
+    public performance: PerformanceBreakdown;
 
     // An object containing error data, written for failed requests
     public errorData: any;
@@ -68,12 +78,15 @@ export class LogEntryData {
         this.clientApplicationName = '';
         this.userId = '';
         this.statusCode = 0;
+        this.millisecondsTaken = 0;
+        this.performanceThresholdMilliseconds = 500;
         this.errorCode = '';
         this.errorId = 0;
         this.correlationId = '';
         this.sessionId = '';
 
         // Objects that are not directly queryable
+        this.performance = new PerformanceBreakdown();
         this.errorData = null;
     }
 
@@ -97,6 +110,8 @@ export class LogEntryData {
         this._outputString((x) => output.errorCode = x, this.errorCode);
         this._outputNumber((x) => output.errorId = x, this.errorId);
         this._outputString((x) => output.correlationId = x, this.correlationId);
+        this._outputNumber((x) => output.millisecondsTaken = x, this.millisecondsTaken, true);
+        this._outputNumber((x) => output.millisecondsThreshold = x, this.performanceThresholdMilliseconds, true);
         this._outputString((x) => output.sessionId = x, this.sessionId);
 
         // Output errors as an object

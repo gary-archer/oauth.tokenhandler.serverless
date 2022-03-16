@@ -16,8 +16,7 @@ custom:
   
   # API gateway domain details
   customDomain:
-    #domainName: ${self:custom.config.settings.domainName}
-    domainName: tokenhandler.authsamples.com
+    domainName: ${self:custom.config.settings.domainName}
     certificateName: '*.${self:custom.config.settings.certificateDomainName}'
     stage: ${self:custom.config.settings.stage}
     endpointType: regional

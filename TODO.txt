@@ -1,11 +1,11 @@
 IMPL
 ----
-1. Fix up -dev deployment
+1. Deploy token handler, SPA with different OAuth client settings, and Serverless API
+   Verify it works for mobile and web
 
-2. ResponseWriter.objectResponse changes to Serverless API, to prevent cryptic 502 response errors
-   Check for typeof object
-
-3. Merge token handler and SPA + update blog
+2. Make the tokenhandler.serverless repo public
+   Merge the three repos
+   Update blog instructions
 
 OTHER WORKING SAMPLES
 ---------------------

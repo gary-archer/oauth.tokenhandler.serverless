@@ -15,7 +15,7 @@ Two separate instances are deployed to to AWS in a low cost manner to support th
 - A token handler to support local development
 - A token handler to support the deployed SPA
 
-This enables my preferred end-to-end SPA, API and Logging behavior to run in the preferred way.
+This enables my end-to-end SPA, API and Logging behavior to run in the preferred way.
 
 ## Quick Start
 

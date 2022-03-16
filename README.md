@@ -9,13 +9,13 @@ The [Final SPA](https://github.com/gary-archer/oauth.websample.final) uses Curit
 
 ## Custom Implementation
 
-This repo provides an OAuth Agent and OAuth Proxy, which is deployed to AWS in a low cost manner to support the SPA.\
-Two separate instances are deployed:
+This repo provides an OAuth Agent and OAuth Proxy with some custom expiry testing and logging behavior.\
+Two separate instances are deployed to to AWS in a low cost manner to support the SPA:
 
 - A token handler to support local development
 - A token handler to support the deployed SPA
 
-It enables my [End-to-end SPA and API](https://github.com/gary-archer/oauth.cloudnative.deployment) to run with the desired behaviour in both setups.
+This enables my preferred end-to-end SPA, API and Logging behavior to run in the preferred way.
 
 ## Quick Start
 

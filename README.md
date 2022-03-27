@@ -22,7 +22,8 @@ This enables my end-to-end SPA, API and Logging behavior to run in the preferred
 To run this component in isolation, run these commands to build the API code:
 
 ```bash
-./start.sh
+npm install
+npm run build
 ```
 
 Then test API operations locally via this command, which runs lambda functions:

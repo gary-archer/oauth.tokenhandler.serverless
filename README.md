@@ -4,22 +4,20 @@
 
 [![Known Vulnerabilities](https://snyk.io/test/github/gary-archer/oauth.tokenhandler.serverless/badge.svg?targetFile=package.json)](https://snyk.io/test/github/gary-archer/oauth.tokenhandler.serverless?targetFile=package.json)
 
-Utility API support for a Single Page Application, to enable OpenID Connect security and use of secure cookies.\
+API Driven OpenID Connect for Single Page Applications.\
 The [Final SPA](https://github.com/gary-archer/oauth.websample.final) uses Curity's [Token Handler Pattern](https://github.com/curityio/spa-using-token-handler) and calls this API to perform OAuth related work.
 
 ## Custom Implementation
 
 This repo provides an OAuth Agent and OAuth Proxy with some custom expiry testing and logging behavior.\
-Two separate instances are deployed to to AWS in a low cost manner to support the SPA:
+Two separate instances are deployed to to AWS, and run in a low cost manner:
 
-- A token handler to support local development
-- A token handler to support the deployed SPA
-
-This enables my end-to-end SPA, API and Logging behavior to run in the preferred way.
+- Token handler components to support local development
+- Token handler components used by the deployed SPA
 
 ## Quick Start
 
-To run this component in isolation, run these commands to build the API code:
+To run this component in isolation, run the following commands to build the API code:
 
 ```bash
 npm install
@@ -32,8 +30,25 @@ Then test API operations locally via this command, which runs lambda functions:
 npm run lambda
 ```
 
-Test deployed API endpoints via this command:
+Test AWS deployed API endpoints via this command:
 
 ```bash
 npm run http
 ```
+
+## Further Information
+
+See the [Final SPA to API Routing](https://authguidance.com/2019/04/08/serverless-spa-to-api-routing) blog post for further details on the utility API components.
+
+## Programming Technologies
+
+* Node.js and TypeScript are used to implement an AWS wildcard lambda function
+
+## Cloud Infrastructure Used
+
+* AWS Route 53 is used for custom hosting domains
+* AWS Certificate Manager is used to manage and auto renew the SSL certificate for the token handler domain
+* AWS Cognito is used as the default Authorization Server
+* The AWS API Gateway is used as the HTTPS internet entry point
+* CloudWatch is used for immediate storage of OAuth Agent logs
+* Logs are aggregated to [Elastic Cloud](https://authguidance.com/2020/08/11/cloud-elastic-search-setup) to support common [Query Use Cases](https://authguidance.com/2019/08/02/intelligent-api-platform-analysis/)

@@ -1,8 +1,7 @@
 .DS_store
 node_modules
 dist
-request.txt
-response.txt
-lambdatest.log
+test/*.txt
+test/*.log
 credentials.json
 .serverless

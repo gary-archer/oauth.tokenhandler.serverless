@@ -1,18 +1,21 @@
 #!/bin/bash
 
-#####################################################################
-# A script to test the deployed lambdas running as AWS HTTP endpoints
-#####################################################################
+##################################################################
+# A script to test the deployed OAuth Agent and also deployed APIs
+##################################################################
 
 WEB_BASE_URL='https://web.authsamples-dev.com'
-TOKEN_HANDLER_BASE_URL='https://tokenhandler.authsamples-dev.com'
+OAUTH_AGENT_BASE_URL='https://tokenhandler.authsamples-dev.com/oauth-agent'
+API_BASE_URL='https://tokenhandler.authsamples-dev.com/api'
 LOGIN_BASE_URL='https://login.authsamples.com'
 COOKIE_PREFIX=mycompany
 TEST_USERNAME='guestuser@mycompany.com'
 TEST_PASSWORD=GuestPassword1
 SESSION_ID=$(uuidgen)
-RESPONSE_FILE=test/response.txt
-#export HTTPS_PROXY='http://127.0.0.1:8888'
+RESPONSE_FILE='test/response.txt'
+LOGIN_COOKIES_FILE='test/login_cookies.txt'
+MAIN_COOKIES_FILE='test/main_cookies.txt'
+
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 cd ..
@@ -29,8 +32,7 @@ function getHeaderValue(){
 }
 
 #
-# Similar to the above except that we read a cookie value from an HTTP response file
-# This currently only supports a single cookie in each set-cookie header, which is good enough for my purposes
+# Used to read a Cognito token from a cookie
 #
 function getCookieValue(){
   local _COOKIE_NAME=$1
@@ -57,7 +59,7 @@ function apiError() {
 # 1. Verify that an OPTIONS request for an invalid route returns 204
 #
 echo '1. OPTIONS request for an invalid route ...'
-HTTP_STATUS=$(curl -i -s -X OPTIONS "$TOKEN_HANDLER_BASE_URL/badpath" \
+HTTP_STATUS=$(curl -i -s -X OPTIONS "$OAUTH_AGENT_BASE_URL/badpath" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204' ]; then
   echo "*** A request with an invalid route returned an unexpected HTTP status: $HTTP_STATUS"
@@ -69,7 +71,7 @@ fi
 # 2. Next verify that an OPTIONS request for an untrusted origin does not return CORS headers
 #
 echo '2. OPTIONS request for an untrusted origin ...'
-HTTP_STATUS=$(curl -i -s -X OPTIONS "$TOKEN_HANDLER_BASE_URL/api/companies" \
+HTTP_STATUS=$(curl -i -s -X OPTIONS "$OAUTH_AGENT_BASE_URL/api/companies" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204' ]; then
   echo "*** OPTIONS request for an untrusted origin returned an unexpected HTTP status: $HTTP_STATUS"
@@ -85,7 +87,7 @@ fi
 # 3. Act as the SPA by sending an OPTIONS request, then verifying that we get the expected results
 #
 echo '3. OPTIONS request for a trusted origin ...'
-HTTP_STATUS=$(curl -i -s -X OPTIONS "$TOKEN_HANDLER_BASE_URL/oauth-agent/login/start" \
+HTTP_STATUS=$(curl -i -s -X OPTIONS "$OAUTH_AGENT_BASE_URL/login/start" \
 -H "origin: $WEB_BASE_URL" \
 -H "access-control-request-headers: x-mycompany-api-client,x-mycompany-session-id" \
 -o $RESPONSE_FILE -w '%{http_code}')
@@ -110,12 +112,12 @@ if [ "$ALLOWED_HEADERS" != 'x-mycompany-api-client,x-mycompany-session-id' ]; th
 fi
 
 #
-# 4. Verify that a GET request for an invalid route returns a 404 error
+# 4. Verify that a GET request for an invalid route returns a 401 error
 #
 echo '4. GET request with an invalid route ...'
-HTTP_STATUS=$(curl -i -s -X GET "$TOKEN_HANDLER_BASE_URL/badpath" \
+HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/badpath" \
 -o $RESPONSE_FILE -w '%{http_code}')
-if [ $HTTP_STATUS -ne '404' ]; then
+if [ $HTTP_STATUS -ne '401' ]; then
   echo "*** GET request with an invalid route returned an unexpected HTTP status: $HTTP_STATUS"
   apiError "$BODY"
   exit
@@ -125,11 +127,12 @@ fi
 # 5. Act as the SPA by calling the OAuth Agent to start a login and get the request URI
 #
 echo '5. Creating login URL ...'
-HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/login/start" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/login/start" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
+-c "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
   echo "*** Problem encountered starting a login, status: $HTTP_STATUS"
@@ -138,14 +141,15 @@ fi
 
 JSON=$(tail -n 1 $RESPONSE_FILE)
 AUTHORIZATION_REQUEST_URL=$(jq -r .authorizationRequestUri <<< "$JSON")
-STATE_COOKIE=$(getCookieValue "$COOKIE_PREFIX-state")
 
 #
 # 6. Next invoke the redirect URI to start a login
 #    The Cognito CSRF cookie is written twice due to following the redirect, so get the second occurrence
 #
 echo '6. Following login redirect ...'
-HTTP_STATUS=$(curl -i -L -s "$AUTHORIZATION_REQUEST_URL" -o $RESPONSE_FILE -w '%{http_code}')
+HTTP_STATUS=$(curl -i -L -s "$AUTHORIZATION_REQUEST_URL" \
+-c "$LOGIN_COOKIES_FILE" \
+-o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
   echo "*** Problem encountered using the OpenID Connect authorization URL, status: $HTTP_STATUS"
   exit
@@ -160,7 +164,7 @@ COGNITO_XSRF_TOKEN=$(getCookieValue 'XSRF-TOKEN' | cut -d ' ' -f 2)
 echo '7. Posting credentials to sign in the test user ...'
 HTTP_STATUS=$(curl -i -s -X POST "$LOGIN_POST_LOCATION" \
 -H "origin: $LOGIN_BASE_URL" \
---cookie "XSRF-TOKEN=$COGNITO_XSRF_TOKEN" \
+-b "$LOGIN_COOKIES_FILE" \
 --data-urlencode "_csrf=$COGNITO_XSRF_TOKEN" \
 --data-urlencode "username=$TEST_USERNAME" \
 --data-urlencode "password=$TEST_PASSWORD" \
@@ -176,13 +180,14 @@ AUTHORIZATION_RESPONSE_URL=$(getHeaderValue 'location')
 # 8. Next we end the login by asking the server to do an authorization code grant
 #
 echo '8. Finishing the login by processing the authorization code ...'
-HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/login/end" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/login/end" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
---cookie "$COOKIE_PREFIX-state=$STATE_COOKIE" \
+-b "$MAIN_COOKIES_FILE" \
+-c "$MAIN_COOKIES_FILE" \
 -d '{"url":"'$AUTHORIZATION_RESPONSE_URL'"}' \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
@@ -191,22 +196,25 @@ if [ "$HTTP_STATUS" != '200' ]; then
   exit
 fi
 
+#
+# Get the anti forgery token which should be present after a successful login
+#
 JSON=$(tail -n 1 $RESPONSE_FILE)
 ANTI_FORGERY_TOKEN=$(jq -r .antiForgeryToken <<< "$JSON")
-ACCESS_COOKIE=$(getCookieValue "$COOKIE_PREFIX-at")
-REFRESH_COOKIE=$(getCookieValue "$COOKIE_PREFIX-rt")
-ID_COOKIE=$(getCookieValue "$COOKIE_PREFIX-id")
-CSRF_COOKIE=$(getCookieValue "$COOKIE_PREFIX-csrf")
+if [ "$ANTI_FORGERY_TOKEN" == 'null' ]; then
+  echo "*** End login did not complete successfully"
+  exit
+fi
 
 #
 # 9. Verify that a GET request to APIs returns valid data
 #
 echo '9. GET request with a valid access cookie returns JSON data ...'
-HTTP_STATUS=$(curl -i -s -X GET "$TOKEN_HANDLER_BASE_URL/api/companies" \
+HTTP_STATUS=$(curl -i -s -X GET "$API_BASE_URL/companies" \
 -H "origin: $WEB_BASE_URL" \
--H "cookie: $COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
+-b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
   echo "*** GET request with a valid access cookie returned an unexpected HTTP status: $HTTP_STATUS"
@@ -218,12 +226,12 @@ fi
 # 10. Verify that a GET request to APIs returns valid data
 #
 echo '10. Failed GET request returns expected 500 error response ...'
-HTTP_STATUS=$(curl -i -s -X GET "$TOKEN_HANDLER_BASE_URL/api/companies" \
+HTTP_STATUS=$(curl -i -s -X GET "$API_BASE_URL/companies" \
 -H "origin: $WEB_BASE_URL" \
--H "cookie: $COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
 -H 'x-mycompany-test-exception: SampleApi' \
+-b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '500' ]; then
   echo "*** Failed GET request returned an unexpected HTTP status: $HTTP_STATUS"
@@ -235,14 +243,15 @@ fi
 # 11. Next expire the access token in the secure cookie, for test purposes
 #
 echo '11. Expiring the access token ...'
-HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/expire" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
 -H "x-$COOKIE_PREFIX-csrf: $ANTI_FORGERY_TOKEN" \
---cookie "$COOKIE_PREFIX-at=$ACCESS_COOKIE;$COOKIE_PREFIX-rt=$REFRESH_COOKIE;$COOKIE_PREFIX-id=$ID_COOKIE;$COOKIE_PREFIX-csrf=$CSRF_COOKIE" \
+-b "$MAIN_COOKIES_FILE" \
+-c "$MAIN_COOKIES_FILE" \
 -d '{"type":"access"}' \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204' ]; then
@@ -250,41 +259,39 @@ if [ "$HTTP_STATUS" != '204' ]; then
   apiError
   exit
 fi
-ACCESS_COOKIE=$(getCookieValue "$COOKIE_PREFIX-at")
 
 #
 # 12. Next try to refresh the access token
 #
 echo '12. Calling refresh to get a new access token ...'
-HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/refresh" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/refresh" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
 -H "x-$COOKIE_PREFIX-csrf: $ANTI_FORGERY_TOKEN" \
---cookie "$COOKIE_PREFIX-rt=$REFRESH_COOKIE;$COOKIE_PREFIX-id=$ID_COOKIE;$COOKIE_PREFIX-csrf=$CSRF_COOKIE" \
+-b "$MAIN_COOKIES_FILE" \
+-c "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204' ]; then
   echo "*** Problem encountered refreshing the access token, status: $HTTP_STATUS"
   apiError
   exit
 fi
-ACCESS_COOKIE=$(getCookieValue "$COOKIE_PREFIX-at")
-REFRESH_COOKIE=$(getCookieValue "$COOKIE_PREFIX-rt")
-ID_COOKIE=$(getCookieValue "$COOKIE_PREFIX-id")
 
 #
 # 13. Next expire both the access token and refresh token in the secure cookies, for test purposes
 #
 echo '13. Expiring the refresh token ...'
-HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/expire" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
 -H "x-$COOKIE_PREFIX-csrf: $ANTI_FORGERY_TOKEN" \
---cookie "$COOKIE_PREFIX-at=$ACCESS_COOKIE;$COOKIE_PREFIX-rt=$REFRESH_COOKIE;$COOKIE_PREFIX-id=$ID_COOKIE;$COOKIE_PREFIX-csrf=$CSRF_COOKIE" \
+-b "$MAIN_COOKIES_FILE" \
+-c "$MAIN_COOKIES_FILE" \
 -d '{"type":"refresh"}' \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204' ]; then
@@ -292,20 +299,18 @@ if [ "$HTTP_STATUS" != '204' ]; then
   apiError
   exit
 fi
-ACCESS_COOKIE=$(getCookieValue "$COOKIE_PREFIX-at")
-REFRESH_COOKIE=$(getCookieValue "$COOKIE_PREFIX-rt")
 
 #
 # 14. Next try to refresh the token and we should get an invalid_grant error
 #
 echo '14. Trying to refresh the access token when the session is expired ...'
-HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/refresh" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/refresh" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
 -H "x-$COOKIE_PREFIX-csrf: $ANTI_FORGERY_TOKEN" \
---cookie "$COOKIE_PREFIX-rt=$REFRESH_COOKIE;$COOKIE_PREFIX-id=$ID_COOKIE;$COOKIE_PREFIX-csrf=$CSRF_COOKIE" \
+-b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '401' ]; then
   echo "*** The expected 401 error did not occur, status: $HTTP_STATUS"
@@ -317,13 +322,14 @@ fi
 # 15. Next make a logout request
 #
 echo '15. Calling logout to clear cookies and get the end session request URL ...'
-HTTP_STATUS=$(curl -i -s -X POST "$TOKEN_HANDLER_BASE_URL/oauth-agent/logout" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/logout" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
 -H "x-$COOKIE_PREFIX-csrf: $ANTI_FORGERY_TOKEN" \
---cookie "$COOKIE_PREFIX-rt=$REFRESH_COOKIE;$COOKIE_PREFIX-id=$ID_COOKIE;$COOKIE_PREFIX-csrf=$CSRF_COOKIE" \
+-b "$MAIN_COOKIES_FILE" \
+-c "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
   echo "*** Problem encountered calling logout, status: $HTTP_STATUS"
@@ -331,5 +337,8 @@ if [ "$HTTP_STATUS" != '200' ]; then
   exit
 fi
 
+#
+# The real SPA will then do a logout redirect with this URL
+#
 JSON=$(tail -n 1 $RESPONSE_FILE)
 END_SESSION_REQUEST_URL=$(jq -r .endSessionRequestUri <<< "$JSON")

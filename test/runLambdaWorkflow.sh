@@ -10,8 +10,9 @@ COOKIE_PREFIX=mycompany
 TEST_USERNAME='guestuser@mycompany.com'
 TEST_PASSWORD=GuestPassword1
 SESSION_ID=$(uuidgen)
-REQUEST_FILE=test/request.txt
-RESPONSE_FILE=test/response.txt
+REQUEST_FILE='test/request.txt'
+RESPONSE_FILE='test/response.txt'
+LOGIN_COOKIES_FILE='test/login_cookies.txt'
 SLS=./node_modules/.bin/sls
 #export HTTPS_PROXY='http://127.0.0.1:8888'
 
@@ -209,7 +210,9 @@ STATE_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-state" "$MULTI_VALUE
 #    The Cognito CSRF cookie is written twice due to following the redirect, so get the second occurrence
 #
 echo '6. Following login redirect ...'
-HTTP_STATUS=$(curl -i -L -s "$AUTHORIZATION_REQUEST_URL" -o $RESPONSE_FILE -w '%{http_code}')
+HTTP_STATUS=$(curl -i -L -s "$AUTHORIZATION_REQUEST_URL" \
+-c "$LOGIN_COOKIES_FILE" \
+-o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
   echo "*** Problem encountered using the OpenID Connect authorization URL, status: $HTTP_STATUS"
   exit
@@ -224,7 +227,7 @@ COGNITO_XSRF_TOKEN=$(getCognitoCookieValue 'XSRF-TOKEN' | cut -d ' ' -f 2)
 echo '7. Posting credentials to sign in the test user ...'
 HTTP_STATUS=$(curl -i -s -X POST "$LOGIN_POST_LOCATION" \
 -H "origin: $LOGIN_BASE_URL" \
---cookie "XSRF-TOKEN=$COGNITO_XSRF_TOKEN" \
+-b "$LOGIN_COOKIES_FILE" \
 --data-urlencode "_csrf=$COGNITO_XSRF_TOKEN" \
 --data-urlencode "username=$TEST_USERNAME" \
 --data-urlencode "password=$TEST_PASSWORD" \

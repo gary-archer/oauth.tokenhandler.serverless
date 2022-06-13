@@ -25,7 +25,7 @@ cd ..
 # A simple routine to get a header value from an HTTP response file in a direct Cognito request
 # The sed expression matches everything after the colon, after which we return this in group 1
 #
-function getCognitoHeaderValue(){
+function getCognitoHeaderValue() {
   local _HEADER_NAME=$1
   local _HEADER_VALUE=$(cat $RESPONSE_FILE | grep -i "^$_HEADER_NAME" | sed -r "s/^$_HEADER_NAME: (.*)$/\1/i")
   local _HEADER_VALUE=${_HEADER_VALUE%$'\r'}
@@ -36,7 +36,7 @@ function getCognitoHeaderValue(){
 # Similar to the above except that we read a cookie value from an HTTP response file in a direct Cognito request
 # This currently only supports a single cookie in each set-cookie header, which is good enough for my purposes
 #
-function getCognitoCookieValue(){
+function getCognitoCookieValue() {
   local _COOKIE_NAME=$1
   local _COOKIE_VALUE=$(cat $RESPONSE_FILE | grep -i "set-cookie: $_COOKIE_NAME" | sed -r "s/^set-cookie: $_COOKIE_NAME=(.[^;]*)(.*)$/\1/i")
   local _COOKIE_VALUE=${_COOKIE_VALUE%$'\r'}
@@ -46,7 +46,7 @@ function getCognitoCookieValue(){
 #
 # Get a cookie name passed in the first argument from the multi value headers passed in the second
 #
-function getLambdaResponseCookieValue(){
+function getLambdaResponseCookieValue() {
   
   local _COOKIE_TEXT=$(jq -r --arg NAME "$1" '."set-cookie"[] | select(. | contains($NAME))' <<< "$2")
   local _COOKIE_VALUE=$(echo $_COOKIE_TEXT | sed -r "s/^$1=(.[^;]*)(.*)$/\1/")

@@ -1,3 +1,4 @@
+import {LoggingConfiguration} from '../configuration/loggingConfiguration';
 import {ClientError} from '../errors/clientError';
 import {ErrorUtils} from '../errors/errorUtils';
 import {LogEntry} from './logEntry';
@@ -8,9 +9,17 @@ import {LogEntry} from './logEntry';
 export class LoggerFactory {
 
     private _name: string;
+    private _prettyPrint: boolean;
 
     public constructor() {
         this._name = 'TokenHandler';
+        this._prettyPrint = false;
+    }
+
+    public configure(configuration: LoggingConfiguration): void {
+        this._name = configuration.apiName;
+        this._prettyPrint = configuration.prettyPrint;
+
     }
 
     public get apiName(): string {
@@ -29,6 +38,6 @@ export class LoggerFactory {
     }
 
     public createLogEntry(): LogEntry {
-        return new LogEntry(this._name);
+        return new LogEntry(this._name, this._prettyPrint);
     }
 }

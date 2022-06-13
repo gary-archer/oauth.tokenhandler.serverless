@@ -9,5 +9,5 @@ cd ..
 if [ "$STAGE" == 'deployed' ]; then
     cp environments/config.deployed.json config.json
 else
-    cp environments/config.local.json config.json
+    cp environments/config.dev.json config.json
 fi

@@ -3,6 +3,10 @@
         "useProxy": false,
         "proxyUrl": "http://127.0.0.1:8888"
     },
+    "logging": {
+        "apiName": "TokenHander",
+        "prettyPrint": true
+    },
     "cors": {
         "trustedWebOrigins": ["https://web.authsamples-dev.com"]
     },

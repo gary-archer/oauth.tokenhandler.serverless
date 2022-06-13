@@ -11,7 +11,7 @@ provider:
 
 custom:
   # Load the environment specific YAML configuration into this shared configuration
-  config: ${file(environments/${opt:stage, 'local'}.yml)}
+  config: ${file(environments/${opt:stage, 'dev'}.yml)}
   
   # API gateway domain details
   customDomain:
@@ -23,8 +23,8 @@ custom:
   # Scripts used when building the AWS deployment package
   scripts:
     hooks:
-      'before:package:createDeploymentArtifacts': STAGE=${opt:stage, 'local'} npm run packageConfig
-      'after:package:createDeploymentArtifacts':  STAGE=${opt:stage, 'local'} npm run restoreConfig
+      'before:package:createDeploymentArtifacts': STAGE=${opt:stage, 'dev'} npm run packageConfig
+      'after:package:createDeploymentArtifacts':  STAGE=${opt:stage, 'dev'} npm run restoreConfig
 
 # A single HTTP endpoint covers all routes, with other logic handled in code
 functions:

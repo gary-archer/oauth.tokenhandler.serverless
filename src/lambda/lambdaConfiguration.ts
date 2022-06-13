@@ -28,6 +28,7 @@ export class LambdaConfiguration {
             // Load our JSON configuration
             const configuration = this._loadConfiguration();
             container.setConfiguration(configuration);
+            loggerFactory.configure(configuration.logging);
 
             // Create middleware objects
             const loggerMiddleware = new LoggerMiddleware(container, loggerFactory);

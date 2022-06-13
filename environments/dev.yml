@@ -1,0 +1,10 @@
+#
+# Specific settings to support local development
+#
+settings:
+  # Sets event.requestContext.stage to this value
+  stage: 'dev'
+
+  # Host names for the deployed token handler used when running the SPA locally
+  domainName: 'tokenhandler.authsamples-dev.com'
+  certificateDomainName: 'authsamples-dev.com'

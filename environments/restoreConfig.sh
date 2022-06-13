@@ -6,4 +6,4 @@ cd ..
 #
 # Restore development configuration after deploying
 #
-cp environments/config.local.json config.json
+cp environments/config.dev.json config.json

@@ -9,13 +9,15 @@ LOGIN_BASE_URL='https://login.authsamples.com'
 COOKIE_PREFIX=mycompany
 TEST_USERNAME='guestuser@mycompany.com'
 TEST_PASSWORD=GuestPassword1
-SESSION_ID=$(uuidgen)
 REQUEST_FILE='test/request.txt'
 RESPONSE_FILE='test/response.txt'
 LOGIN_COOKIES_FILE='test/login_cookies.txt'
 SLS=./node_modules/.bin/sls
 #export HTTPS_PROXY='http://127.0.0.1:8888'
 
+#
+# Ensure that we are in the root folder
+#
 cd "$(dirname "${BASH_SOURCE[0]}")"
 cd ..
 
@@ -65,11 +67,38 @@ function apiError() {
 }
 
 #
+# Get the platform
+#
+case "$(uname -s)" in
+
+  Darwin)
+    PLATFORM="MACOS"
+ 	;;
+
+  MINGW64*)
+    PLATFORM="WINDOWS"
+	;;
+
+  Linux)
+    PLATFORM="LINUX"
+	;;
+esac
+
+#
+# Get a random session ID
+#
+if [ "$PLATFORM" == 'WINDOWS' ]; then
+  SESSION_ID=$(powershell -command $"[guid]::NewGuid().ToString()")
+else
+  SESSION_ID=$(uuidgen)
+fi
+
+#
 # 1. Verify that an OPTIONS request for an invalid route returns 204
 #
 jo \
-httpMethod=OPTIONS \
-path=/badpath \
+httpMethod='OPTIONS' \
+path='\/badpath' \
 | jq > $REQUEST_FILE
 
 echo '1. OPTIONS request for an invalid route ...'
@@ -89,9 +118,9 @@ fi
 # 2. Next verify that an OPTIONS request for an untrusted origin does not return CORS headers
 #
 jo \
-httpMethod=OPTIONS \
-path=/api/companies \
-headers=$(jo origin="https://badsite.com") \
+httpMethod='OPTIONS' \
+path='\/api/companies' \
+headers=$(jo origin='https://badsite.com') \
 | jq > $REQUEST_FILE
 
 echo '2. OPTIONS request for an untrusted origin ...'
@@ -116,8 +145,8 @@ fi
 # 3. Act as the SPA by sending an OPTIONS request, then verifying that we get the expected results
 #
 jo \
-httpMethod=OPTIONS \
-path=/api/companies \
+httpMethod='OPTIONS' \
+path='\/api/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 access-control-request-headers='x-mycompany-api-client,x-mycompany-session-id') \
 | jq > $REQUEST_FILE
@@ -154,8 +183,8 @@ fi
 # 4. Verify that a GET request for an invalid route returns a 404 error
 #
 jo \
-httpMethod=GET \
-path=/badpath \
+httpMethod='GET' \
+path='\/badpath' \
 | jq > $REQUEST_FILE
 
 echo '4. GET request with an invalid route ...'
@@ -177,8 +206,8 @@ fi
 # 5. Act as the SPA by calling the OAuth Agent to start a login and get the request URI
 #
 jo -p \
-path=/oauth-agent/login/start \
-httpMethod=POST \
+path='\/oauth-agent/login/start' \
+httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept=application/json \
 x-mycompany-api-client=lambdaTest \
@@ -243,13 +272,13 @@ AUTHORIZATION_RESPONSE_URL=$(getCognitoHeaderValue 'location')
 # 8. Next we end the login by asking the server to do an authorization code grant
 #
 jo \
-path=/oauth-agent/login/end \
-httpMethod=POST \
+path='\/oauth-agent/login/end' \
+httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
-accept=application/json \
-content-type=application/json \
-x-mycompany-api-client=lambdaTest \
-x-mycompany-session-id=$SESSION_ID) \
+accept='application/json' \
+content-type='application/json' \
+x-mycompany-api-client='lambdaTest' \
+x-mycompany-session-id="$SESSION_ID") \
 multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-state=$STATE_COOKIE")) \
 body="{\\\""url\\\"":\\\""$AUTHORIZATION_RESPONSE_URL\\\""}" \
 | sed 's/\\\\\\/\\/g' \
@@ -282,11 +311,11 @@ ANTI_FORGERY_TOKEN=$(jq -r .antiForgeryToken <<< "$BODY")
 # 9. Verify that a GET request to APIs returns valid data
 #
 jo \
-httpMethod=GET \
-path=/api/companies \
+httpMethod='GET' \
+path='\/api/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
-x-mycompany-api-client=lambdaTest \
-x-mycompany-session-id=$SESSION_ID) \
+x-mycompany-api-client='lambdaTest' \
+x-mycompany-session-id="$SESSION_ID") \
 multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-at=$ACCESS_COOKIE")) \
 | jq > $REQUEST_FILE
 
@@ -309,12 +338,12 @@ fi
 # 10. Use the error simulation custom header to verify that 500 errors return the expected data
 #
 jo \
-httpMethod=GET \
-path=/api/companies \
+httpMethod='GET' \
+path='\/api/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
-x-mycompany-api-client=lambdaTest \
+x-mycompany-api-client='lambdaTest' \
 x-mycompany-test-exception='SampleApi' \
-x-mycompany-session-id=$SESSION_ID) \
+x-mycompany-session-id="$SESSION_ID") \
 multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-at=$ACCESS_COOKIE")) \
 | jq > $REQUEST_FILE
 
@@ -337,13 +366,13 @@ fi
 # 11. Next expire the access token in the secure cookie, for test purposes
 #
 jo -p \
-path='/oauth-agent/expire' \
-httpMethod=POST \
+path='\/oauth-agent/expire' \
+httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
-accept=application/json \
-content-type=application/json \
-x-mycompany-api-client=lambdaTest \
-x-mycompany-session-id=$SESSION_ID \
+accept='application/json' \
+content-type='application/json' \
+x-mycompany-api-client='lambdaTest' \
+x-mycompany-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -376,13 +405,13 @@ ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_H
 # 12. Next try to refresh the access token
 #
 jo -p \
-path='/oauth-agent/refresh' \
-httpMethod=POST \
+path='\/oauth-agent/refresh' \
+httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
-accept=application/json \
-content-type=application/json \
-x-mycompany-api-client=lambdaTest \
-x-mycompany-session-id=$SESSION_ID \
+accept='application/json' \
+content-type='application/json' \
+x-mycompany-api-client='lambdaTest' \
+x-mycompany-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -414,13 +443,13 @@ REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_
 # 13. Next expire both the access token and refresh token in the secure cookies, for test purposes
 #
 jo -p \
-path='/oauth-agent/expire' \
+path='\/oauth-agent/expire' \
 httpMethod=POST \
 headers=$(jo origin="$WEB_BASE_URL" \
-accept=application/json \
-content-type=application/json \
-x-mycompany-api-client=lambdaTest \
-x-mycompany-session-id=$SESSION_ID \
+accept='application/json' \
+content-type='application/json' \
+x-mycompany-api-client='lambdaTest' \
+x-mycompany-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -454,13 +483,13 @@ REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_
 # 14. Next try to refresh the token and we should get an invalid_grant error
 #
 jo -p \
-path='/oauth-agent/refresh' \
-httpMethod=POST \
+path='\/oauth-agent/refresh' \
+httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
-accept=application/json \
-content-type=application/json \
-x-mycompany-api-client=lambdaTest \
-x-mycompany-session-id=$SESSION_ID \
+accept='application/json' \
+content-type='application/json' \
+x-mycompany-api-client='lambdaTest' \
+x-mycompany-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -490,13 +519,13 @@ fi
 # 15. Next make a logout request
 #
 jo -p \
-path='/oauth-agent/logout' \
-httpMethod=POST \
+path='\/oauth-agent/logout' \
+httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
-accept=application/json \
-content-type=application/json \
-x-mycompany-api-client=lambdaTest \
-x-mycompany-session-id=$SESSION_ID \
+accept='application/json' \
+content-type='application/json' \
+x-mycompany-api-client='lambdaTest' \
+x-mycompany-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \

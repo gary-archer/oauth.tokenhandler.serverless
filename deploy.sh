@@ -5,7 +5,11 @@
 ###################################
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
+SLS='./node_modules/.bin/sls'
 
+#
+# Get the stage being deployed
+#
 STAGE="$1"
 if [ "$STAGE" != 'dev' ]; then
   STAGE='deployed'
@@ -40,7 +44,7 @@ cp "environments/config.$STAGE.json" ./config.json
 # Do the packaging
 #
 rm -rf .serverless
-sls package --stage "$STAGE"
+"$SLS" package --stage "$STAGE"
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the AWS package'
   exit
@@ -49,7 +53,7 @@ fi
 #
 # Do the deployment
 #
-sls deploy --stage "$STAGE" --package .serverless
+"$SLS" deploy --stage "$STAGE" --package .serverless
 if [ $? -ne 0 ]; then
   echo 'Problem encountered deploying the AWS package'
   exit

@@ -6,15 +6,13 @@
     "lint": "npx eslint . --ext .ts,.tsx",
     "build": "rimraf dist && tsc --sourceMap true",
     "buildRelease": "rimraf dist && tsc",
-    "http": "./test/runHttpWorkflow.sh",
-    "lambda": "./test/runLambdaWorkflow.sh",
-    "packageConfig": "./environments/packageConfig.sh",
-    "restoreConfig": "./environments/restoreConfig.sh",
-    "packageLocal": "npm run buildRelease && rimraf .serverless && sls package --stage local",
-    "deployLocal": "sls deploy --stage local --package .serverless",
-    "removeLocal": "sls remove --stage local",
-    "package": "npm run buildRelease && rimraf .serverless && sls package --stage deployed",
-    "deploy": "sls deploy --stage deployed --package .serverless --aws-profile default",
+    "start": "bash ./start.sh",
+    "test": "bash ./start.sh",
+    "deployDev": "bash ./deploy.sh dev",
+    "deploy": "bash ./deploy.sh deployed",
+    "httpDev": "bash ./test/runHttpWorkflow.sh dev",
+    "http": "bash ./test/runHttpWorkflow.sh deployed",
+    "removeDev": "sls remove --stage dev",
     "remove": "sls remove --stage deployed"
   },
   "author": "Gary Archer",
@@ -41,7 +39,6 @@
     "rimraf": "^3.0.2",
     "serverless": "^3.18.2",
     "serverless-domain-manager": "4.1.0",
-    "serverless-plugin-scripts": "^1.0.2",
     "typescript": "4.7.2"
   }
 }

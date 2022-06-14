@@ -1,0 +1,7 @@
+#
+# Settings for SPA development, where the token handler is deployed to AWS
+#
+settings:
+  stage: 'dev'
+  domainName: 'tokenhandler.authsamples-dev.com'
+  certificateDomainName: 'authsamples-dev.com'

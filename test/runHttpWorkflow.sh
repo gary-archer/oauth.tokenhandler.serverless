@@ -4,19 +4,18 @@
 # A script to test the deployed OAuth Agent and also deployed APIs
 ##################################################################
 
-WEB_BASE_URL='https://web.authsamples-dev.com'
-OAUTH_AGENT_BASE_URL='https://tokenhandler.authsamples-dev.com/oauth-agent'
-API_BASE_URL='https://tokenhandler.authsamples-dev.com/api'
+
 LOGIN_BASE_URL='https://login.authsamples.com'
 COOKIE_PREFIX=mycompany
 TEST_USERNAME='guestuser@mycompany.com'
 TEST_PASSWORD=GuestPassword1
-SESSION_ID=$(uuidgen)
 RESPONSE_FILE='test/response.txt'
 LOGIN_COOKIES_FILE='test/login_cookies.txt'
 MAIN_COOKIES_FILE='test/main_cookies.txt'
 
-
+#
+# Ensure that we are in the root folder
+#
 cd "$(dirname "${BASH_SOURCE[0]}")"
 cd ..
 
@@ -54,6 +53,51 @@ function apiError() {
     echo "*** Code: $_CODE, Message: $_MESSAGE"
   fi
 }
+
+#
+# Set stage specific URLs
+#
+STAGE="$1"
+if [ "$STAGE" == 'dev' ]; then
+  
+  # Use the deployed endpoints to support SPA development
+  WEB_BASE_URL='https://web.authsamples-dev.com'
+  OAUTH_AGENT_BASE_URL='https://tokenhandler.authsamples-dev.com/oauth-agent'
+  API_BASE_URL='https://tokenhandler.authsamples-dev.com/api'
+else
+
+  # Use the deployed endpoints that the deployed SPA uses
+  WEB_BASE_URL='https://web.authsamples.com'
+  OAUTH_AGENT_BASE_URL='https://tokenhandler.authsamples.com/oauth-agent'
+  API_BASE_URL='https://tokenhandler.authsamples.com/api'
+fi
+
+#
+# Get the platform
+#
+case "$(uname -s)" in
+
+  Darwin)
+    PLATFORM="MACOS"
+ 	;;
+
+  MINGW64*)
+    PLATFORM="WINDOWS"
+	;;
+
+  Linux)
+    PLATFORM="LINUX"
+	;;
+esac
+
+#
+# Get a random session ID
+#
+if [ "$PLATFORM" == 'WINDOWS' ]; then
+  SESSION_ID=$(powershell -command $"[guid]::NewGuid().ToString()")
+else
+  SESSION_ID=$(uuidgen)
+fi
 
 #
 # 1. Verify that an OPTIONS request for an invalid route returns 204

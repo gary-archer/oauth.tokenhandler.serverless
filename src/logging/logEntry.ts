@@ -10,10 +10,12 @@ import {LogEntryData} from './logEntryData';
 export class LogEntry {
 
     private readonly _data: LogEntryData;
+    private readonly _prettyPrint: boolean;
 
-    public constructor(apiName: string) {
+    public constructor(apiName: string, prettyPrint: boolean) {
         this._data = new LogEntryData(apiName);
         this._data.operationName = 'api';
+        this._prettyPrint = prettyPrint;
     }
 
     /*
@@ -80,7 +82,7 @@ export class LogEntry {
 
         if (this._willLog()) {
 
-            if (process.env.IS_LOCAL) {
+            if (this._prettyPrint) {
 
                 // On a developer PC, output from 'npm run lambda' is written with pretty printing to a file
                 const data = JSON.stringify(this._data.toLogFormat(), null, 2);

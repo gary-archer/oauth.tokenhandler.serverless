@@ -7,32 +7,29 @@
 API Driven OpenID Connect for Single Page Applications.\
 The [Final SPA](https://github.com/gary-archer/oauth.websample.final) uses Curity's [Token Handler Pattern](https://github.com/curityio/spa-using-token-handler) and calls this API to perform OAuth related work.
 
-## Custom Implementation
+## Overview
 
 This repo provides an OAuth Agent and OAuth Proxy with some custom expiry testing and logging behavior.\
 Two separate instances are deployed to to AWS, and run in a low cost manner:
 
-- Token handler components to support local development
-- Token handler components used by the deployed SPA
+- A token handler to support local SPA development runs at https://tokenhandler.authsamples-dev.com
+- A token handler for the deployed system runs at https://tokenhandler.authsamples.com
 
-## Quick Start
 
-To run this component in isolation, run the following commands to build the API code:
+## Local Development Quick Start
+
+To run this component in isolation, run the following commands.\
+This tests all lambdas via Serverless local execution with `sls invoke -f local`.
 
 ```bash
 npm install
-npm run build
+npm start
 ```
 
-Then test API operations locally via this command, which runs lambda functions:
+To test AWS endpoints for the two token handler deployments, run one of these commands:
 
 ```bash
-npm run lambda
-```
-
-Test AWS deployed API endpoints via this command:
-
-```bash
+npm run httpDev
 npm run http
 ```
 

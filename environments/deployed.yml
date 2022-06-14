@@ -1,10 +1,7 @@
 #
-# Specific settings for the main deployed environment
+# Settings for the fully deployed online environment
 #
 settings:
-  # Sets event.requestContext.stage to this value
   stage: 'deployed'
-
-  # Host names for the deployed token handler used by the deployed SPA
   domainName: 'tokenhandler.authsamples.com'
   certificateDomainName: 'authsamples.com'

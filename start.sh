@@ -7,24 +7,6 @@
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 #
-# Get the platform
-#
-case "$(uname -s)" in
-
-  Darwin)
-    PLATFORM="MACOS"
- 	;;
-
-  MINGW64*)
-    PLATFORM="WINDOWS"
-	;;
-
-  Linux)
-    PLATFORM="LINUX"
-	;;
-esac
-
-#
 # Install dependencies if needed
 #
 if [ ! -d 'node_modules' ]; then
@@ -33,6 +15,15 @@ if [ ! -d 'node_modules' ]; then
     echo 'Problem encountered installing API dependencies'
     exit
   fi
+fi
+
+#
+# Check code quality
+#
+npm run lint
+if [ $? -ne 0 ]; then
+  echo 'Code quality problems encountered'
+  exit
 fi
 
 #
@@ -45,9 +36,11 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# Run the lambda workflow
+# Ensure that the local development configuration is in the root folder
 #
-npm run lambda
-if [ $? -ne 0 ]; then
-  exit
-fi
+cp environments/config.local.json ./config.json
+
+#
+# Run the test workflow against local code
+#
+./test/runLambdaWorkflow.sh

@@ -4,9 +4,7 @@
 # A script to test the deployed OAuth Agent and also deployed APIs
 ##################################################################
 
-WEB_BASE_URL='https://web.authsamples-dev.com'
-OAUTH_AGENT_BASE_URL='https://tokenhandler.authsamples-dev.com/oauth-agent'
-API_BASE_URL='https://tokenhandler.authsamples-dev.com/api'
+
 LOGIN_BASE_URL='https://login.authsamples.com'
 COOKIE_PREFIX=mycompany
 TEST_USERNAME='guestuser@mycompany.com'
@@ -55,6 +53,24 @@ function apiError() {
     echo "*** Code: $_CODE, Message: $_MESSAGE"
   fi
 }
+
+#
+# Set stage specific URLs
+#
+STAGE="$1"
+if [ "$STAGE" == 'dev' ]; then
+  
+  # Use the deployed endpoints to support SPA development
+  WEB_BASE_URL='https://web.authsamples-dev.com'
+  OAUTH_AGENT_BASE_URL='https://tokenhandler.authsamples-dev.com/oauth-agent'
+  API_BASE_URL='https://tokenhandler.authsamples-dev.com/api'
+else
+
+  # Use the deployed endpoints that the deployed SPA uses
+  WEB_BASE_URL='https://web.authsamples.com'
+  OAUTH_AGENT_BASE_URL='https://tokenhandler.authsamples.com/oauth-agent'
+  API_BASE_URL='https://tokenhandler.authsamples.com/api'
+fi
 
 #
 # Get the platform

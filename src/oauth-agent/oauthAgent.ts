@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import {CookieConfiguration} from '../configuration/cookieConfiguration';
 import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
+import {OAuthErrorStatus} from '../errors/oauthErrorStatus';
 import {CookieProcessor} from '../http/cookieProcessor';
 import {FormProcessor} from '../http/formProcessor';
 import {HeaderProcessor} from '../http/headerProcessor';
@@ -129,7 +130,8 @@ export class OAuthAgent {
         if (state && error) {
 
             // Report Authorization Server front channel errors back to the SPA
-            throw ErrorUtils.fromLoginResponseError(error, errorDescription);
+            const statusCode = OAuthErrorStatus.fromAuthorizationResponseError(error);
+            throw ErrorUtils.fromLoginResponseError(statusCode, error, errorDescription);
 
         } else if (!(state && code)) {
 

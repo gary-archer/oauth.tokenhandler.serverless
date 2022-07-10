@@ -2,6 +2,7 @@ import axios, {AxiosRequestConfig} from 'axios';
 import {URLSearchParams} from 'url';
 import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
+import { OAuthErrorStatus } from '../errors/oauthErrorStatus';
 import {QueryProcessor} from '../http/queryProcessor';
 import {HttpProxy} from '../utilities/httpProxy';
 import {OAuthLoginState} from './oauthLoginState';
@@ -63,7 +64,7 @@ export class AuthorizationServerClient {
         formData.append('redirect_uri', this._configuration.client.redirectUri);
         formData.append('code_verifier', codeVerifier);
 
-        const response = await this._postGrantMessage(formData);
+        const response = await this._postGrantMessage('authorization_code', formData);
 
         if (!response.refresh_token) {
             throw ErrorUtils.createInvalidOAuthResponseError(
@@ -95,7 +96,7 @@ export class AuthorizationServerClient {
         formData.append('client_secret', this._configuration.client.clientSecret);
         formData.append('refresh_token', refreshToken);
 
-        const response = await this._postGrantMessage(formData);
+        const response = await this._postGrantMessage('refresh_token', formData);
         if (!response.access_token) {
             throw ErrorUtils.createInvalidOAuthResponseError(
                 'No access token was received in a refresh token grant response');
@@ -136,7 +137,7 @@ export class AuthorizationServerClient {
     /*
      * Send a grant message to the Authorization Server
      */
-    private async _postGrantMessage(formData: URLSearchParams): Promise<any> {
+    private async _postGrantMessage(grantType: string, formData: URLSearchParams): Promise<any> {
 
         // Define request options
         const options = {
@@ -165,8 +166,17 @@ export class AuthorizationServerClient {
                 const errorData = e.response.data;
                 if (errorData.error) {
 
-                    // Throw an error with Authorization Server details, such as invalid_grant
-                    throw ErrorUtils.fromTokenResponseError(errorData.error, errorData.error_description, options.url);
+                    // Throw an error with Authorization Server details
+                    const statusCode = OAuthErrorStatus.fromTokenResponseError(
+                        grantType,
+                        e.response.status,
+                        errorData.error);
+
+                    throw ErrorUtils.fromTokenResponseError(
+                        statusCode,
+                        errorData.error,
+                        errorData.error_description,
+                        options.url);
                 }
             }
 

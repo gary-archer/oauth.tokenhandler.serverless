@@ -1,0 +1,7 @@
+#
+# Settings for the fully deployed online environment
+#
+settings:
+  stage: 'deployed'
+  domainName: 'tokenhandler.authsamples.com'
+  certificateDomainName: 'authsamples.com'

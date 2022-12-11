@@ -1,0 +1,8 @@
+.DS_store
+node_modules
+dist
+test/*.txt
+test/*.log
+credentials.json
+.serverless
+config-template.json

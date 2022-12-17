@@ -4,57 +4,45 @@
 
 [![Known Vulnerabilities](https://snyk.io/test/github/gary-archer/oauth.tokenhandler.serverless/badge.svg?targetFile=package.json)](https://snyk.io/test/github/gary-archer/oauth.tokenhandler.serverless?targetFile=package.json)
 
-AWS deployed endpoints that implement an application level cookie layer for single page applications.\
-The [Final SPA](https://github.com/gary-archer/oauth.websample.final) uses Curity's [Token Handler Pattern](https://github.com/curityio/spa-using-token-handler) and calls these endpoints.
+Single page application security components, referenced in my blog at https://authguidance.com:
 
-## Overview
+- Curity's Token Handler Pattern is followed, to keep security complexity out of application code
+- Deployed AWS endpoints provide an application level secure cookie layer for SPAs
 
-This implementation has some custom logging and expiry testing behaviour.\
-Two separate instances are deployed to to AWS, and run in a low cost manner:
+## Architecture Design
 
-- A token handler to support local SPA development runs at https://tokenhandler.authsamples-dev.com
-- A token handler for the deployed system runs at https://tokenhandler.authsamples.com
+See the [Serverless SPA to API Routing](https://authguidance.com/docker-spa-to-api-routing/) blog post for details:
 
-The token handler manages these web back end concerns in an API driven manner:
+- An OAuth Agent acts as a confidential OAuth Client for the SPA, and to issue its cookies
+- An OAuth Proxy manages web security during calls to APIs
 
-- OpenID Connect
-- Cookie issuing
-- CORS and CSRF
+## Scenarios
+
+The components are deployed in these main scenarios:
+
+- To secure local SPA development, via deployed endpoints at https://tokenhandler.authsamples-dev.com
+- To secure the AWS Cloudfront deployed SPA, via deployed endpoints at https://tokenhandler.authsamples.com
+
+## Custom Implementation
+
+This implementation provides a low cost lambda based solution that can be hosted in AWS.\
+A single wildcard lambda implements both the OAuth Agent and OAuth Proxy roles.
+
+The OAuth Agent also has some custom expiry testing and Elasticsearch logging behaviour.\
+These relate to my blog's reliability and supportability behaviours.
 
 ## Development
 
-To run this component in isolation, run the following command.\
-This tests lambda logic locally using `sls invoke -f local` commands:
+To run the wildcard lambda on a development computer, run the following command.\
+This tests lambda logic locally using `sls invoke -f local` operations:
 
 ```bash
 ./start.sh
 ```
 
-## Deployment
-
-To test AWS endpoints for the two token handler deployments, run one of these commands:
-
-```bash
-npm run deployDev
-npm run deploy
-```
-
-## HTTP Testing
-
-To test AWS endpoints for the two token handler deployments, run one of these commands:
-
-```bash
-npm run httpDev
-npm run http
-```
-
-## Further Information
-
-See the [Final SPA to API Routing](https://authguidance.com/2019/04/08/serverless-spa-to-api-routing) blog post for further details on URLs and setup.
-
 ## Programming Technologies
 
-* Node.js and TypeScript are used to implement an AWS wildcard lambda function
+* Node.js and TypeScript are used to implement the Serverless lambda
 
 ## Cloud Infrastructure Used
 

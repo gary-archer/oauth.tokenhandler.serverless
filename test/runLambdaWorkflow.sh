@@ -67,6 +67,20 @@ function apiError() {
 }
 
 #
+# Check prerequisites
+#
+jq --version 1>/dev/null
+if [ "$?" != '0' ]; then
+  echo '*** Please install the jq tool before running this script'
+  exit
+fi
+jo -version 1>/dev/null
+if [ "$?" != '0' ]; then
+  echo '*** Please install the jo tool before running this script'
+  exit
+fi
+
+#
 # Get the platform
 #
 case "$(uname -s)" in

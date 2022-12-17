@@ -55,6 +55,15 @@ function apiError() {
 }
 
 #
+# Check prerequisites
+#
+jq --version 1>/dev/null
+if [ "$?" != '0' ]; then
+  echo '*** Please install the jq tool before running this script'
+  exit
+fi
+
+#
 # Set stage specific URLs
 #
 STAGE="$1"

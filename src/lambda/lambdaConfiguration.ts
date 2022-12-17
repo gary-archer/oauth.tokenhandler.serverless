@@ -37,15 +37,15 @@ export class LambdaConfiguration {
             const corsMiddleware = new CorsMiddleware(configuration);
 
             // Wrap the base handler and add middleware for cross cutting concerns
-            // This ordering ensures that correct CORS headers are written for error responses
             return middy(async (event: APIGatewayProxyEvent, context: Context) => {
                 return baseHandler(event, context);
 
             })
+                // Handlers run in the reverse order listed here, so that CORS headers are added to the response
+                .use(corsMiddleware)
                 .use(loggerMiddleware)
                 .use(exceptionMiddleware)
-                .use(authorizerMiddleware)
-                .use(corsMiddleware);
+                .use(authorizerMiddleware);
 
         } catch (e: any) {
 

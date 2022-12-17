@@ -26,6 +26,7 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
      * Run after a lambda fails and returns an error
      */
     public onError(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
+
         this._addResponseHeaders(request);
     }
 
@@ -36,7 +37,7 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
 
         // Only add headers for trusted origins
         const origin = this._readHeader('origin', request.event);
-        if (this._isTrustedOrigin(request.event, origin)) {
+        if (this._isTrustedOrigin(request.event, origin) && request.response) {
 
             const headers = request.response!.headers || {};
 

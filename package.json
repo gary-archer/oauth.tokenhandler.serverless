@@ -16,7 +16,7 @@
     "remove": "sls remove --stage deployed"
   },
   "author": "Gary Archer",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "@middy/core": "^4.0.8",
     "axios": "^1.2.1",

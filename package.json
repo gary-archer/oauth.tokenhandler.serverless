@@ -1,7 +1,7 @@
 {
   "name": "tokenhandler",
   "version": "1.0.0",
-  "description": "A serverless lambda token handler implementation for the Final SPA",
+  "description": "A custom serverless token handler implementation for the Final SPA",
   "scripts": {
     "lint": "npx eslint . --ext .ts,.tsx",
     "build": "rimraf dist && tsc --sourceMap true",

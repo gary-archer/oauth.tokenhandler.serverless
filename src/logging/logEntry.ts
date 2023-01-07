@@ -1,11 +1,11 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
 import fs from 'fs-extra';
 import {Guid} from 'guid-typescript';
-import {ClientError} from '../errors/clientError';
-import {ServerError} from '../errors/serverError';
-import {HeaderProcessor} from '../http/headerProcessor';
-import {PathProcessor} from '../http/pathProcessor';
-import {LogEntryData} from './logEntryData';
+import {ClientError} from '../errors/clientError.js';
+import {ServerError} from '../errors/serverError.js';
+import {HeaderProcessor} from '../http/headerProcessor.js';
+import {PathProcessor} from '../http/pathProcessor.js';
+import {LogEntryData} from './logEntryData.js';
 
 export class LogEntry {
 

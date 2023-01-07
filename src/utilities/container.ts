@@ -1,6 +1,6 @@
 import {APIGatewayProxyResult} from 'aws-lambda';
-import {LogEntry} from '../logging/logEntry';
-import {Configuration} from '../configuration/configuration';
+import {LogEntry} from '../logging/logEntry.js';
+import {Configuration} from '../configuration/configuration.js';
 
 /*
  * A primitive container used during the request lifecycle

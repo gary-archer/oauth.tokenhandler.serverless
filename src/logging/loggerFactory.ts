@@ -1,7 +1,7 @@
-import {LoggingConfiguration} from '../configuration/loggingConfiguration';
-import {ClientError} from '../errors/clientError';
-import {ErrorUtils} from '../errors/errorUtils';
-import {LogEntry} from './logEntry';
+import {LoggingConfiguration} from '../configuration/loggingConfiguration.js';
+import {ClientError} from '../errors/clientError.js';
+import {ErrorUtils} from '../errors/errorUtils.js';
+import {LogEntry} from './logEntry.js';
 
 /*
  * A logging factory

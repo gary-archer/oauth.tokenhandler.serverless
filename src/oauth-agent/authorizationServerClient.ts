@@ -1,11 +1,11 @@
 import axios, {AxiosRequestConfig} from 'axios';
 import {URLSearchParams} from 'url';
-import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
-import {ErrorUtils} from '../errors/errorUtils';
-import {OAuthErrorStatus} from '../errors/oauthErrorStatus';
-import {QueryProcessor} from '../http/queryProcessor';
-import {HttpProxy} from '../utilities/httpProxy';
-import {OAuthLoginState} from './oauthLoginState';
+import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration.js';
+import {ErrorUtils} from '../errors/errorUtils.js';
+import {OAuthErrorStatus} from '../errors/oauthErrorStatus.js';
+import {QueryProcessor} from '../http/queryProcessor.js';
+import {HttpProxy} from '../utilities/httpProxy.js';
+import {OAuthLoginState} from './oauthLoginState.js';
 
 /*
  * A class to deal with calls to the Authorization Server and other OAuth responsibilities

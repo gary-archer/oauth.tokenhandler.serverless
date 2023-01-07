@@ -1,13 +1,13 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import axios, {AxiosRequestConfig, AxiosResponse, Method} from 'axios';
-import {CookieConfiguration} from '../configuration/cookieConfiguration';
-import {RouteConfiguration} from '../configuration/routeConfiguration';
-import {ErrorUtils} from '../errors/errorUtils';
-import {CookieProcessor} from '../http/cookieProcessor';
-import {PathProcessor} from '../http/pathProcessor';
-import {ResponseWriter} from '../http/responseWriter';
-import {Container} from '../utilities/container';
-import {HttpProxy} from '../utilities/httpProxy';
+import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
+import {RouteConfiguration} from '../configuration/routeConfiguration.js';
+import {ErrorUtils} from '../errors/errorUtils.js';
+import {CookieProcessor} from '../http/cookieProcessor.js';
+import {PathProcessor} from '../http/pathProcessor.js';
+import {ResponseWriter} from '../http/responseWriter.js';
+import {Container} from '../utilities/container.js';
+import {HttpProxy} from '../utilities/httpProxy.js';
 
 /*
  * A demo level class to manage HTTP forwarding of API requests
@@ -68,15 +68,16 @@ export class OAuthProxy {
         const path = PathProcessor.getFullPath(event);
         const targetUrl = `${route.target}${path}`;
 
+        const headers: any = {
+            authorization: `Bearer ${accessToken}`,
+        };
+
         // Set request options
         const options: AxiosRequestConfig = {
 
             url: targetUrl,
             method: event.httpMethod as Method,
-            headers: {
-                authorization: `Bearer ${accessToken}`,
-            },
-
+            headers,
             httpsAgent: this._httpProxy.agent,
         };
 
@@ -85,13 +86,13 @@ export class OAuthProxy {
 
             Object.keys(event.headers).forEach((name) => {
                 if (name.startsWith('x-mycompany')) {
-                    options.headers![name] = event.headers[name] as string;
+                    headers[name] = event.headers[name] as string;
                 }
             });
         }
 
         // Ensure that the correlation id from the log entry is forwarded
-        options.headers!['x-mycompany-correlation-id'] = this._container.getLogEntry().getCorrelationId();
+        headers['x-mycompany-correlation-id'] = this._container.getLogEntry().getCorrelationId();
 
         // Supply a body if required
         if (event.body) {

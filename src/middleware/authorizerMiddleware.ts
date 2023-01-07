@@ -1,13 +1,13 @@
 import middy from '@middy/core';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import {OAuthAgent} from '../oauth-agent/oauthAgent';
-import {OAuthProxy} from '../oauth-proxy/oauthProxy';
-import {Configuration} from '../configuration/configuration';
-import {ErrorUtils} from '../errors/errorUtils';
-import {HeaderProcessor} from '../http/headerProcessor';
-import {PathProcessor} from '../http/pathProcessor';
-import {Container} from '../utilities/container';
-import {HttpProxy} from '../utilities/httpProxy';
+import {OAuthAgent} from '../oauth-agent/oauthAgent.js';
+import {OAuthProxy} from '../oauth-proxy/oauthProxy.js';
+import {Configuration} from '../configuration/configuration.js';
+import {ErrorUtils} from '../errors/errorUtils.js';
+import {HeaderProcessor} from '../http/headerProcessor.js';
+import {PathProcessor} from '../http/pathProcessor.js';
+import {Container} from '../utilities/container.js';
+import {HttpProxy} from '../utilities/httpProxy.js';
 
 /*
  * The entry point for authorization

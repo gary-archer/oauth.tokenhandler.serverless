@@ -4,8 +4,8 @@
   "description": "A custom serverless token handler implementation for the Final SPA",
   "scripts": {
     "lint": "npx eslint . --ext .ts,.tsx",
-    "build": "rimraf dist && tsc --sourceMap true",
-    "buildRelease": "rimraf dist && tsc",
+    "build": "rimraf dist && tsc",
+    "buildRelease": "rimraf dist && tsc --sourceMap false",
     "start": "bash ./start.sh",
     "test": "bash ./start.sh",
     "deployDev": "bash ./deploy.sh dev",
@@ -17,6 +17,10 @@
   },
   "author": "Gary Archer",
   "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@middy/core": "^4.0.8",
     "axios": "^1.2.1",

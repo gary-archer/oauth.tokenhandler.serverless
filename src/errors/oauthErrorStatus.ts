@@ -1,4 +1,4 @@
-import {ErrorCodes} from './errorCodes';
+import {ErrorCodes} from './errorCodes.js';
 
 /*
  * Most 4xx errors from the Authorization Server are returned as 4xx errors and the UI displays an error

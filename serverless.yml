@@ -33,15 +33,17 @@ functions:
 package:
   patterns:
   - '!.codacy.yaml'
-  - '!.eslintrc.js'
+  - '!.eslintrc'
   - '!.vscode/**'
   - '!environments/**'
   - '!src/**'
   - '!test/**'
   - '!ts*.json'
-  - '!package*.json'
+  - '!package-lock.json'
   - '!README.md'
+  - '!NOTICES'
   - '!LICENSE.txt'
+  - '!config-template.json'
   - '!*.sh'
   
 plugins:

@@ -1,6 +1,6 @@
 import {Guid} from 'guid-typescript';
 import os from 'os';
-import {PerformanceBreakdown} from './performanceBreakdown';
+import {PerformanceBreakdown} from './performanceBreakdown.js';
 
 /*
  * Each API request writes a structured log entry containing fields we will query by

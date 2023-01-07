@@ -1,9 +1,9 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
 import cookie, {CookieSerializeOptions} from 'cookie';
-import {CookieConfiguration} from '../configuration/cookieConfiguration';
-import {ErrorUtils} from '../errors/errorUtils';
-import {CookieEncrypter} from '../utilities/cookieEncrypter';
-import {HeaderProcessor} from './headerProcessor';
+import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
+import {ErrorUtils} from '../errors/errorUtils.js';
+import {CookieEncrypter} from '../utilities/cookieEncrypter.js';
+import {HeaderProcessor} from './headerProcessor.js';
 
 const STATE_COOKIE   = 'state';
 const ACCESS_COOKIE  = 'at';

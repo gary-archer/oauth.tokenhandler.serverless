@@ -1,19 +1,19 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import base64url from 'base64url';
 import crypto from 'crypto';
-import {CookieConfiguration} from '../configuration/cookieConfiguration';
-import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
-import {ErrorUtils} from '../errors/errorUtils';
-import {OAuthErrorStatus} from '../errors/oauthErrorStatus';
-import {CookieProcessor} from '../http/cookieProcessor';
-import {FormProcessor} from '../http/formProcessor';
-import {HeaderProcessor} from '../http/headerProcessor';
-import {QueryProcessor} from '../http/queryProcessor';
-import {ResponseWriter} from '../http/responseWriter';
-import {Container} from '../utilities/container';
-import {HttpProxy} from '../utilities/httpProxy';
-import {AuthorizationServerClient} from './authorizationServerClient';
-import {EndLoginResponse} from './endLoginResponse';
+import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
+import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration.js';
+import {ErrorUtils} from '../errors/errorUtils.js';
+import {OAuthErrorStatus} from '../errors/oauthErrorStatus.js';
+import {CookieProcessor} from '../http/cookieProcessor.js';
+import {FormProcessor} from '../http/formProcessor.js';
+import {HeaderProcessor} from '../http/headerProcessor.js';
+import {QueryProcessor} from '../http/queryProcessor.js';
+import {ResponseWriter} from '../http/responseWriter.js';
+import {Container} from '../utilities/container.js';
+import {HttpProxy} from '../utilities/httpProxy.js';
+import {AuthorizationServerClient} from './authorizationServerClient.js';
+import {EndLoginResponse} from './endLoginResponse.js';
 
 /*
  * The entry point for OAuth Agent handling

@@ -209,7 +209,10 @@ export class CookieProcessor {
      */
     private _getCookieOptions(type: string): CookieSerializeOptions {
 
+        // Refresh and ID tokens are not sent to APIs
         const isOAuthOnlyCookie = (type === STATE_COOKIE || type === REFRESH_COOKIE || type === ID_COOKIE);
+        const basePath = this._configuration.basePath;
+
         return {
 
             // The cookie cannot be read by Javascript code
@@ -221,8 +224,8 @@ export class CookieProcessor {
             // The cookie written is only needed by the API domain
             domain: this._configuration.domain,
 
-            // The refresh cookie is restricted to the refresh endpoint
-            path: isOAuthOnlyCookie ? '/oauth-agent' : '/',
+            // Set the cookie path
+            path: isOAuthOnlyCookie ? `${basePath}oauth-agent` : basePath,
 
             // Other domains cannot send the cookie, which reduces cross site request forgery risks
             sameSite: 'strict',

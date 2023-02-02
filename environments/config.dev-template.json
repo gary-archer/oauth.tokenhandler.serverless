@@ -12,6 +12,7 @@
     },
     "cookie": {
         "domain": "tokenhandler.authsamples-dev.com",
+        "basePath": "/",
         "prefix": "mycompany",
         "encryptionKey": "$COOKIE_ENCRYPTION_KEY"
     },

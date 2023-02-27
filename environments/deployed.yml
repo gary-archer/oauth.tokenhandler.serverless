@@ -5,3 +5,5 @@ settings:
   stage: 'deployed'
   domainName: 'tokenhandler.authsamples.com'
   certificateDomainName: 'authsamples.com'
+  basePath: '/demobrand/'
+  

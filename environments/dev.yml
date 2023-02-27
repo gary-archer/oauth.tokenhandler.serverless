@@ -5,3 +5,4 @@ settings:
   stage: 'dev'
   domainName: 'tokenhandler.authsamples-dev.com'
   certificateDomainName: 'authsamples-dev.com'
+  basePath: '/'

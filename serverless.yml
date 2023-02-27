@@ -19,6 +19,7 @@ custom:
     certificateName: '*.${self:custom.config.settings.certificateDomainName}'
     stage: ${self:custom.config.settings.stage}
     endpointType: regional
+    basePath: ${self:custom.config.settings.basePath}
 
 # A single HTTP endpoint covers all routes, with other logic handled in code
 functions:

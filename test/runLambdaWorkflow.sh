@@ -133,7 +133,7 @@ fi
 #
 jo \
 httpMethod='OPTIONS' \
-path='\/api/companies' \
+path='\/investments/companies' \
 headers=$(jo origin='https://badsite.com') \
 | jq > $REQUEST_FILE
 
@@ -160,7 +160,7 @@ fi
 #
 jo \
 httpMethod='OPTIONS' \
-path='\/api/companies' \
+path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 access-control-request-headers='x-mycompany-api-client,x-mycompany-session-id') \
 | jq > $REQUEST_FILE
@@ -326,7 +326,7 @@ ANTI_FORGERY_TOKEN=$(jq -r .antiForgeryToken <<< "$BODY")
 #
 jo \
 httpMethod='GET' \
-path='\/api/companies' \
+path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID") \
@@ -353,7 +353,7 @@ fi
 #
 jo \
 httpMethod='GET' \
-path='\/api/companies' \
+path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-test-exception='SampleApi' \

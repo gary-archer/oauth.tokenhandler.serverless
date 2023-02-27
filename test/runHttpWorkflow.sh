@@ -65,20 +65,17 @@ fi
 
 #
 # Set stage specific URLs
-#
-STAGE="$1"
-if [ "$STAGE" == 'dev' ]; then
-  
+#clientId
   # Use the deployed endpoints to support SPA development
   WEB_BASE_URL='https://web.authsamples-dev.com'
   OAUTH_AGENT_BASE_URL='https://tokenhandler.authsamples-dev.com/oauth-agent'
-  API_BASE_URL='https://tokenhandler.authsamples-dev.com/api'
+  API_BASE_URL='https://tokenhandler.authsamples-dev.com/investments'
 else
 
   # Use the deployed endpoints that the deployed SPA uses
   WEB_BASE_URL='https://web.authsamples.com'
   OAUTH_AGENT_BASE_URL='https://tokenhandler.authsamples.com/oauth-agent'
-  API_BASE_URL='https://tokenhandler.authsamples.com/api'
+  API_BASE_URL='https://tokenhandler.authsamples.com/investments'
 fi
 
 #
@@ -124,7 +121,7 @@ fi
 # 2. Next verify that an OPTIONS request for an untrusted origin does not return CORS headers
 #
 echo '2. OPTIONS request for an untrusted origin ...'
-HTTP_STATUS=$(curl -i -s -X OPTIONS "$OAUTH_AGENT_BASE_URL/api/companies" \
+HTTP_STATUS=$(curl -i -s -X OPTIONS "$OAUTH_AGENT_BASE_URL/investments/companies" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204' ]; then
   echo "*** OPTIONS request for an untrusted origin returned an unexpected HTTP status: $HTTP_STATUS"

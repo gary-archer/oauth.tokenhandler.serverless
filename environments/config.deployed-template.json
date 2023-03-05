@@ -33,12 +33,12 @@
     },
     "routes": [
         {
-            "path": "/oauth-agent",
+            "path": "/demobrand/oauth-agent",
             "plugins": ["cors", "oauthAgent"]
         },
         {
-            "path": "/investments",
-            "target": "https://api.authsamples.com",
+            "path": "/demobrand/investments",
+            "target": "https://api.authsamples.com/investments",
             "plugins": ["cors", "oauthProxy"]
         }
     ]

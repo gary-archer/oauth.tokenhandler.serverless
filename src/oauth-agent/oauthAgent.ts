@@ -22,6 +22,7 @@ export class OAuthAgent {
 
     private readonly _container: Container;
     private readonly _configuration: OAuthAgentConfiguration;
+    private readonly _basePath: string;
     private readonly _httpProxy: HttpProxy;
     private readonly _cookieProcessor: CookieProcessor;
     private readonly _authorizationServerClient: AuthorizationServerClient;
@@ -34,6 +35,7 @@ export class OAuthAgent {
 
         this._container = container;
         this._configuration = agentConfiguration;
+        this._basePath = `${cookieConfiguration.basePath}oauth-agent`;
         this._httpProxy = httpProxy;
 
         this._authorizationServerClient = new AuthorizationServerClient(this._configuration, this._httpProxy);
@@ -48,29 +50,30 @@ export class OAuthAgent {
         const method = event.httpMethod.toLowerCase();
         const path = event.path.toLowerCase();
 
-        if (method === 'post' && path === '/oauth-agent/login/start') {
+        if (method === 'post' && path === `${this._basePath}/login/start`) {
 
             return this.startLogin(event);
 
-        } else if (method === 'post' && path === '/oauth-agent/login/end') {
+        } else if (method === 'post' && path === `${this._basePath}/login/end`) {
 
             return this.endLogin(event);
 
-        } else if (method === 'post' && path === '/oauth-agent/refresh') {
+        } else if (method === 'post' && path === `${this._basePath}/refresh`) {
 
             return this.refresh(event);
 
-        } else if (method === 'post' && path === '/oauth-agent/expire') {
+        } else if (method === 'post' && path === `/${this._basePath}/expire`) {
 
             return this.expire(event);
 
-        } else if (method === 'post' && path === '/oauth-agent/logout') {
+        } else if (method === 'post' && path === `${this._basePath}/logout`) {
 
             return this.logout(event);
 
         } else {
 
             // Each route should either do OAuth or API work
+            console.error('THROWING: ' + this._basePath + ' : ' + path);
             throw ErrorUtils.fromInvalidRouteError();
         }
     }

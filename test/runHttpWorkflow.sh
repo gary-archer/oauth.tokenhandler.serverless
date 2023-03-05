@@ -163,15 +163,6 @@ if [ "$ALLOWED_HEADERS" != 'x-mycompany-api-client,x-mycompany-session-id' ]; th
   exit
 fi
 
-
-curl -i -s -X OPTIONS "https://api.authsamples.com/demobrand/oauth-agent/login/start" \
--H "origin: https://web.authsamples.com"
-
-WEB_BASE_URL='https://web.authsamples.com'
-  OAUTH_AGENT_BASE_URL='https://api.authsamples.com/demobrand/oauth-agent'
-  API_BASE_URL='https://api.authsamples.com/demobrand/investments'
-
-
 #
 # 4. Verify that a GET request for an invalid route returns a 401 error
 #

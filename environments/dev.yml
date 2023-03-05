@@ -3,6 +3,6 @@
 #
 settings:
   stage: 'dev'
-  domainName: 'tokenhandler.authsamples-dev.com'
+  domainName: 'api.authsamples.com'
   certificateDomainName: 'authsamples-dev.com'
-  basePath: '/'
+  basePath: 'demobrand'

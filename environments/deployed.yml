@@ -1,9 +1,9 @@
 #
-# Settings for the fully deployed online environment
+# Settings for the deployed online environment
 #
 settings:
   stage: 'deployed'
-  domainName: 'tokenhandler.authsamples.com'
+  domainName: 'api.authsamples.com'
   certificateDomainName: 'authsamples.com'
-  basePath: '/demobrand/'
+  basePath: 'demobrand'
   

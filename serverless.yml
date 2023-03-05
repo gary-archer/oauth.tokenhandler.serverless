@@ -12,7 +12,7 @@ provider:
 custom:
   # Load the environment specific YAML configuration into this shared configuration
   config: ${file(environments/${opt:stage, 'dev'}.yml)}
-  
+
   # API gateway domain details
   customDomain:
     domainName: ${self:custom.config.settings.domainName}

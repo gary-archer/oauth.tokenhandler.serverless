@@ -11,7 +11,7 @@
         "trustedWebOrigins": ["https://web.authsamples-dev.com"]
     },
     "cookie": {
-        "domain": "tokenhandler.authsamples-dev.com",
+        "domain": "api.authsamples-dev.com",
         "basePath": "/",
         "prefix": "mycompany",
         "encryptionKey": "7312725575a3789d43bd41e592d1042226bc0d1a5d9bd9c4e8e58f121a1d5550"
@@ -26,8 +26,8 @@
         "client": {
             "clientId": "5aragskp1jjf1keh4fdblmln33",
             "clientSecret": "1ok5vf8eplm374u7a67ukt387raih1eb5srka13ha8f53cmrbd28",
-            "redirectUri": "https://web.authsamples-dev.com/spa/",
-            "postLogoutRedirectUri": "https://web.authsamples-dev.com/spa/loggedout",
+            "redirectUri": "https://web.authsamples-dev.com/demoapp/",
+            "postLogoutRedirectUri": "https://web.authsamples-dev.com/demoapp/loggedout",
             "scope": "openid profile email https://api.authsamples.com/investments"
         }
     },

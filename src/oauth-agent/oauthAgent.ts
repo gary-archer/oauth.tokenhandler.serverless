@@ -62,7 +62,7 @@ export class OAuthAgent {
 
             return this.refresh(event);
 
-        } else if (method === 'post' && path === `/${this._basePath}/expire`) {
+        } else if (method === 'post' && path === `${this._basePath}/expire`) {
 
             return this.expire(event);
 
@@ -73,7 +73,6 @@ export class OAuthAgent {
         } else {
 
             // Each route should either do OAuth or API work
-            console.error('THROWING: ' + this._basePath + ' : ' + path);
             throw ErrorUtils.fromInvalidRouteError();
         }
     }

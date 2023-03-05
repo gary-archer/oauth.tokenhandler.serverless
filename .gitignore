@@ -5,4 +5,3 @@ test/*.txt
 test/*.log
 credentials.json
 .serverless
-config-template.json

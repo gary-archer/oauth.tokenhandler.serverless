@@ -64,9 +64,10 @@ export class OAuthProxy {
             throw ErrorUtils.fromInvalidRouteError();
         }
 
-        // Get the full target path
-        const path = PathProcessor.getFullPath(event);
-        const targetUrl = `${route.target}${path}`;
+        // Calculate the full target path
+        const fullPath = PathProcessor.getFullPath(event);
+        const fullPathToForward = fullPath.replace(route.path, '');
+        const targetUrl = `${route.target}${fullPathToForward}`;
 
         const headers: any = {
             authorization: `Bearer ${accessToken}`,

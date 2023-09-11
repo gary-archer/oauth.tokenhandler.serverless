@@ -1,0 +1,60 @@
+service: tokenhandler
+
+# Base details for AWS deployment
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: eu-west-2
+  stage: ${self:custom.config.settings.stage}
+  apiGateway:
+    shouldStartNameWithService: true
+
+custom:
+  # Load the environment specific YAML configuration into this shared configuration
+  config: ${file(environments/${opt:stage, 'dev'}.yml)}
+
+  # API gateway domain details
+  customDomain:
+    domainName: ${self:custom.config.settings.domainName}
+    certificateName: '*.${self:custom.config.settings.certificateDomainName}'
+    stage: ${self:custom.config.settings.stage}
+    endpointType: regional
+    basePath: ${self:custom.config.settings.basePath}
+
+# A single HTTP endpoint covers all routes, with other logic handled in code
+functions:
+  wildcard:
+    handler: dist/lambda/wildcard.handler
+    events:
+      - http: 
+          path: /{proxy+}
+          method: ANY
+
+# Include the correct config file for the stage, and exclude unwanted files
+package:
+  patterns:
+  - '!.codacy.yaml'
+  - '!.eslintrc'
+  - '!.vscode/**'
+  - '!environments/**'
+  - '!src/**'
+  - '!test/**'
+  - '!ts*.json'
+  - '!package-lock.json'
+  - '!README.md'
+  - '!NOTICES'
+  - '!LICENSE.txt'
+  - '!config-template.json'
+  - '!*.sh'
+  
+plugins:
+  - serverless-domain-manager
+
+resources:
+  Resources:
+
+    # Limit cloudwatch log retention 
+    WildcardLogGroup:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        RetentionInDays: '5'

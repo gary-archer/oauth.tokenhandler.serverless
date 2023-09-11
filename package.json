@@ -1,0 +1,50 @@
+{
+  "name": "tokenhandler",
+  "version": "1.0.0",
+  "description": "A custom serverless token handler implementation for the Final SPA",
+  "author": "Gary Archer",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "lint": "npx eslint . --ext .ts,.tsx",
+    "build": "rm -rf dist && tsc",
+    "buildRelease": "rimraf dist && tsc --sourceMap false",
+    "start": "./start.sh",
+    "test": "./start.sh",
+    "deployDev": "./deploy.sh dev",
+    "deploy": "./deploy.sh deployed",
+    "httpDev": "./test/runHttpWorkflow.sh dev",
+    "http": "./test/runHttpWorkflow.sh deployed",
+    "removeDev": "sls remove --stage dev",
+    "remove": "sls remove --stage deployed"
+  },
+  "dependencies": {
+    "@middy/core": "^4.2.8",
+    "axios": "^1.4.0",
+    "base64url": "^3.0.1",
+    "cookie": "^0.5.0",
+    "fs-extra": "^11.1.1",
+    "guid-typescript": "^1.0.9",
+    "url-parse": "^1.5.10"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.119",
+    "@types/cookie": "^0.5.1",
+    "@types/fs-extra": "^11.0.1",
+    "@types/node": "^18.16.19",
+    "@types/url-parse": "^1.4.8",
+    "@typescript-eslint/eslint-plugin": "^5.61.0",
+    "@typescript-eslint/parser": "^5.61.0",
+    "eslint": "^8.44.0",
+    "https-proxy-agent": "^5.0.1",
+    "serverless": "^3.33.0",
+    "serverless-domain-manager": "7.0.2",
+    "typescript": "5.1.5"
+  },
+  "overrides": {
+    "semver": "7.5.2"
+  }
+}

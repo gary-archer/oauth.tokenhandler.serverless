@@ -8,11 +8,6 @@ Single page application security components, referenced in my blog at https://au
 
 - The **Token Handler Pattern** is followed, to keep security complexity out of application code
 - Deployed AWS endpoints provide an application level secure cookie layer for SPAs
-
-## Architecture Design
-
-See the [Serverless SPA to API Routing](https://authguidance.com/docker-spa-to-api-routing/) blog post for details:
-
 - An OAuth Agent acts as a confidential OAuth Client for the SPA, and to issue its cookies
 - An OAuth Proxy manages web security during calls to APIs
 

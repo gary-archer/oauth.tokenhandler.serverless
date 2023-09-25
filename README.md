@@ -1,5 +1,9 @@
 # Serverless Token Handler
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a180220195dd4500b324a4f87644add4)](https://app.codacy.com/gh/gary-archer/oauth.tokenhandler.serverless?utm_source=github.com&utm_medium=referral&utm_content=gary-archer/oauth.tokenhandler.serverless&utm_campaign=Badge_Grade)
+
+[![Known Vulnerabilities](https://snyk.io/test/github/gary-archer/oauth.tokenhandler.serverless/badge.svg?targetFile=package.json)](https://snyk.io/test/github/gary-archer/oauth.tokenhandler.serverless?targetFile=package.json)
+
 Single page application security components, referenced in my blog at https://authguidance.com:
 
 - The **Token Handler Pattern** is followed, to keep security complexity out of application code

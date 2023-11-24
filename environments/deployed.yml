@@ -1,9 +1,8 @@
 #
-# Settings for the deployed online environment
+# Settings for the deployed SPA
 #
 settings:
   stage: 'deployed'
   domainName: 'api.authsamples.com'
   certificateDomainName: 'authsamples.com'
-  basePath: 'demobrand'
   

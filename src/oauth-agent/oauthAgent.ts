@@ -21,7 +21,6 @@ export class OAuthAgent {
 
     private readonly _container: Container;
     private readonly _configuration: OAuthAgentConfiguration;
-    private readonly _basePath: string;
     private readonly _httpProxy: HttpProxy;
     private readonly _cookieProcessor: CookieProcessor;
     private readonly _authorizationServerClient: AuthorizationServerClient;
@@ -34,7 +33,6 @@ export class OAuthAgent {
 
         this._container = container;
         this._configuration = agentConfiguration;
-        this._basePath = `${cookieConfiguration.basePath}oauth-agent`;
         this._httpProxy = httpProxy;
 
         this._authorizationServerClient = new AuthorizationServerClient(this._configuration, this._httpProxy);
@@ -49,31 +47,31 @@ export class OAuthAgent {
         const method = event.httpMethod.toLowerCase();
         const path = event.path.toLowerCase();
 
-        if (method === 'post' && path === `${this._basePath}/login/start`) {
+        if (method === 'post' && path.endsWith('/oauth-agent/login/start')) {
 
             return this.startLogin(event);
 
-        } else if (method === 'post' && path === `${this._basePath}/login/end`) {
+        } else if (method === 'post' && path.endsWith('/oauth-agent/login/end')) {
 
             return this.endLogin(event);
 
-        } else if (method === 'post' && path === `${this._basePath}/refresh`) {
+        } else if (method === 'post' && path.endsWith('/oauth-agent/refresh')) {
 
             return this.refresh(event);
 
-        } else if (method === 'get' && path === `${this._basePath}/userinfo`) {
+        } else if (method === 'get' && path.endsWith('/oauth-agent/userinfo')) {
 
             return this.userInfo(event);
 
-        } else if (method === 'get' && path === `${this._basePath}/claims`) {
+        } else if (method === 'get' && path.endsWith('/oauth-agent/claims')) {
 
             return this.claims(event);
 
-        } else if (method === 'post' && path === `${this._basePath}/expire`) {
+        } else if (method === 'post' && path.endsWith('/oauth-agent/expire')) {
 
             return this.expire(event);
 
-        } else if (method === 'post' && path === `${this._basePath}/logout`) {
+        } else if (method === 'post' && path.endsWith('/oauth-agent/logout')) {
 
             return this.logout(event);
 

@@ -92,8 +92,7 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
             throw ErrorUtils.fromMissingOriginError();
         }
 
-        const trusted = this._configuration.cors.trustedWebOrigins.find(o => o === origin);
-        if (!trusted) {
+        if (origin.toLowerCase() !== this._configuration.cors.trustedWebOrigin.toLowerCase()) {
             throw ErrorUtils.fromUntrustedOriginError();
         }
     }

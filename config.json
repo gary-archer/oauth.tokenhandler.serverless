@@ -8,11 +8,10 @@
         "prettyPrint": true
     },
     "cors": {
-        "trustedWebOrigins": ["https://web.authsamples-dev.com"]
+        "trustedWebOrigin": "https://web.authsamples-dev.com"
     },
     "cookie": {
         "domain": "api.authsamples-dev.com",
-        "basePath": "/tokenhandler/",
         "prefix": "mycompany",
         "encryptionKey": "7312725575a3789d43bd41e592d1042226bc0d1a5d9bd9c4e8e58f121a1d5550"
     },

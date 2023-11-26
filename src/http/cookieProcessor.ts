@@ -233,17 +233,16 @@ export class CookieProcessor {
      */
     private _getCookiePath(type: string): string {
 
-        const basePath = this._configuration.basePath;
         if (type === STATE_COOKIE || type === ID_COOKIE || type === REFRESH_COOKIE) {
 
             // The refresh token is sent to all OAuth agent endpoints, to support the test option for expire
-            // I send the ID token to all OAuth agent endpoints, for user ID logging
-            return `${basePath}oauth-agent`;
+            // The ID token must be sent to the claims and logout endpoints
+            return '/tokenhandler/oauth-agent';
 
         } else {
 
-            // Only the access token and CSRF cookie are sent to APIs
-            return `${basePath}`;
+            // The base path is used for APIs amd requires the access token cookie and the CSRF cookie
+            return '/';
         }
     }
 

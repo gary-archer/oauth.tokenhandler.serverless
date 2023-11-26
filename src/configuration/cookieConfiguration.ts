@@ -3,7 +3,6 @@
  */
 export interface CookieConfiguration {
     domain: string;
-    basePath: string;
     prefix: string;
     encryptionKey: string;
 }

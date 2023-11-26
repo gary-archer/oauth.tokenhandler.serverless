@@ -70,14 +70,14 @@ if [ "$STAGE" == 'dev' ]; then
 
   # Use the deployed endpoints to support SPA development
   WEB_BASE_URL='https://web.authsamples-dev.com'
-  OAUTH_AGENT_BASE_URL='https://api.authsamples-dev.com/oauth-agent'
-  API_BASE_URL='https://api.authsamples-dev.com/investments'
+  OAUTH_AGENT_BASE_URL='https://api.authsamples-dev.com/demobrand/oauth-agent'
+  API_BASE_URL='https://api.authsamples-dev.com/demobrand/investments'
 else
 
   # Use the deployed endpoints that the deployed SPA uses
   WEB_BASE_URL='https://web.authsamples.com'
-  OAUTH_AGENT_BASE_URL='https://api.authsamples.com/oauth-agent'
-  API_BASE_URL='https://api.authsamples.com/investments'
+  OAUTH_AGENT_BASE_URL='https://api.authsamples.com/demobrand/oauth-agent'
+  API_BASE_URL='https://api.authsamples.com/demobrand/investments'
 fi
 
 #

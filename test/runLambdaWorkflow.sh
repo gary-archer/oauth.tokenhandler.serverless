@@ -133,7 +133,7 @@ fi
 #
 jo \
 httpMethod='OPTIONS' \
-path='\/demobrand/investments/companies' \
+path='\/tokenhandler/investments/companies' \
 headers=$(jo origin='https://badsite.com') \
 | jq > $REQUEST_FILE
 
@@ -160,7 +160,7 @@ fi
 #
 jo \
 httpMethod='OPTIONS' \
-path='\/demobrand/investments/companies' \
+path='\/tokenhandler/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 access-control-request-headers='x-mycompany-api-client,x-mycompany-session-id') \
 | jq > $REQUEST_FILE
@@ -198,7 +198,7 @@ fi
 #
 jo \
 httpMethod='GET' \
-path='\/demobrand/badpath' \
+path='\/tokenhandler/badpath' \
 | jq > $REQUEST_FILE
 
 echo '4. GET request with an invalid route ...'
@@ -220,7 +220,7 @@ fi
 # Act as the SPA by calling the OAuth Agent to start a login and get the request URI
 #
 jo -p \
-path='\/demobrand/oauth-agent/login/start' \
+path='\/tokenhandler/oauth-agent/login/start' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept=application/json \
@@ -286,7 +286,7 @@ AUTHORIZATION_RESPONSE_URL=$(getCognitoHeaderValue 'location')
 # Next we end the login by asking the server to do an authorization code grant
 #
 jo \
-path='\/demobrand/oauth-agent/login/end' \
+path='\/tokenhandler/oauth-agent/login/end' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -326,7 +326,7 @@ ANTI_FORGERY_TOKEN=$(jq -r .antiForgeryToken <<< "$BODY")
 #
 jo \
 httpMethod='GET' \
-path='\/demobrand/investments/companies' \
+path='\/tokenhandler/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID") \
@@ -353,7 +353,7 @@ fi
 #
 jo \
 httpMethod='GET' \
-path='\/demobrand/investments/companies' \
+path='\/tokenhandler/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-test-exception='SampleApi' \
@@ -380,7 +380,7 @@ fi
 # Get user info with the access token
 #
 jo -p \
-path='\/demobrand/oauth-agent/userinfo' \
+path='\/tokenhandler/oauth-agent/userinfo' \
 httpMethod='GET' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -414,7 +414,7 @@ fi
 # Get ID token claims with the access token
 #
 jo -p \
-path='\/demobrand/oauth-agent/claims' \
+path='\/tokenhandler/oauth-agent/claims' \
 httpMethod='GET' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -448,7 +448,7 @@ fi
 # Next simulate expiring the access token in the secure cookie
 #
 jo -p \
-path='\/demobrand/oauth-agent/expire' \
+path='\/tokenhandler/oauth-agent/expire' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -488,7 +488,7 @@ ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_H
 #
 jo \
 httpMethod='GET' \
-path='\/demobrand/investments/companies' \
+path='\/tokenhandler/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID") \
@@ -514,7 +514,7 @@ fi
 # Verify that an expired user info call returns a 401
 #
 jo -p \
-path='\/demobrand/oauth-agent/userinfo' \
+path='\/tokenhandler/oauth-agent/userinfo' \
 httpMethod='GET' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -548,7 +548,7 @@ fi
 # Next try to refresh the access token
 #
 jo -p \
-path='\/demobrand/oauth-agent/refresh' \
+path='\/tokenhandler/oauth-agent/refresh' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -586,7 +586,7 @@ REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_
 # Next expire both the access token and refresh token in the secure cookies, for test purposes
 #
 jo -p \
-path='\/demobrand/oauth-agent/expire' \
+path='\/tokenhandler/oauth-agent/expire' \
 httpMethod=POST \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -626,7 +626,7 @@ REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_
 # Next try to refresh the token and we should get a session_expired error
 #
 jo -p \
-path='\/demobrand/oauth-agent/refresh' \
+path='\/tokenhandler/oauth-agent/refresh' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -662,7 +662,7 @@ fi
 # Next make a logout request
 #
 jo -p \
-path='\/demobrand/oauth-agent/logout' \
+path='\/tokenhandler/oauth-agent/logout' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \

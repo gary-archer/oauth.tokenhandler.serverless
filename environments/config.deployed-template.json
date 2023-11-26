@@ -12,7 +12,7 @@
     },
     "cookie": {
         "domain": "api.authsamples.com",
-        "basePath": "/demobrand/",
+        "basePath": "/tokenhandler/",
         "prefix": "mycompany",
         "encryptionKey": "$COOKIE_ENCRYPTION_KEY"
     },
@@ -28,17 +28,17 @@
             "clientId": "1hofhrb15jb9adqitlkec9s5ag",
             "clientSecret": "4766go5m19shkbujtdp8n9hlcea0ef26h3tso2sf6g3qr3cnqq4",
             "redirectUri": "https://web.authsamples.com/spa/",
-            "postLogoutRedirectUri": "https://web.authsamples.com/loggedout",
+            "postLogoutRedirectUri": "https://web.authsamples.com/spa/loggedout",
             "scope": "openid profile https://api.authsamples.com/investments"
         }
     },
     "routes": [
         {
-            "path": "/demobrand/oauth-agent",
+            "path": "/tokenhandler/oauth-agent",
             "plugins": ["cors", "oauthAgent"]
         },
         {
-            "path": "/demobrand/investments",
+            "path": "/tokenhandler/investments",
             "target": "https://api.authsamples.com/investments",
             "plugins": ["cors", "oauthProxy"]
         }

@@ -42,6 +42,6 @@
     "https-proxy-agent": "^5.0.1",
     "serverless": "^3.36.0",
     "serverless-domain-manager": "7.0.2",
-    "typescript": "^5.2.0"
+    "typescript": "^5.3.3"
   }
 }

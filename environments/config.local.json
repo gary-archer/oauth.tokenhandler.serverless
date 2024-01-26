@@ -24,8 +24,8 @@
             "provider": "cognito"
         },
         "client": {
-            "clientId": "5aragskp1jjf1keh4fdblmln33",
-            "clientSecret": "1ok5vf8eplm374u7a67ukt387raih1eb5srka13ha8f53cmrbd28",
+            "clientId": "7q5pope8rki7okarj2u8l4in7o",
+            "clientSecret": "1d18g4v05sesjkv161borl012j009l7ooktnfs10ph9p6nkbbfl9",
             "redirectUri": "https://web.authsamples-dev.com/spa/",
             "postLogoutRedirectUri": "https://web.authsamples-dev.com/spa/loggedout",
             "scope": "openid profile https://api.authsamples.com/investments"

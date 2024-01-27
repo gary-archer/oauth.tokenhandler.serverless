@@ -15,8 +15,8 @@ Single page application security components, referenced in my blog at https://au
 
 The components are deployed in these main scenarios:
 
-- To secure local SPA development, via deployed endpoints hosted in the https://api.authsamples-dev.com domain
-- To secure the AWS Cloudfront deployed SPA, via deployed endpoints hosted in the https://api.authsamples.com domain
+- To secure local SPA development, via deployed endpoints hosted at https://api.authsamples-dev.com
+- To secure the AWS Cloudfront deployed SPA, via deployed endpoints hosted at https://api.authsamples.com
 
 ## Custom Implementation
 

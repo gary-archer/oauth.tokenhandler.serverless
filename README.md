@@ -28,7 +28,7 @@ These relate to my blog's reliability and supportability behaviours.
 
 ## Development
 
-To run the wildcard lambda on a development computer, run the following command.\
+First ensure that Node.js 20+ is installed, then run the following command.\
 This tests lambda logic locally using `sls invoke -f local` operations:
 
 ```bash

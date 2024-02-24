@@ -11,7 +11,6 @@
         "trustedWebOrigin": "https://web.authsamples.com"
     },
     "cookie": {
-        "domain": "api.authsamples.com",
         "prefix": "mycompany",
         "encryptionKey": "$COOKIE_ENCRYPTION_KEY"
     },

@@ -217,9 +217,6 @@ export class CookieProcessor {
             // The cookie should be sent over an HTTPS connection
             secure: true,
 
-            // The cookie written is only needed by the API domain
-            domain: this._configuration.domain,
-
             // Set the cookie path
             path: this._getCookiePath(type),
 

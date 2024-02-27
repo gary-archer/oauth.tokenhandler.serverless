@@ -5,14 +5,14 @@
     },
     "logging": {
         "apiName": "TokenHandler",
-        "prettyPrint": false
+        "prettyPrint": true
     },
     "cors": {
         "trustedWebOrigin": "https://web.authsamples-dev.com"
     },
     "cookie": {
         "prefix": "mycompany",
-        "encryptionKey": "551ccc4825aa707ce626fefa2faf9fca407fc397a7e78329d624744769674a8f"
+        "encryptionKey": "7312725575a3789d43bd41e592d1042226bc0d1a5d9bd9c4e8e58f121a1d5550"
     },
     "oauthAgent": {
         "api": {

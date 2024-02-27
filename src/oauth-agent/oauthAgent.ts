@@ -120,13 +120,12 @@ export class OAuthAgent {
 
         this._container.getLogEntry().setOperationName('endLogin');
 
-        // Get the URL posted by the SPA
+        // Process the URL posted by the SPA
         const urlString = FormProcessor.readJsonField(event, 'url');
         if (!urlString) {
             throw ErrorUtils.fromMissingJsonFieldError('url');
         }
 
-        // Get data sent up from the SPA
         const url = new URL(urlString);
         if (!url) {
             const error = ErrorUtils.fromMissingJsonFieldError('url');

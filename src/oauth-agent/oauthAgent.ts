@@ -7,7 +7,6 @@ import {ErrorUtils} from '../errors/errorUtils.js';
 import {CookieProcessor} from '../http/cookieProcessor.js';
 import {FormProcessor} from '../http/formProcessor.js';
 import {HeaderProcessor} from '../http/headerProcessor.js';
-import {QueryProcessor} from '../http/queryProcessor.js';
 import {ResponseWriter} from '../http/responseWriter.js';
 import {Container} from '../utilities/container.js';
 import {HttpProxy} from '../utilities/httpProxy.js';
@@ -122,17 +121,24 @@ export class OAuthAgent {
         this._container.getLogEntry().setOperationName('endLogin');
 
         // Get the URL posted by the SPA
-        const url = FormProcessor.readJsonField(event, 'url');
-        if (!url) {
+        const urlString = FormProcessor.readJsonField(event, 'url');
+        if (!urlString) {
             throw ErrorUtils.fromMissingJsonFieldError('url');
         }
 
         // Get data sent up from the SPA
-        const query = QueryProcessor.getQueryParameters(url);
-        const code = query['code'];
-        const state = query['state'];
-        const error = query['error'];
-        const errorDescription = query['error_description'];
+        const url = new URL(urlString);
+        if (!url) {
+            const error = ErrorUtils.fromMissingJsonFieldError('url');
+            error.setLogContext(url);
+            throw error;
+        }
+
+        const args = new URLSearchParams(url.search);
+        const code = args.get('code') || '';
+        const state = args.get('state') || '';
+        const error = args.get('error') || '';
+        const errorDescription = args.get('error_description') || '';
 
         if (state && error) {
 

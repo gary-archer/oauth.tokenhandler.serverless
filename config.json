@@ -1,18 +1,18 @@
 {
     "host": {
         "useProxy": false,
-        "proxyUrl": ""
+        "proxyUrl": "http://127.0.0.1:8888"
     },
     "logging": {
         "apiName": "TokenHandler",
-        "prettyPrint": true
+        "prettyPrint": false
     },
     "cors": {
         "trustedWebOrigin": "https://web.authsamples-dev.com"
     },
     "cookie": {
         "prefix": "mycompany",
-        "encryptionKey": "7312725575a3789d43bd41e592d1042226bc0d1a5d9bd9c4e8e58f121a1d5550"
+        "encryptionKey": "551ccc4825aa707ce626fefa2faf9fca407fc397a7e78329d624744769674a8f"
     },
     "oauthAgent": {
         "api": {

@@ -12,6 +12,7 @@ TEST_PASSWORD=GuestPassword1
 RESPONSE_FILE='test/response.txt'
 LOGIN_COOKIES_FILE='test/login_cookies.txt'
 MAIN_COOKIES_FILE='test/main_cookies.txt'
+# export HTTPS_PROXY='http://127.0.0.1:8888'
 
 #
 # Ensure that we are in the root folder

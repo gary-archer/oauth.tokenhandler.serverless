@@ -13,7 +13,7 @@ REQUEST_FILE='test/request.txt'
 RESPONSE_FILE='test/response.txt'
 LOGIN_COOKIES_FILE='test/login_cookies.txt'
 SLS=./node_modules/.bin/sls
-#export HTTPS_PROXY='http://127.0.0.1:8888'
+# export HTTPS_PROXY='http://127.0.0.1:8888'
 
 #
 # Ensure that we are in the root folder

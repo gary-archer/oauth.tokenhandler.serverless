@@ -151,7 +151,7 @@ export class AuthorizationServerClient {
     /*
      * Create the OpenID Connect end session request URL
      */
-    public getEndSessionRequestUrl(idToken: string): string {
+    public getEndSessionRequestUrl(): string {
 
         // Start the URL
         let url = this._configuration.api.endSessionEndpoint;
@@ -162,7 +162,9 @@ export class AuthorizationServerClient {
         if (this._configuration.api.provider === 'cognito') {
 
             // Cognito has non standard parameters
-            url += QueryProcessor.createQueryParameter('logout_uri', this._configuration.client.postLogoutRedirectUri);
+            url += QueryProcessor.createQueryParameter(
+                'logout_uri',
+                this._configuration.client.postLogoutRedirectUri);
 
         } else {
 
@@ -170,8 +172,6 @@ export class AuthorizationServerClient {
             url += QueryProcessor.createQueryParameter(
                 'post_logout_redirect_uri',
                 this._configuration.client.postLogoutRedirectUri);
-            url += '&';
-            url += QueryProcessor.createQueryParameter('id_token_hint', idToken);
         }
 
         return url;

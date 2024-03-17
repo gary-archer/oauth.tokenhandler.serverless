@@ -368,18 +368,9 @@ export class OAuthAgent {
         // Check incoming details
         this._validateCsrfTokenCookie(event);
 
-        // Get the id token from the id cookie
-        const idToken = this._cookieProcessor.readIdCookie(event);
-        if (!idToken) {
-            throw ErrorUtils.fromMissingCookieError('id');
-        }
-
-        // Include the OAuth user id in API logs
-        this._logUserId(idToken);
-
         // Write the full end session URL to the response body
         const body = {
-            url: this._authorizationServerClient.getEndSessionRequestUrl(idToken),
+            url: this._authorizationServerClient.getEndSessionRequestUrl(),
         };
 
         // Clear all cookies in the browser

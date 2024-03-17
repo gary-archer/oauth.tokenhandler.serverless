@@ -328,7 +328,7 @@ fi
 # Next expire the access token in the secure cookie, for test purposes
 #
 echo '13. Expiring the access token ...'
-HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/access/expire" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
@@ -337,7 +337,6 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
 -H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
--d '{"type":"access"}' \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204' ]; then
   echo "*** Problem encountered expiring the access token, status: $HTTP_STATUS"
@@ -400,7 +399,7 @@ fi
 # Next expire both the access token and refresh token in the secure cookies, for test purposes
 #
 echo '17. Expiring the refresh token ...'
-HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/refresh/expire" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
@@ -409,7 +408,6 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
 -H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
--d '{"type":"refresh"}' \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204' ]; then
   echo "*** Problem encountered expiring the refresh token, status: $HTTP_STATUS"
@@ -436,9 +434,92 @@ if [ "$HTTP_STATUS" != '401' ]; then
 fi
 
 #
+# Do a new login so that we can test logout
+#
+echo '19. Creating login URL ...'
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/login/start" \
+-H "origin: $WEB_BASE_URL" \
+-H 'accept: application/json' \
+-H 'x-mycompany-api-client: httpTest' \
+-H "x-mycompany-session-id: $SESSION_ID" \
+-c "$MAIN_COOKIES_FILE" \
+-o $RESPONSE_FILE -w '%{http_code}')
+if [ "$HTTP_STATUS" != '200' ]; then
+  echo "*** Problem encountered starting a login, status: $HTTP_STATUS"
+  exit
+fi
+
+JSON=$(tail -n 1 $RESPONSE_FILE)
+AUTHORIZATION_REQUEST_URL=$(jq -r .authorizationRequestUrl <<< "$JSON")
+
+#
+# Next invoke the redirect URI to start a login
+# The Cognito CSRF cookie is written twice due to following the redirect, so get the second occurrence
+#
+echo '20. Following login redirect ...'
+HTTP_STATUS=$(curl -i -L -s "$AUTHORIZATION_REQUEST_URL" \
+-c "$LOGIN_COOKIES_FILE" \
+-o $RESPONSE_FILE -w '%{http_code}')
+if [ "$HTTP_STATUS" != '200' ]; then
+  echo "*** Problem encountered using the OpenID Connect authorization URL, status: $HTTP_STATUS"
+  exit
+fi
+
+LOGIN_POST_LOCATION=$(getHeaderValue 'location')
+COGNITO_XSRF_TOKEN=$(getCookieValue 'XSRF-TOKEN' | cut -d ' ' -f 2)
+
+#
+# We can now post a password credential, and the form fields used are Cognito specific
+#
+echo '21. Posting credentials to sign in the test user ...'
+HTTP_STATUS=$(curl -i -s -X POST "$LOGIN_POST_LOCATION" \
+-H "origin: $LOGIN_BASE_URL" \
+-b "$LOGIN_COOKIES_FILE" \
+--data-urlencode "_csrf=$COGNITO_XSRF_TOKEN" \
+--data-urlencode "username=$TEST_USERNAME" \
+--data-urlencode "password=$TEST_PASSWORD" \
+-o $RESPONSE_FILE -w '%{http_code}')
+if [ "$HTTP_STATUS" != '302' ]; then
+  echo "*** Problem encountered posting a credential to AWS Cognito, status: $HTTP_STATUS"
+  exit
+fi
+
+AUTHORIZATION_RESPONSE_URL=$(getHeaderValue 'location')
+
+#
+# Next we end the login by asking the server to do an authorization code grant
+#
+echo '22. Finishing the login by processing the authorization code ...'
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/login/end" \
+-H "origin: $WEB_BASE_URL" \
+-H 'content-type: application/json' \
+-H 'accept: application/json' \
+-H 'x-mycompany-api-client: httpTest' \
+-H "x-mycompany-session-id: $SESSION_ID" \
+-b "$MAIN_COOKIES_FILE" \
+-c "$MAIN_COOKIES_FILE" \
+-d '{"pageUrl":"'$AUTHORIZATION_RESPONSE_URL'"}' \
+-o $RESPONSE_FILE -w '%{http_code}')
+if [ "$HTTP_STATUS" != '200' ]; then
+  echo "*** Problem encountered ending a login, status: $HTTP_STATUS"
+  apiError
+  exit
+fi
+
+#
+# Get the CSRF token which should be present after a successful login
+#
+JSON=$(tail -n 1 $RESPONSE_FILE)
+CSRF_TOKEN=$(jq -r .csrf <<< "$JSON")
+if [ "$CSRF_TOKEN" == 'null' ]; then
+  echo "*** End login did not complete successfully"
+  exit
+fi
+
+#
 # Next make a logout request
 #
-echo '19. Calling logout to clear cookies and get the end session request URL ...'
+echo '23. Calling logout to clear cookies and get the end session request URL ...'
 HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/logout" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \

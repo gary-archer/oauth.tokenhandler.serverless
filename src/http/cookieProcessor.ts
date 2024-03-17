@@ -230,15 +230,24 @@ export class CookieProcessor {
      */
     private _getCookiePath(type: string): string {
 
-        if (type === STATE_COOKIE || type === ID_COOKIE || type === REFRESH_COOKIE) {
+        if (type === STATE_COOKIE) {
 
-            // The refresh token is sent to all OAuth agent endpoints, to support the test option for expire
-            // The ID token must be sent to the claims and logout endpoints
-            return '/tokenhandler/oauth-agent';
+            // The state cookie is restricted to login paths
+            return '/tokenhandler/oauth-agent/login';
+
+        } else if (type === REFRESH_COOKIE) {
+
+            // The refresh cookie is restricted to the refresh path
+            return '/tokenhandler/oauth-agent/refresh';
+
+        } else if (type === ID_COOKIE) {
+
+            // The ID cookie is restricted to the claims path
+            return '/tokenhandler/oauth-agent/claims';
 
         } else {
 
-            // The base path is used for APIs amd requires the access token cookie and the CSRF cookie
+            // The base path is used for APIs, and requires the access token cookie and the CSRF cookie
             return '/';
         }
     }

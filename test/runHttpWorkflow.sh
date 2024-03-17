@@ -328,7 +328,7 @@ fi
 # Next expire the access token in the secure cookie, for test purposes
 #
 echo '13. Expiring the access token ...'
-HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/access/expire" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
@@ -337,7 +337,6 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
 -H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
--d '{"type":"access"}' \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204' ]; then
   echo "*** Problem encountered expiring the access token, status: $HTTP_STATUS"
@@ -400,7 +399,7 @@ fi
 # Next expire both the access token and refresh token in the secure cookies, for test purposes
 #
 echo '17. Expiring the refresh token ...'
-HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
+HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/refresh/expire" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
@@ -409,7 +408,6 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
 -H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
--d '{"type":"refresh"}' \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204' ]; then
   echo "*** Problem encountered expiring the refresh token, status: $HTTP_STATUS"

@@ -66,9 +66,13 @@ export class OAuthAgent {
 
             return this.claims(event);
 
-        } else if (method === 'post' && path.endsWith('/oauth-agent/expire')) {
+        } else if (method === 'post' && path.endsWith('/oauth-agent/access/expire')) {
 
-            return this.expire(event);
+            return this.expireAccess(event);
+
+        } else if (method === 'post' && path.endsWith('/oauth-agent/refresh/expire')) {
+
+            return this.expireRefresh(event);
 
         } else if (method === 'post' && path.endsWith('/oauth-agent/logout')) {
 
@@ -153,14 +157,10 @@ export class OAuthAgent {
             } as EndLoginResponse;
 
             // See if there are existing cookies
-            const existingIdToken = this._cookieProcessor.readIdCookie(event);
             const existingCsrfToken = this._cookieProcessor.readCsrfTokenCookie(event);
-            if (existingIdToken && existingCsrfToken) {
-
-                // Update the response fields and log the user ID
+            if (existingCsrfToken) {
                 body.isLoggedIn = true;
                 body.csrf = existingCsrfToken;
-                this._logUserId(existingIdToken);
             }
 
             return ResponseWriter.objectResponse(200, body);
@@ -227,15 +227,6 @@ export class OAuthAgent {
             throw ErrorUtils.fromMissingCookieError('rt');
         }
 
-        // Get the id token from the id cookie
-        const idToken = this._cookieProcessor.readIdCookie(event);
-        if (!idToken) {
-            throw ErrorUtils.fromMissingCookieError('id');
-        }
-
-        // Include the OAuth user id in API logs
-        this._logUserId(idToken);
-
         // Send the request for a new access token to the authorization server
         const refreshTokenGrantData =
             await this._authorizationServerClient.sendRefreshTokenGrant(refreshToken);
@@ -243,14 +234,19 @@ export class OAuthAgent {
         const newRefreshToken = refreshTokenGrantData.refresh_token;
         const newIdToken = refreshTokenGrantData.id_token;
 
+        const cookies = [
+            this._cookieProcessor.writeAccessCookie(refreshTokenGrantData.access_token),
+            this._cookieProcessor.writeRefreshCookie(newRefreshToken ?? refreshToken),
+        ];
+
+        if (newIdToken) {
+            cookies.push(this._cookieProcessor.writeIdCookie(newIdToken));
+        }
+
         // Return an empty response to the browser, with attached cookies
         const response = ResponseWriter.objectResponse(204, null);
         response.multiValueHeaders = {
-            'set-cookie': [
-                this._cookieProcessor.writeAccessCookie(refreshTokenGrantData.access_token),
-                this._cookieProcessor.writeRefreshCookie(newRefreshToken ?? refreshToken),
-                this._cookieProcessor.writeIdCookie(newIdToken ?? idToken),
-            ]
+            'set-cookie': cookies,
         };
         return response;
     }
@@ -267,15 +263,6 @@ export class OAuthAgent {
         if (!accessToken) {
             throw ErrorUtils.fromMissingCookieError('at');
         }
-
-        // Get the id token from the id cookie
-        const idToken = this._cookieProcessor.readIdCookie(event);
-        if (!idToken) {
-            throw ErrorUtils.fromMissingCookieError('id');
-        }
-
-        // Include the OAuth user id in API logs
-        this._logUserId(idToken);
 
         // Get and return the user info
         const userInfo = await this._authorizationServerClient.getUserInfo(accessToken);
@@ -304,20 +291,18 @@ export class OAuthAgent {
     }
 
     /*
-     * Make the refresh and / or the access token inside secure cookies act expired, for testing purposes
+     * Make the access token inside secure cookies act expired, for testing purposes
      */
     /* eslint-disable @typescript-eslint/no-unused-vars */
-    public async expire(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    public async expireAccess(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        // Get whether to expire the access or refresh token
         const type = FormProcessor.readJsonField(event, 'type');
-        const operation = type === 'access' ? 'expireAccessToken' : 'expireRefreshToken';
-        this._container.getLogEntry().setOperationName(operation);
+        this._container.getLogEntry().setOperationName('expireAccessToken');
 
         // Check incoming details
         this._validateCsrfTokenCookie(event);
 
-        // Get the current refresh token
+        // Get the current access token
         const accessToken = this._cookieProcessor.readAccessCookie(event);
         if (!accessToken) {
             throw ErrorUtils.fromMissingCookieError('at');
@@ -329,24 +314,48 @@ export class OAuthAgent {
             throw ErrorUtils.fromMissingCookieError('rt');
         }
 
-        // Get the id token from the id cookie
-        const idToken = this._cookieProcessor.readIdCookie(event);
-        if (!idToken) {
-            throw ErrorUtils.fromMissingCookieError('id');
-        }
-
-        // Include the OAuth user id in API logs
-        this._logUserId(idToken);
-
-        // Always make the access cookie act expired to cause an API 401
+        // Make the access cookie act expired to cause an API 401
         const cookies = [
             this._cookieProcessor.writeAccessCookie(`${accessToken}x`),
         ];
 
-        // If requested, make the refresh cookie act expired, to cause a permanent API 401
-        if (type === 'refresh') {
-            cookies.push(this._cookieProcessor.writeRefreshCookie(`${refreshToken}x`));
+        // Return the response with the expired header
+        const response = ResponseWriter.objectResponse(204, null);
+        response.multiValueHeaders = {
+            'set-cookie': cookies
+        };
+        return response;
+    }
+
+    /*
+     * Make the refresh token inside secure cookies act expired, for testing purposes
+     */
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    public async expireRefresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        const type = FormProcessor.readJsonField(event, 'type');
+        this._container.getLogEntry().setOperationName('expireRefreshToken');
+
+        // Check incoming details
+        this._validateCsrfTokenCookie(event);
+
+        // Get the current access token
+        const accessToken = this._cookieProcessor.readAccessCookie(event);
+        if (!accessToken) {
+            throw ErrorUtils.fromMissingCookieError('at');
         }
+
+        // Get the current refresh token
+        const refreshToken = this._cookieProcessor.readRefreshCookie(event);
+        if (!refreshToken) {
+            throw ErrorUtils.fromMissingCookieError('rt');
+        }
+
+        // Always make the access cookie act expired to cause an API 401
+        const cookies = [
+            this._cookieProcessor.writeAccessCookie(`${accessToken}x`),
+            this._cookieProcessor.writeRefreshCookie(`${refreshToken}x`),
+        ];
 
         // Return the response with the expired header
         const response = ResponseWriter.objectResponse(204, null);

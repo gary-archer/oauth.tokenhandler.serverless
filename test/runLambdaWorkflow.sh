@@ -448,7 +448,7 @@ fi
 # Next simulate expiring the access token in the secure cookie
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/expire' \
+path='\/tokenhandler/oauth-agent/access/expire' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -461,7 +461,6 @@ multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
 "$COOKIE_PREFIX-id=$ID_COOKIE" \
 "$COOKIE_PREFIX-csrf=$CSRF_COOKIE")) \
-body="{\\\""type\\\"":\\\""access\\\""}" \
 | sed 's/\\\\\\/\\/g' \
 | jq > $REQUEST_FILE
 
@@ -586,7 +585,7 @@ REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_
 # Next expire both the access token and refresh token in the secure cookies, for test purposes
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/expire' \
+path='\/tokenhandler/oauth-agent/refresh/expire' \
 httpMethod=POST \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -599,7 +598,6 @@ multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
 "$COOKIE_PREFIX-id=$ID_COOKIE" \
 "$COOKIE_PREFIX-csrf=$CSRF_COOKIE")) \
-body="{\\\""type\\\"":\\\""refresh\\\""}" \
 | sed 's/\\\\\\/\\/g' \
 | jq > $REQUEST_FILE
 

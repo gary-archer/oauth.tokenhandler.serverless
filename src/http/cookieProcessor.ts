@@ -233,7 +233,7 @@ export class CookieProcessor {
         if (type === STATE_COOKIE) {
 
             // The state cookie is restricted to login paths
-            return '/tokenhandler/login';
+            return '/tokenhandler/oauth-agent/login';
 
         } else if (type === REFRESH_COOKIE) {
 

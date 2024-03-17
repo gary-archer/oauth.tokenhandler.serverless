@@ -296,7 +296,6 @@ export class OAuthAgent {
     /* eslint-disable @typescript-eslint/no-unused-vars */
     public async expireAccess(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        const type = FormProcessor.readJsonField(event, 'type');
         this._container.getLogEntry().setOperationName('expireAccessToken');
 
         // Check incoming details
@@ -306,12 +305,6 @@ export class OAuthAgent {
         const accessToken = this._cookieProcessor.readAccessCookie(event);
         if (!accessToken) {
             throw ErrorUtils.fromMissingCookieError('at');
-        }
-
-        // Get the current refresh token
-        const refreshToken = this._cookieProcessor.readRefreshCookie(event);
-        if (!refreshToken) {
-            throw ErrorUtils.fromMissingCookieError('rt');
         }
 
         // Make the access cookie act expired to cause an API 401
@@ -333,7 +326,6 @@ export class OAuthAgent {
     /* eslint-disable @typescript-eslint/no-unused-vars */
     public async expireRefresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        const type = FormProcessor.readJsonField(event, 'type');
         this._container.getLogEntry().setOperationName('expireRefreshToken');
 
         // Check incoming details

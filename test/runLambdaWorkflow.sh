@@ -245,7 +245,7 @@ if [ "$HTTP_STATUS" != '200' ]; then
   exit
 fi
 
-AUTHORIZATION_REQUEST_URL=$(jq -r .authorizationRequestUri <<< "$BODY")
+AUTHORIZATION_REQUEST_URL=$(jq -r .authorizationRequestUrl <<< "$BODY")
 STATE_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-state" "$MULTI_VALUE_HEADERS")
 
 #
@@ -294,7 +294,7 @@ content-type='application/json' \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID") \
 multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-state=$STATE_COOKIE")) \
-body="{\\\""url\\\"":\\\""$AUTHORIZATION_RESPONSE_URL\\\""}" \
+body="{\\\""pageUrl\\\"":\\\""$AUTHORIZATION_RESPONSE_URL\\\""}" \
 | sed 's/\\\\\\/\\/g' \
 | jq > $REQUEST_FILE
 
@@ -319,7 +319,7 @@ ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_H
 REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_HEADERS")
 ID_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-id" "$MULTI_VALUE_HEADERS")
 CSRF_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-csrf" "$MULTI_VALUE_HEADERS")
-ANTI_FORGERY_TOKEN=$(jq -r .antiForgeryToken <<< "$BODY")
+CSRF_TOKEN=$(jq -r .csrf <<< "$BODY")
 
 #
 # Verify that a GET request to APIs returns valid data
@@ -387,7 +387,7 @@ accept='application/json' \
 content-type='application/json' \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID" \
-"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+"x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
@@ -421,7 +421,7 @@ accept='application/json' \
 content-type='application/json' \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID" \
-"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+"x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
@@ -455,7 +455,7 @@ accept='application/json' \
 content-type='application/json' \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID" \
-"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+"x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
@@ -521,7 +521,7 @@ accept='application/json' \
 content-type='application/json' \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID" \
-"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+"x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
@@ -555,7 +555,7 @@ accept='application/json' \
 content-type='application/json' \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID" \
-"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+"x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
@@ -593,7 +593,7 @@ accept='application/json' \
 content-type='application/json' \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID" \
-"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+"x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
@@ -633,7 +633,7 @@ accept='application/json' \
 content-type='application/json' \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID" \
-"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+"x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
@@ -669,7 +669,7 @@ accept='application/json' \
 content-type='application/json' \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID" \
-"x-$COOKIE_PREFIX-csrf=$ANTI_FORGERY_TOKEN") \
+"x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
@@ -693,4 +693,4 @@ if [ "$HTTP_STATUS" != '200' ]; then
   exit
 fi
 
-END_SESSION_REQUEST_URL=$(jq -r .endSessionRequestUri <<< "$BODY")
+END_SESSION_REQUEST_URL=$(jq -r .url <<< "$BODY")

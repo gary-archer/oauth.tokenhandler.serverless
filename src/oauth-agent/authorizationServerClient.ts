@@ -31,7 +31,7 @@ export class AuthorizationServerClient {
     /*
      * Form the OpenID Connect authorization request URL
      */
-    public getAuthorizationRequestUri(loginState: OAuthLoginState): string {
+    public getAuthorizationRequestUrl(loginState: OAuthLoginState): string {
 
         let url = this._configuration.api.authorizeEndpoint;
         url += '?';
@@ -151,7 +151,7 @@ export class AuthorizationServerClient {
     /*
      * Create the OpenID Connect end session request URL
      */
-    public getEndSessionRequestUri(idToken: string): string {
+    public getEndSessionRequestUrl(idToken: string): string {
 
         // Start the URL
         let url = this._configuration.api.endSessionEndpoint;

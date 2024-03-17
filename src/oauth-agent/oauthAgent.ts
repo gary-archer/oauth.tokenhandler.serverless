@@ -94,7 +94,7 @@ export class OAuthAgent {
 
         // Get the full authorization URL as response data
         const body = {} as any;
-        body.authorizationRequestUri = this._authorizationServerClient.getAuthorizationRequestUri(loginState);
+        body.authorizationRequestUrl = this._authorizationServerClient.getAuthorizationRequestUrl(loginState);
 
         // Create a temporary state cookie
         const cookiePayload = {
@@ -121,14 +121,14 @@ export class OAuthAgent {
         this._container.getLogEntry().setOperationName('endLogin');
 
         // Process the URL posted by the SPA
-        const urlString = FormProcessor.readJsonField(event, 'url');
+        const urlString = FormProcessor.readJsonField(event, 'pageUrl');
         if (!urlString) {
-            throw ErrorUtils.fromMissingJsonFieldError('url');
+            throw ErrorUtils.fromMissingJsonFieldError('pageUrl');
         }
 
         const url = new URL(urlString);
         if (!url) {
-            const error = ErrorUtils.fromMissingJsonFieldError('url');
+            const error = ErrorUtils.fromMissingJsonFieldError('pageUrl');
             error.setLogContext(url);
             throw error;
         }
@@ -148,18 +148,18 @@ export class OAuthAgent {
 
             // Handle normal page loads, such as loading a new browser tab
             const body = {
-                isLoggedIn: false,
                 handled: false,
+                isLoggedIn: false,
             } as EndLoginResponse;
 
             // See if there are existing cookies
             const existingIdToken = this._cookieProcessor.readIdCookie(event);
-            const existingAntiForgeryToken = this._cookieProcessor.readAntiForgeryCookie(event);
-            if (existingIdToken && existingAntiForgeryToken) {
+            const existingCsrfToken = this._cookieProcessor.readCsrfTokenCookie(event);
+            if (existingIdToken && existingCsrfToken) {
 
                 // Update the response fields and log the user ID
                 body.isLoggedIn = true;
-                body.antiForgeryToken = existingAntiForgeryToken;
+                body.csrf = existingCsrfToken;
                 this._logUserId(existingIdToken);
             }
 
@@ -188,11 +188,11 @@ export class OAuthAgent {
             const idToken = authCodeGrantData.id_token;
             this._logUserId(idToken);
 
-            // Inform the SPA that that a login response was handled, and generate a new anti forgery token
+            // Inform the SPA that that a login response was handled, and generate a new CSRF token
             const body = {
-                isLoggedIn: true,
                 handled: true,
-                antiForgeryToken: crypto.randomBytes(32).toString('base64'),
+                isLoggedIn: true,
+                csrf: crypto.randomBytes(32).toString('base64'),
             } as EndLoginResponse;
 
             // Write the response and attach secure cookies
@@ -203,7 +203,7 @@ export class OAuthAgent {
                     this._cookieProcessor.writeRefreshCookie(refreshToken),
                     this._cookieProcessor.writeAccessCookie(accessToken),
                     this._cookieProcessor.writeIdCookie(idToken),
-                    this._cookieProcessor.writeAntiForgeryCookie(body.antiForgeryToken!)
+                    this._cookieProcessor.writeCsrfTokenCookie(body.csrf!)
                 ]
             };
             return response;
@@ -219,7 +219,7 @@ export class OAuthAgent {
         this._container.getLogEntry().setOperationName('refresh');
 
         // Check incoming details
-        this._validateAntiForgeryCookie(event);
+        this._validateCsrfTokenCookie(event);
 
         // Get the refresh token from the cookie
         const refreshToken = this._cookieProcessor.readRefreshCookie(event);
@@ -315,7 +315,7 @@ export class OAuthAgent {
         this._container.getLogEntry().setOperationName(operation);
 
         // Check incoming details
-        this._validateAntiForgeryCookie(event);
+        this._validateCsrfTokenCookie(event);
 
         // Get the current refresh token
         const accessToken = this._cookieProcessor.readAccessCookie(event);
@@ -365,7 +365,7 @@ export class OAuthAgent {
         this._container.getLogEntry().setOperationName('logout');
 
         // Check incoming details
-        this._validateAntiForgeryCookie(event);
+        this._validateCsrfTokenCookie(event);
 
         // Get the id token from the id cookie
         const idToken = this._cookieProcessor.readIdCookie(event);
@@ -378,7 +378,7 @@ export class OAuthAgent {
 
         // Write the full end session URL to the response body
         const body = {
-            endSessionRequestUri: this._authorizationServerClient.getEndSessionRequestUri(idToken),
+            url: this._authorizationServerClient.getEndSessionRequestUrl(idToken),
         };
 
         // Clear all cookies in the browser
@@ -392,24 +392,24 @@ export class OAuthAgent {
     /*
      * Extra cookies checks for data changing requests in line with OWASP
      */
-    private _validateAntiForgeryCookie(event: APIGatewayProxyEvent): void {
+    private _validateCsrfTokenCookie(event: APIGatewayProxyEvent): void {
 
         // Get the cookie value
-        const cookieValue = this._cookieProcessor.readAntiForgeryCookie(event);
+        const cookieValue = this._cookieProcessor.readCsrfTokenCookie(event);
         if (!cookieValue) {
             throw ErrorUtils.fromMissingCookieError('csrf');
         }
 
-        // Check the client has sent a matching anti forgery request header
-        const headerName = this._cookieProcessor.getAntiForgeryRequestHeaderName();
+        // Check the client has sent a matching CSRF token request header
+        const headerName = this._cookieProcessor.getCsrfTokenRequestHeaderName();
         const headerValue = HeaderProcessor.readHeader(event, headerName);
         if (!headerValue) {
-            throw ErrorUtils.fromMissingAntiForgeryTokenError();
+            throw ErrorUtils.fromMissingCsrfTokenError();
         }
 
         // Check that the values match
         if (cookieValue !== headerValue) {
-            throw ErrorUtils.fromMismatchedAntiForgeryTokenError();
+            throw ErrorUtils.fromMismatchedCsrfTokenError();
         }
     }
 

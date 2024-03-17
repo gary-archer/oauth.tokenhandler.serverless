@@ -124,9 +124,9 @@ export class CookieProcessor {
     }
 
     /*
-     * Write the anti forgery token cookie
+     * Write the CSRF token cookie
      */
-    public writeAntiForgeryCookie(csrfToken: string): string {
+    public writeCsrfTokenCookie(csrfToken: string): string {
 
         const name = this._getCookieName(CSRF_COOKIE);
         const value = this._encrypter.encryptCookie(csrfToken);
@@ -134,9 +134,9 @@ export class CookieProcessor {
     }
 
     /*
-     * Read the anti forgery value from the cookie
+     * Read the CSRF token value from the cookie
      */
-    public readAntiForgeryCookie(event: APIGatewayProxyEvent): string | null {
+    public readCsrfTokenCookie(event: APIGatewayProxyEvent): string | null {
 
         const name = this._getCookieName(CSRF_COOKIE);
         const ciphertext = HeaderProcessor.readCookieValue(event, name);
@@ -150,7 +150,7 @@ export class CookieProcessor {
     /*
      * We also derive the request header value from this class
      */
-    public getAntiForgeryRequestHeaderName(): string {
+    public getCsrfTokenRequestHeaderName(): string {
 
         const cookieName = this._getCookieName(CSRF_COOKIE);
         return `x-${cookieName}`;
@@ -159,21 +159,21 @@ export class CookieProcessor {
     /*
      * For data changing commands, enforce double sumbit cookie checks
      */
-    public enforceAntiForgeryChecks(event: APIGatewayProxyEvent): void {
+    public enforceCsrfTokenChecks(event: APIGatewayProxyEvent): void {
 
-        const csrfCookie = this.readAntiForgeryCookie(event);
+        const csrfCookie = this.readCsrfTokenCookie(event);
         if (!csrfCookie) {
             throw ErrorUtils.fromMissingCookieError(CSRF_COOKIE);
         }
 
         const csrfHeader = HeaderProcessor.readHeader(event, `x-${this._configuration.prefix}-${CSRF_COOKIE}`);
         if (!csrfHeader) {
-            throw ErrorUtils.fromMissingAntiForgeryTokenError();
+            throw ErrorUtils.fromMissingCsrfTokenError();
         }
 
         const csrfToken = this._encrypter.decryptCookie(CSRF_COOKIE, csrfCookie);
         if (csrfHeader !== csrfToken) {
-            throw ErrorUtils.fromMismatchedAntiForgeryTokenError();
+            throw ErrorUtils.fromMismatchedCsrfTokenError();
         }
     }
 
@@ -220,7 +220,7 @@ export class CookieProcessor {
             // Set the cookie path
             path: this._getCookiePath(type),
 
-            // Other domains cannot send the cookie, which reduces cross site request forgery risks
+            // Other domains cannot send the cookie
             sameSite: 'strict',
         };
     }

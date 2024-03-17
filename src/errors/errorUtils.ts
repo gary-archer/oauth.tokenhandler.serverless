@@ -207,29 +207,29 @@ export class ErrorUtils {
     }
 
     /*
-     * This occurs if the anti forgery token was not provided
+     * This occurs if the CSRF token was not provided
      */
-    public static fromMissingAntiForgeryTokenError(): ClientError {
+    public static fromMissingCsrfTokenError(): ClientError {
 
         const error = ErrorFactory.createClient401Error(
-            'An anti forgery request header was not supplied for a data changing command');
+            'A CSRF token request header was not supplied for a data changing command');
 
         const logContext = error.getLogContext();
-        logContext.errorCode = ErrorCodes.missingAntiForgeryTokenError;
+        logContext.errorCode = ErrorCodes.missingCsrfTokenError;
 
         return error;
     }
 
     /*
-     * This occurs if the anti forgery token does not have the expected value
+     * This occurs if the CSRF token does not have the expected value
      */
-    public static fromMismatchedAntiForgeryTokenError(): ClientError {
+    public static fromMismatchedCsrfTokenError(): ClientError {
 
         const error = ErrorFactory.createClient401Error(
-            'The anti forgery request header value does not match that of the request cookie');
+            'The CSRF token request header value does not match that of the request cookie');
 
         const logContext = error.getLogContext();
-        logContext.errorCode = ErrorCodes.mismatchedAntiForgeryTokenError;
+        logContext.errorCode = ErrorCodes.mismatchedCsrfTokenError;
 
         return error;
     }

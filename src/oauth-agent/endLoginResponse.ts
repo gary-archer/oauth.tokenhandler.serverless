@@ -4,5 +4,5 @@
 export interface EndLoginResponse {
     isLoggedIn: boolean;
     handled: boolean;
-    antiForgeryToken: string | null;
+    csrf: string | null;
 }

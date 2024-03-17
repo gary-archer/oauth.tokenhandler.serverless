@@ -193,7 +193,7 @@ if [ "$HTTP_STATUS" != '200' ]; then
 fi
 
 JSON=$(tail -n 1 $RESPONSE_FILE)
-AUTHORIZATION_REQUEST_URL=$(jq -r .authorizationRequestUri <<< "$JSON")
+AUTHORIZATION_REQUEST_URL=$(jq -r .authorizationRequestUrl <<< "$JSON")
 
 #
 # Next invoke the redirect URI to start a login
@@ -241,7 +241,7 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/login/end" \
 -H "x-mycompany-session-id: $SESSION_ID" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
--d '{"url":"'$AUTHORIZATION_RESPONSE_URL'"}' \
+-d '{"pageUrl":"'$AUTHORIZATION_RESPONSE_URL'"}' \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
   echo "*** Problem encountered ending a login, status: $HTTP_STATUS"
@@ -250,11 +250,11 @@ if [ "$HTTP_STATUS" != '200' ]; then
 fi
 
 #
-# Get the anti forgery token which should be present after a successful login
+# Get the CSRF token which should be present after a successful login
 #
 JSON=$(tail -n 1 $RESPONSE_FILE)
-ANTI_FORGERY_TOKEN=$(jq -r .antiForgeryToken <<< "$JSON")
-if [ "$ANTI_FORGERY_TOKEN" == 'null' ]; then
+CSRF_TOKEN=$(jq -r .csrf <<< "$JSON")
+if [ "$CSRF_TOKEN" == 'null' ]; then
   echo "*** End login did not complete successfully"
   exit
 fi
@@ -334,7 +334,7 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
--H "x-$COOKIE_PREFIX-csrf: $ANTI_FORGERY_TOKEN" \
+-H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
 -d '{"type":"access"}' \
@@ -386,7 +386,7 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/refresh" \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
--H "x-$COOKIE_PREFIX-csrf: $ANTI_FORGERY_TOKEN" \
+-H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
@@ -406,7 +406,7 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/expire" \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
--H "x-$COOKIE_PREFIX-csrf: $ANTI_FORGERY_TOKEN" \
+-H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
 -d '{"type":"refresh"}' \
@@ -426,7 +426,7 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/refresh" \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
--H "x-$COOKIE_PREFIX-csrf: $ANTI_FORGERY_TOKEN" \
+-H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '401' ]; then
@@ -444,7 +444,7 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/logout" \
 -H 'accept: application/json' \
 -H 'x-mycompany-api-client: httpTest' \
 -H "x-mycompany-session-id: $SESSION_ID" \
--H "x-$COOKIE_PREFIX-csrf: $ANTI_FORGERY_TOKEN" \
+-H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
@@ -458,4 +458,4 @@ fi
 # The real SPA will then do a logout redirect with this URL
 #
 JSON=$(tail -n 1 $RESPONSE_FILE)
-END_SESSION_REQUEST_URL=$(jq -r .endSessionRequestUri <<< "$JSON")
+END_SESSION_REQUEST_URL=$(jq -r .url <<< "$JSON")

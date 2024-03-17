@@ -37,7 +37,7 @@ export class OAuthProxy {
         // For data changing commands, enforce CSRF checks
         const method = event.httpMethod.toLowerCase();
         if (method === 'post' || method === 'put' || method === 'patch' || method === 'delete') {
-            this._cookieProcessor.enforceAntiForgeryChecks(event);
+            this._cookieProcessor.enforceCsrfTokenChecks(event);
         }
 
         // Decrypt the access token cookie

@@ -19,9 +19,9 @@ export class ErrorCodes {
 
     public static readonly cookieDecryptionError = 'cookie_decryption_error';
 
-    public static readonly missingAntiForgeryTokenError = 'missing_csrf_token';
+    public static readonly missingCsrfTokenError = 'missing_csrf_token';
 
-    public static readonly mismatchedAntiForgeryTokenError = 'mismatched_csrf_token';
+    public static readonly mismatchedCsrfTokenError = 'mismatched_csrf_token';
 
     public static readonly invalidOAuthResponse = 'invalid_oauth_response';
 

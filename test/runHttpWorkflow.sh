@@ -77,8 +77,8 @@ else
 
   # Use the deployed endpoints that the deployed SPA uses
   WEB_BASE_URL='https://www.authsamples.com'
-  OAUTH_AGENT_BASE_URL='https://api.authsamples.com/tokenhandler/oauth-agent'
-  API_BASE_URL='https://api.authsamples.com/tokenhandler/investments'
+  OAUTH_AGENT_BASE_URL='https://api.authsamples.com/oauth-agent'
+  API_BASE_URL='https://api.authsamples.com/investments'
 fi
 
 #

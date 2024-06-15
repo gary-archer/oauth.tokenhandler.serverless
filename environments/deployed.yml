@@ -3,6 +3,6 @@
 #
 settings:
   stage: 'deployed'
-  domainName: 'api.authsamples.com'
+  domainName: 'bff.authsamples.com'
   certificateDomainName: 'authsamples.com'
   

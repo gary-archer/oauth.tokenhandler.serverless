@@ -32,11 +32,11 @@
     },
     "routes": [
         {
-            "path": "/tokenhandler/oauth-agent",
+            "path": "/oauth-agent",
             "plugins": ["cors", "oauthAgent"]
         },
         {
-            "path": "/tokenhandler/investments",
+            "path": "/investments",
             "target": "https://api.authsamples.com/investments",
             "plugins": ["cors", "oauthProxy"]
         }

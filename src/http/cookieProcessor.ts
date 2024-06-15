@@ -233,17 +233,17 @@ export class CookieProcessor {
         if (type === STATE_COOKIE) {
 
             // The state cookie is restricted to login paths
-            return '/tokenhandler/oauth-agent/login';
+            return '/oauth-agent/login';
 
         } else if (type === REFRESH_COOKIE) {
 
             // The refresh cookie is restricted to the refresh path
-            return '/tokenhandler/oauth-agent/refresh';
+            return '/oauth-agent/refresh';
 
         } else if (type === ID_COOKIE) {
 
             // The ID cookie is restricted to the claims path
-            return '/tokenhandler/oauth-agent/claims';
+            return '/oauth-agent/claims';
 
         } else {
 

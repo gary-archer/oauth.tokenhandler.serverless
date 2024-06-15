@@ -133,7 +133,7 @@ fi
 #
 jo \
 httpMethod='OPTIONS' \
-path='\/tokenhandler/investments/companies' \
+path='\/investments/companies' \
 headers=$(jo origin='https://badsite.com') \
 | jq > $REQUEST_FILE
 
@@ -160,7 +160,7 @@ fi
 #
 jo \
 httpMethod='OPTIONS' \
-path='\/tokenhandler/investments/companies' \
+path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 access-control-request-headers='x-mycompany-api-client,x-mycompany-session-id') \
 | jq > $REQUEST_FILE
@@ -198,7 +198,7 @@ fi
 #
 jo \
 httpMethod='GET' \
-path='\/tokenhandler/badpath' \
+path='\/badpath' \
 | jq > $REQUEST_FILE
 
 echo '4. GET request with an invalid route ...'
@@ -220,7 +220,7 @@ fi
 # Act as the SPA by calling the OAuth Agent to start a login and get the request URI
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/login/start' \
+path='\/oauth-agent/login/start' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept=application/json \
@@ -286,7 +286,7 @@ AUTHORIZATION_RESPONSE_URL=$(getCognitoHeaderValue 'location')
 # Next we end the login by asking the server to do an authorization code grant
 #
 jo \
-path='\/tokenhandler/oauth-agent/login/end' \
+path='\/oauth-agent/login/end' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -326,7 +326,7 @@ CSRF_TOKEN=$(jq -r .csrf <<< "$BODY")
 #
 jo \
 httpMethod='GET' \
-path='\/tokenhandler/investments/companies' \
+path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID") \
@@ -353,7 +353,7 @@ fi
 #
 jo \
 httpMethod='GET' \
-path='\/tokenhandler/investments/companies' \
+path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-test-exception='SampleApi' \
@@ -380,7 +380,7 @@ fi
 # Get user info with the access token
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/userinfo' \
+path='\/oauth-agent/userinfo' \
 httpMethod='GET' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -414,7 +414,7 @@ fi
 # Get ID token claims with the access token
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/claims' \
+path='\/oauth-agent/claims' \
 httpMethod='GET' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -448,7 +448,7 @@ fi
 # Next simulate expiring the access token in the secure cookie
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/access/expire' \
+path='\/oauth-agent/access/expire' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -487,7 +487,7 @@ ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_H
 #
 jo \
 httpMethod='GET' \
-path='\/tokenhandler/investments/companies' \
+path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
 x-mycompany-api-client='lambdaTest' \
 x-mycompany-session-id="$SESSION_ID") \
@@ -513,7 +513,7 @@ fi
 # Verify that an expired user info call returns a 401
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/userinfo' \
+path='\/oauth-agent/userinfo' \
 httpMethod='GET' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -547,7 +547,7 @@ fi
 # Next try to refresh the access token
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/refresh' \
+path='\/oauth-agent/refresh' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -585,7 +585,7 @@ REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_
 # Next expire both the access token and refresh token in the secure cookies, for test purposes
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/refresh/expire' \
+path='\/oauth-agent/refresh/expire' \
 httpMethod=POST \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -624,7 +624,7 @@ REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_
 # Next try to refresh the token and we should get a session_expired error
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/refresh' \
+path='\/oauth-agent/refresh' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -660,7 +660,7 @@ fi
 # Next make a logout request
 #
 jo -p \
-path='\/tokenhandler/oauth-agent/logout' \
+path='\/oauth-agent/logout' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \

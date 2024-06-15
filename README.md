@@ -16,7 +16,7 @@ Single page application security components, referenced in my blog at https://au
 The components are deployed in these main scenarios:
 
 - To secure local SPA development, via deployed endpoints hosted at https://bff.authsamples-dev.com
-- To secure the AWS Cloudfront deployed SPA, via deployed endpoints hosted at https://api.authsamples.com
+- To secure the AWS Cloudfront deployed SPA, via deployed endpoints hosted at https://bff.authsamples.com
 
 ## Custom Implementation
 

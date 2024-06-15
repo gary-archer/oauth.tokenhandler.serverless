@@ -3,5 +3,5 @@
 #
 settings:
   stage: 'dev'
-  domainName: 'api.authsamples-dev.com'
+  domainName: 'bff.authsamples-dev.com'
   certificateDomainName: 'authsamples-dev.com'

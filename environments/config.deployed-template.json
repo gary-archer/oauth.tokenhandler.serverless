@@ -8,7 +8,7 @@
         "prettyPrint": false
     },
     "cors": {
-        "trustedWebOrigin": "https://web.authsamples.com"
+        "trustedWebOrigin": "https://www.authsamples.com"
     },
     "cookie": {
         "prefix": "mycompany",
@@ -25,8 +25,8 @@
         "client": {
             "clientId": "4g2i321jh9dcqbj0lpnsk6413p",
             "clientSecret": "1jhst3gm7aci5m5g0kb5vfcn0n28n82g2t1fc7d8sfqmgm87capf",
-            "redirectUri": "https://web.authsamples.com/spa/",
-            "postLogoutRedirectUri": "https://web.authsamples.com/spa/loggedout",
+            "redirectUri": "https://www.authsamples.com/spa/",
+            "postLogoutRedirectUri": "https://www.authsamples.com/spa/loggedout",
             "scope": "openid profile https://api.authsamples.com/investments"
         }
     },

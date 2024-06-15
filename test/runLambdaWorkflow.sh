@@ -4,7 +4,7 @@
 # A script to test lambda logic running locally on a development computer
 #########################################################################
 
-WEB_BASE_URL='https://web.authsamples-dev.com'
+WEB_BASE_URL='https://www.authsamples-dev.com'
 LOGIN_BASE_URL='https://login.authsamples.com'
 COOKIE_PREFIX=mycompany
 TEST_USERNAME='guestuser@mycompany.com'

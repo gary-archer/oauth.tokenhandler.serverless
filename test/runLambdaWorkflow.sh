@@ -6,8 +6,8 @@
 
 WEB_BASE_URL='https://www.authsamples-dev.com'
 LOGIN_BASE_URL='https://login.authsamples.com'
-COOKIE_PREFIX=mycompany
-TEST_USERNAME='guestuser@mycompany.com'
+COOKIE_PREFIX=authsamples
+TEST_USERNAME='guestuser@example.com'
 TEST_PASSWORD=GuestPassword1
 REQUEST_FILE='test/request.txt'
 RESPONSE_FILE='test/response.txt'
@@ -162,7 +162,7 @@ jo \
 httpMethod='OPTIONS' \
 path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
-access-control-request-headers='x-mycompany-api-client,x-mycompany-session-id') \
+access-control-request-headers='x-authsamples-api-client,x-authsamples-session-id') \
 | jq > $REQUEST_FILE
 
 echo '3. OPTIONS request for a trusted origin ...'
@@ -188,7 +188,7 @@ if [ "$ALLOW_CREDENTIALS" != 'true' ]; then
   exit
 fi
 ALLOWED_HEADERS=$(jq -r '.headers."access-control-allow-headers"' <<< "$JSON")
-if [ "$ALLOWED_HEADERS" != 'x-mycompany-api-client,x-mycompany-session-id' ]; then
+if [ "$ALLOWED_HEADERS" != 'x-authsamples-api-client,x-authsamples-session-id' ]; then
   echo '*** OPTIONS request for a trusted origin returned an unexpected allow-headers header'
   exit
 fi
@@ -224,8 +224,8 @@ path='\/oauth-agent/login/start' \
 httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept=application/json \
-x-mycompany-api-client=lambdaTest \
-x-mycompany-session-id=$SESSION_ID) \
+x-authsamples-api-client=lambdaTest \
+x-authsamples-session-id=$SESSION_ID) \
 > $REQUEST_FILE
 
 echo '5. Creating login URL ...'
@@ -291,8 +291,8 @@ httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
 content-type='application/json' \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID") \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID") \
 multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-state=$STATE_COOKIE")) \
 body="{\\\""pageUrl\\\"":\\\""$AUTHORIZATION_RESPONSE_URL\\\""}" \
 | sed 's/\\\\\\/\\/g' \
@@ -328,8 +328,8 @@ jo \
 httpMethod='GET' \
 path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID") \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID") \
 multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-at=$ACCESS_COOKIE")) \
 | jq > $REQUEST_FILE
 
@@ -355,9 +355,9 @@ jo \
 httpMethod='GET' \
 path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-test-exception='SampleApi' \
-x-mycompany-session-id="$SESSION_ID") \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-test-exception='SampleApi' \
+x-authsamples-session-id="$SESSION_ID") \
 multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-at=$ACCESS_COOKIE")) \
 | jq > $REQUEST_FILE
 
@@ -385,8 +385,8 @@ httpMethod='GET' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
 content-type='application/json' \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID" \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -419,8 +419,8 @@ httpMethod='GET' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
 content-type='application/json' \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID" \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -453,8 +453,8 @@ httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
 content-type='application/json' \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID" \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -489,8 +489,8 @@ jo \
 httpMethod='GET' \
 path='\/investments/companies' \
 headers=$(jo origin="$WEB_BASE_URL" \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID") \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID") \
 multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-at=$ACCESS_COOKIE")) \
 | jq > $REQUEST_FILE
 
@@ -518,8 +518,8 @@ httpMethod='GET' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
 content-type='application/json' \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID" \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -552,8 +552,8 @@ httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
 content-type='application/json' \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID" \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -590,8 +590,8 @@ httpMethod=POST \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
 content-type='application/json' \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID" \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -629,8 +629,8 @@ httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
 content-type='application/json' \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID" \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
@@ -665,8 +665,8 @@ httpMethod='POST' \
 headers=$(jo origin="$WEB_BASE_URL" \
 accept='application/json' \
 content-type='application/json' \
-x-mycompany-api-client='lambdaTest' \
-x-mycompany-session-id="$SESSION_ID" \
+x-authsamples-api-client='lambdaTest' \
+x-authsamples-session-id="$SESSION_ID" \
 "x-$COOKIE_PREFIX-csrf=$CSRF_TOKEN") \
 multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \

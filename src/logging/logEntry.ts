@@ -27,15 +27,15 @@ export class LogEntry {
         this._data.path = PathProcessor.getFullPath(event);
         this._data.method = event.httpMethod;
 
-        const clientApplicationName = HeaderProcessor.readHeader(event, 'x-mycompany-api-client');
+        const clientApplicationName = HeaderProcessor.readHeader(event, 'x-authsamples-api-client');
         if (clientApplicationName) {
             this._data.clientApplicationName = clientApplicationName;
         }
 
-        const correlationId = HeaderProcessor.readHeader(event, 'x-mycompany-correlation-id');
+        const correlationId = HeaderProcessor.readHeader(event, 'x-authsamples-correlation-id');
         this._data.correlationId = correlationId ? correlationId : Guid.create().toString();
 
-        const sessionId = HeaderProcessor.readHeader(event, 'x-mycompany-session-id');
+        const sessionId = HeaderProcessor.readHeader(event, 'x-authsamples-session-id');
         if (sessionId) {
             this._data.sessionId = sessionId;
         }

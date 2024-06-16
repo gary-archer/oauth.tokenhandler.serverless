@@ -6,8 +6,8 @@
 
 
 LOGIN_BASE_URL='https://login.authsamples.com'
-COOKIE_PREFIX=mycompany
-TEST_USERNAME='guestuser@mycompany.com'
+COOKIE_PREFIX=authsamples
+TEST_USERNAME='guestuser@example.com'
 TEST_PASSWORD=GuestPassword1
 RESPONSE_FILE='test/response.txt'
 LOGIN_COOKIES_FILE='test/login_cookies.txt'
@@ -142,7 +142,7 @@ fi
 echo '3. OPTIONS request for a trusted origin ...'
 HTTP_STATUS=$(curl -i -s -X OPTIONS "$OAUTH_AGENT_BASE_URL/login/start" \
 -H "origin: $WEB_BASE_URL" \
--H "access-control-request-headers: x-mycompany-api-client,x-mycompany-session-id" \
+-H "access-control-request-headers: x-authsamples-api-client,x-authsamples-session-id" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '204'  ]; then
   echo "*** Problem encountered requesting cross origin access, status: $HTTP_STATUS"
@@ -159,7 +159,7 @@ if [ "$ALLOW_CREDENTIALS" != 'true' ]; then
   exit
 fi
 ALLOWED_HEADERS=$(getHeaderValue 'access-control-allow-headers')
-if [ "$ALLOWED_HEADERS" != 'x-mycompany-api-client,x-mycompany-session-id' ]; then
+if [ "$ALLOWED_HEADERS" != 'x-authsamples-api-client,x-authsamples-session-id' ]; then
   echo '*** OPTIONS request for a trusted origin returned an unexpected allow-headers header'
   exit
 fi
@@ -183,8 +183,8 @@ echo '5. Creating login URL ...'
 HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/login/start" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -c "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
@@ -237,8 +237,8 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/login/end" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
 -d '{"pageUrl":"'$AUTHORIZATION_RESPONSE_URL'"}' \
@@ -265,8 +265,8 @@ fi
 echo '9. GET request with a valid access cookie returns JSON data ...'
 HTTP_STATUS=$(curl -i -s -X GET "$API_BASE_URL/companies" \
 -H "origin: $WEB_BASE_URL" \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
@@ -281,9 +281,9 @@ fi
 echo '10. Failed GET request returns correct rehearsed 500 error response ...'
 HTTP_STATUS=$(curl -i -s -X GET "$API_BASE_URL/companies" \
 -H "origin: $WEB_BASE_URL" \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
--H 'x-mycompany-test-exception: SampleApi' \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
+-H 'x-authsamples-test-exception: SampleApi' \
 -b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '500' ]; then
@@ -298,8 +298,8 @@ fi
 echo '11. GET request for user info with a valid access cookie returns JSON data ...'
 HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/userinfo" \
 -H "origin: $WEB_BASE_URL" \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
@@ -314,8 +314,8 @@ fi
 echo '12. Get ID token claims with a valid ID cookie returns JSON data ...'
 HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/claims" \
 -H "origin: $WEB_BASE_URL" \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
@@ -332,8 +332,8 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/access/expire" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
@@ -350,8 +350,8 @@ fi
 echo '14. GET request with an expired access cookie returns 401 ...'
 HTTP_STATUS=$(curl -i -s -X GET "$API_BASE_URL/companies" \
 -H "origin: $WEB_BASE_URL" \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '401' ]; then
@@ -366,8 +366,8 @@ fi
 echo '15. GET request for user info with an expired access cookie returns 401 ...'
 HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/userinfo" \
 -H "origin: $WEB_BASE_URL" \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '401' ]; then
@@ -383,8 +383,8 @@ echo '16. Calling refresh to get a new access token ...'
 HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/refresh" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
@@ -403,8 +403,8 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/refresh/expire" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
@@ -422,8 +422,8 @@ echo '18. Trying to refresh the access token when the session is expired ...'
 HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/refresh" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
@@ -440,8 +440,8 @@ echo '19. Creating login URL ...'
 HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/login/start" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -c "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
@@ -494,8 +494,8 @@ HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/login/end" \
 -H "origin: $WEB_BASE_URL" \
 -H 'content-type: application/json' \
 -H 'accept: application/json' \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \
 -d '{"pageUrl":"'$AUTHORIZATION_RESPONSE_URL'"}' \
@@ -523,8 +523,8 @@ echo '23. Calling logout to clear cookies and get the end session request URL ..
 HTTP_STATUS=$(curl -i -s -X POST "$OAUTH_AGENT_BASE_URL/logout" \
 -H "origin: $WEB_BASE_URL" \
 -H 'accept: application/json' \
--H 'x-mycompany-api-client: httpTest' \
--H "x-mycompany-session-id: $SESSION_ID" \
+-H 'x-authsamples-api-client: httpTest' \
+-H "x-authsamples-session-id: $SESSION_ID" \
 -H "x-$COOKIE_PREFIX-csrf: $CSRF_TOKEN" \
 -b "$MAIN_COOKIES_FILE" \
 -c "$MAIN_COOKIES_FILE" \

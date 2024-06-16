@@ -11,7 +11,7 @@
         "trustedWebOrigin": "https://www.authsamples-dev.com"
     },
     "cookie": {
-        "prefix": "mycompany",
+        "prefix": "authsamples",
         "encryptionKey": "$COOKIE_ENCRYPTION_KEY"
     },
     "oauthAgent": {

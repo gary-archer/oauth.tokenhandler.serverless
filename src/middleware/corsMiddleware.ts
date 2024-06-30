@@ -37,12 +37,12 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
 
         // Only add headers for trusted origins
         const origin = this._readHeader('origin', request.event);
-        if (this._isTrustedOrigin(request.event, origin) && request.response) {
+        if (origin && this._isTrustedOrigin(request.event, origin) && request.response) {
 
-            const headers = request.response!.headers || {};
+            const headers = request.response?.headers || {};
 
             // Always return these two CORS response headers
-            headers['access-control-allow-origin'] = origin!;
+            headers['access-control-allow-origin'] = origin;
             headers['access-control-allow-credentials'] = 'true';
             headers['vary'] = 'origin';
 
@@ -62,7 +62,7 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
             }
 
             // Set the final headers to return
-            request.response!.headers = headers;
+            request.response.headers = headers;
         }
     }
 

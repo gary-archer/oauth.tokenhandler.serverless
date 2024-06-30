@@ -5,6 +5,7 @@ import {Configuration} from '../configuration/configuration.js';
 /*
  * A primitive container used during the request lifecycle
  */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 export class Container {
 
     private _configuration: Configuration | null;

@@ -203,7 +203,7 @@ export class OAuthAgent {
                     this._cookieProcessor.writeRefreshCookie(refreshToken),
                     this._cookieProcessor.writeAccessCookie(accessToken),
                     this._cookieProcessor.writeIdCookie(idToken),
-                    this._cookieProcessor.writeCsrfTokenCookie(body.csrf!)
+                    this._cookieProcessor.writeCsrfTokenCookie(body.csrf || '')
                 ]
             };
             return response;

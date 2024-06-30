@@ -211,7 +211,7 @@ export class AuthorizationServerClient {
 
                     // Throw an error with Authorization Server details
                     const [statusCode, errorCode] = OAuthErrorStatus.processTokenResponseError(
-                        formData.get('grant_type')!,
+                        formData.get('grant_type') || '',
                         e.response.status,
                         errorData.error);
 

@@ -112,7 +112,7 @@ export class OAuthProxy {
             }
 
             // Otherwise rethrow the exception, eg for a connectivity error
-            throw ErrorUtils.fromApiHttpRequestError(e, options.url!);
+            throw ErrorUtils.fromApiHttpRequestError(e, options.url || '');
         }
     }
 }

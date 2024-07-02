@@ -78,10 +78,10 @@ export class CookieProcessor {
     /*
      * Write the access token cookie
      */
-    public writeAccessCookie(refreshToken: string): string {
+    public writeAccessCookie(accessToken: string): string {
 
         const name = this._getCookieName(ACCESS_COOKIE);
-        const value = this._encrypter.encryptCookie(refreshToken);
+        const value = this._encrypter.encryptCookie(accessToken);
         return cookie.serialize(name, value, this._getCookieOptions(ACCESS_COOKIE));
     }
 
@@ -102,10 +102,10 @@ export class CookieProcessor {
     /*
      * Write the ID token cookie
      */
-    public writeIdCookie(refreshToken: string): string {
+    public writeIdCookie(idToken: string): string {
 
         const name = this._getCookieName(ID_COOKIE);
-        const value = this._encrypter.encryptCookie(refreshToken);
+        const value = this._encrypter.encryptCookie(idToken);
         return cookie.serialize(name, value, this._getCookieOptions(ID_COOKIE));
     }
 

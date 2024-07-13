@@ -1,7 +1,7 @@
-import base64url from 'base64url';
 import crypto from 'crypto';
 import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
 import {ErrorUtils} from '../errors/errorUtils.js';
+import {Base64Url} from './base64url.js';
 
 const VERSION_SIZE = 1;
 const GCM_IV_SIZE = 12;
@@ -37,7 +37,7 @@ export class CookieEncrypter {
         const tagBytes = cipher.getAuthTag();
 
         const allBytes = Buffer.concat([versionBytes, ivBytes, ciphertextBytes, tagBytes]);
-        return base64url.encode(allBytes);
+        return Base64Url.encode(allBytes);
     }
 
     /*
@@ -45,7 +45,7 @@ export class CookieEncrypter {
      */
     public decryptCookie(cookieName: string, ciphertext: string): string {
 
-        const allBytes = base64url.toBuffer(ciphertext);
+        const allBytes = Base64Url.decode(ciphertext);
 
         const minSize = VERSION_SIZE + GCM_IV_SIZE + 1 + GCM_TAG_SIZE;
         if (allBytes.length < minSize) {

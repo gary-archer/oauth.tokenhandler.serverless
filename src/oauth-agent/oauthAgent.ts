@@ -1,5 +1,4 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import base64url from 'base64url';
 import crypto from 'crypto';
 import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
 import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration.js';
@@ -8,6 +7,7 @@ import {CookieProcessor} from '../http/cookieProcessor.js';
 import {FormProcessor} from '../http/formProcessor.js';
 import {HeaderProcessor} from '../http/headerProcessor.js';
 import {ResponseWriter} from '../http/responseWriter.js';
+import {Base64Url} from '../utilities/base64url.js';
 import {Container} from '../utilities/container.js';
 import {HttpProxy} from '../utilities/httpProxy.js';
 import {AuthorizationServerClient} from './authorizationServerClient.js';
@@ -413,7 +413,7 @@ export class OAuthAgent {
         const parts = idToken.split('.');
         if (parts.length === 3) {
 
-            const payload = base64url.decode(parts[1]);
+            const payload = Base64Url.decodeToString(parts[1]);
             if (payload) {
                 const claims = JSON.parse(payload);
                 if (claims.sub) {

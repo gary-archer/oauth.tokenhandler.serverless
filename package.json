@@ -24,7 +24,6 @@
   "dependencies": {
     "@middy/core": "^5.4.2",
     "axios": "^1.7.2",
-    "base64url": "^3.0.1",
     "cookie": "^0.6.0",
     "fs-extra": "^11.2.0",
     "guid-typescript": "^1.0.9"

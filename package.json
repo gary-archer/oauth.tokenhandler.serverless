@@ -37,9 +37,17 @@
     "@types/node": "^20.11.30",
     "eslint": "^8.57.0",
     "https-proxy-agent": "^7.0.2",
-    "serverless": "^3.39.0",
+    "serverless": "^4.1.15",
     "serverless-domain-manager": "7.3.8",
     "typescript": "^5.5.2",
     "typescript-eslint": "^7.14.1"
+  },
+  "overrides": {
+    "eslint": {
+      "file-entry-cache": "8.x"
+    },
+    "serverless-domain-manager": {
+      "serverless": "^4.1.15"
+    }
   }
 }

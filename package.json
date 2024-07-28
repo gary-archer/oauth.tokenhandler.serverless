@@ -9,6 +9,7 @@
     "node": ">=20"
   },
   "scripts": {
+    "login": "sls login",
     "lint": "npx eslint . --ignore-pattern dist",
     "build": "rm -rf dist && tsc",
     "buildRelease": "rimraf dist && tsc --sourceMap false",

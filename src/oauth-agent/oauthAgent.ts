@@ -1,0 +1,350 @@
+import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
+import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration.js';
+import {ErrorUtils} from '../errors/errorUtils.js';
+import {CookieProcessor} from '../http/cookieProcessor.js';
+import {FormProcessor} from '../http/formProcessor.js';
+import {ResponseWriter} from '../http/responseWriter.js';
+import {Container} from '../utilities/container.js';
+import {HttpProxy} from '../utilities/httpProxy.js';
+import {AuthorizationServerClient} from './authorizationServerClient.js';
+import {EndLoginResponse} from './endLoginResponse.js';
+
+/*
+ * The entry point for OAuth Agent handling
+ */
+export class OAuthAgent {
+
+    private readonly _container: Container;
+    private readonly _configuration: OAuthAgentConfiguration;
+    private readonly _httpProxy: HttpProxy;
+    private readonly _cookieProcessor: CookieProcessor;
+    private readonly _authorizationServerClient: AuthorizationServerClient;
+
+    public constructor(
+        container: Container,
+        agentConfiguration: OAuthAgentConfiguration,
+        cookieConfiguration: CookieConfiguration,
+        httpProxy: HttpProxy) {
+
+        this._container = container;
+        this._configuration = agentConfiguration;
+        this._httpProxy = httpProxy;
+
+        this._authorizationServerClient = new AuthorizationServerClient(this._configuration, this._httpProxy);
+        this._cookieProcessor = new CookieProcessor(cookieConfiguration);
+    }
+
+    /*
+     * The entry point for processing of OAuth requests on behalf of the SPA
+     */
+    public async handleRequest(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        const method = event.httpMethod.toLowerCase();
+        const path = event.path.toLowerCase();
+
+        if (method === 'post' && path.endsWith('/oauth-agent/login/start')) {
+
+            return this.startLogin(event);
+
+        } else if (method === 'post' && path.endsWith('/oauth-agent/login/end')) {
+
+            return this.endLogin(event);
+
+        } else if (method === 'post' && path.endsWith('/oauth-agent/refresh')) {
+
+            return this.refresh(event);
+
+        } else if (method === 'get' && path.endsWith('/oauth-agent/userinfo')) {
+
+            return this.userInfo(event);
+
+        } else if (method === 'get' && path.endsWith('/oauth-agent/claims')) {
+
+            return this.claims(event);
+
+        } else if (method === 'post' && path.endsWith('/oauth-agent/access/expire')) {
+
+            return this.expireAccess(event);
+
+        } else if (method === 'post' && path.endsWith('/oauth-agent/refresh/expire')) {
+
+            return this.expireRefresh(event);
+
+        } else if (method === 'post' && path.endsWith('/oauth-agent/logout')) {
+
+            return this.logout(event);
+
+        } else {
+
+            // Each route should either do OAuth or API work
+            throw ErrorUtils.fromInvalidRouteError();
+        }
+    }
+
+    /*
+     * Calculate the authorization redirect URL and write a state cookie
+     */
+    /* eslint-disable @typescript-eslint/no-unused-vars */
+    public async startLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('startLogin');
+
+        // First create a random login state
+        const loginState = this._authorizationServerClient.generateLoginState();
+
+        // Get the full authorization URL as response data
+        const body = {} as any;
+        body.authorizationRequestUrl = this._authorizationServerClient.getAuthorizationRequestUrl(loginState);
+
+        // Create a temporary state cookie
+        const cookiePayload = {
+            state: loginState.state,
+            codeVerifier: loginState.codeVerifier,
+        };
+        const cookie = this._cookieProcessor.writeStateCookie(cookiePayload);
+
+        // Return data in the AWS format
+        const response = ResponseWriter.objectResponse(200, body);
+        response.multiValueHeaders = {
+            'set-cookie': [cookie]
+        };
+        return response;
+    }
+
+    /*
+     * The SPA sends us the full URL when the page loads, and it may contain an authorization result
+     * Complete login if required, by swapping the authorization code for tokens and storing tokens in secure cookies
+     */
+    public async endLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('endLogin');
+
+        // Process the URL posted by the SPA
+        const urlString = FormProcessor.readJsonField(event, 'pageUrl');
+        if (!urlString) {
+            throw ErrorUtils.fromMissingJsonFieldError('pageUrl');
+        }
+
+        const url = new URL(urlString);
+        if (!url) {
+            const error = ErrorUtils.fromMissingJsonFieldError('pageUrl');
+            error.setLogContext(url);
+            throw error;
+        }
+
+        const args = new URLSearchParams(url.search);
+        const code = args.get('code') || '';
+        const state = args.get('state') || '';
+        const error = args.get('error') || '';
+        const errorDescription = args.get('error_description') || '';
+
+        if (state && error) {
+
+            // Report Authorization Server front channel errors back to the SPA
+            throw ErrorUtils.fromLoginResponseError(400, error, errorDescription);
+
+        } else if (!(state && code)) {
+
+            // Handle normal page loads, such as loading a new browser tab
+            const body = {
+                handled: false,
+                isLoggedIn: false,
+            } as EndLoginResponse;
+
+            return ResponseWriter.objectResponse(200, body);
+
+        } else {
+
+            // Start processing a login response by checking the state matches that in the cookie
+            const stateCookie = this._cookieProcessor.readStateCookie(event);
+            if (!stateCookie) {
+                throw ErrorUtils.fromMissingCookieError('state');
+            }
+
+            if (state !== stateCookie.state) {
+                throw ErrorUtils.fromInvalidStateError();
+            }
+
+            // Send the authorization code grant message to the authorization server
+            const authCodeGrantData = await this._authorizationServerClient.sendAuthorizationCodeGrant(
+                code,
+                stateCookie.codeVerifier);
+
+            // Get tokens and include the OAuth User ID in API logs
+            const refreshToken = authCodeGrantData.refresh_token;
+            const accessToken = authCodeGrantData.access_token;
+            const idToken = authCodeGrantData.id_token;
+
+            // Inform the SPA that that a login response was handled
+            const body = {
+                handled: true,
+                isLoggedIn: true,
+            } as EndLoginResponse;
+
+            // Write the response and attach secure cookies
+            const response = ResponseWriter.objectResponse(200, body);
+            response.multiValueHeaders = {
+                'set-cookie': [
+                    this._cookieProcessor.expireStateCookie(),
+                    this._cookieProcessor.writeRefreshCookie(refreshToken),
+                    this._cookieProcessor.writeAccessCookie(accessToken),
+                    this._cookieProcessor.writeIdCookie(idToken),
+                ]
+            };
+            return response;
+        }
+    }
+
+    /*
+     * Write a new access token into the access token cookie
+     */
+    public async refresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('refresh');
+
+        // Get the refresh token from the cookie
+        const refreshToken = this._cookieProcessor.readRefreshCookie(event);
+        if (!refreshToken) {
+            throw ErrorUtils.fromMissingCookieError('rt');
+        }
+
+        // Send the request for a new access token to the authorization server
+        const refreshTokenGrantData =
+            await this._authorizationServerClient.sendRefreshTokenGrant(refreshToken);
+
+        const newRefreshToken = refreshTokenGrantData.refresh_token;
+        const newIdToken = refreshTokenGrantData.id_token;
+
+        const cookies = [
+            this._cookieProcessor.writeAccessCookie(refreshTokenGrantData.access_token),
+            this._cookieProcessor.writeRefreshCookie(newRefreshToken ?? refreshToken),
+        ];
+
+        if (newIdToken) {
+            cookies.push(this._cookieProcessor.writeIdCookie(newIdToken));
+        }
+
+        // Return an empty response to the browser, with attached cookies
+        const response = ResponseWriter.objectResponse(204, null);
+        response.multiValueHeaders = {
+            'set-cookie': cookies,
+        };
+        return response;
+    }
+
+    /*
+     * Look up and return OAuth user info to the SPA
+     */
+    public async userInfo(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('userInfo');
+
+        // Get the access token from the cookie
+        const accessToken = this._cookieProcessor.readAccessCookie(event);
+        if (!accessToken) {
+            throw ErrorUtils.fromMissingCookieError('at');
+        }
+
+        // Get and return the user info
+        const userInfo = await this._authorizationServerClient.getUserInfo(accessToken);
+        return ResponseWriter.objectResponse(200, userInfo);
+    }
+
+    /*
+     * Return claims from the ID token to the SPA
+     */
+    public async claims(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('claims');
+
+        // Get the ID token from the cookie
+        const idTokenPayload = this._cookieProcessor.readIdCookie(event);
+        if (!idTokenPayload) {
+            throw ErrorUtils.fromMissingCookieError('id');
+        }
+
+        // Read the payload
+        const payload = Buffer.from(idTokenPayload, 'base64').toString();
+        return ResponseWriter.objectResponse(200, JSON.parse(payload));
+    }
+
+    /*
+     * Make the access token inside secure cookies act expired, for testing purposes
+     */
+    public async expireAccess(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('expireAccessToken');
+
+        // Get the current access token
+        const accessToken = this._cookieProcessor.readAccessCookie(event);
+        if (!accessToken) {
+            throw ErrorUtils.fromMissingCookieError('at');
+        }
+
+        // Make the access cookie act expired to cause an API 401
+        const cookies = [
+            this._cookieProcessor.writeAccessCookie(`${accessToken}x`),
+        ];
+
+        // Return the response with the expired header
+        const response = ResponseWriter.objectResponse(204, null);
+        response.multiValueHeaders = {
+            'set-cookie': cookies
+        };
+        return response;
+    }
+
+    /*
+     * Make the refresh token inside secure cookies act expired, for testing purposes
+     */
+    public async expireRefresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('expireRefreshToken');
+
+        // Get the current access token
+        const accessToken = this._cookieProcessor.readAccessCookie(event);
+        if (!accessToken) {
+            throw ErrorUtils.fromMissingCookieError('at');
+        }
+
+        // Get the current refresh token
+        const refreshToken = this._cookieProcessor.readRefreshCookie(event);
+        if (!refreshToken) {
+            throw ErrorUtils.fromMissingCookieError('rt');
+        }
+
+        // Always make the access cookie act expired to cause an API 401
+        const cookies = [
+            this._cookieProcessor.writeAccessCookie(`${accessToken}x`),
+            this._cookieProcessor.writeRefreshCookie(`${refreshToken}x`),
+        ];
+
+        // Return the response with the expired header
+        const response = ResponseWriter.objectResponse(204, null);
+        response.multiValueHeaders = {
+            'set-cookie': cookies
+        };
+        return response;
+    }
+
+    /*
+     * Return the logout URL and clear cookies
+     */
+    public async logout(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        this._container.getLogEntry().setOperationName('logout');
+
+        // Write the full end session URL to the response body
+        const body = {
+            url: this._authorizationServerClient.getEndSessionRequestUrl(),
+        };
+
+        // Clear all cookies in the browser
+        const response = ResponseWriter.objectResponse(200, body);
+        response.multiValueHeaders = {
+            'set-cookie': this._cookieProcessor.expireAllCookies()
+        };
+        return response;
+    }
+}

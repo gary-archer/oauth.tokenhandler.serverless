@@ -1,0 +1,44 @@
+{
+    "host": {
+        "useProxy": false,
+        "proxyUrl": ""
+    },
+    "logging": {
+        "apiName": "TokenHandler",
+        "prettyPrint": false
+    },
+    "cors": {
+        "trustedWebOrigin": "https://www.authsamples.com"
+    },
+    "cookie": {
+        "prefix": "authsamples",
+        "encryptionKey": "$COOKIE_ENCRYPTION_KEY"
+    },
+    "oauthAgent": {
+        "api": {
+            "authorizeEndpoint": "https://login.authsamples.com/oauth2/authorize",
+            "tokenEndpoint": "https://login.authsamples.com/oauth2/token",
+            "userInfoEndpoint": "https://login.authsamples.com/oauth2/userInfo",
+            "endSessionEndpoint": "https://login.authsamples.com/logout",
+            "provider": "cognito"
+        },
+        "client": {
+            "clientId": "4g2i321jh9dcqbj0lpnsk6413p",
+            "clientSecret": "1jhst3gm7aci5m5g0kb5vfcn0n28n82g2t1fc7d8sfqmgm87capf",
+            "redirectUri": "https://www.authsamples.com/spa/",
+            "postLogoutRedirectUri": "https://www.authsamples.com/spa/loggedout",
+            "scope": "openid profile https://api.authsamples.com/investments"
+        }
+    },
+    "routes": [
+        {
+            "path": "/oauth-agent",
+            "plugins": ["cors", "oauthAgent"]
+        },
+        {
+            "path": "/investments",
+            "target": "https://api.authsamples.com/investments",
+            "plugins": ["cors", "oauthProxy"]
+        }
+    ]
+}

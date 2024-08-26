@@ -1,0 +1,214 @@
+import {APIGatewayProxyEvent} from 'aws-lambda';
+import cookie, {CookieSerializeOptions} from 'cookie';
+import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
+import {CookieEncrypter} from '../utilities/cookieEncrypter.js';
+import {HeaderProcessor} from './headerProcessor.js';
+import { ErrorUtils } from '../errors/errorUtils.js';
+
+const STATE_COOKIE   = 'state';
+const ACCESS_COOKIE  = 'at';
+const REFRESH_COOKIE = 'rt';
+const ID_COOKIE      = 'id';
+
+/*
+ * A class to deal with cookie concerns
+ */
+export class CookieProcessor {
+
+    private readonly _configuration: CookieConfiguration;
+    private readonly _encrypter: CookieEncrypter;
+
+    public constructor(configuration: CookieConfiguration) {
+
+        this._configuration = configuration;
+        this._encrypter = new CookieEncrypter(configuration);
+    }
+
+    /*
+     * Write the state cookie object when a login starts
+     */
+    public writeStateCookie(data: any): string {
+
+        const name = this._getCookieName(STATE_COOKIE);
+        const value = this._encrypter.encryptCookie(JSON.stringify(data));
+        return cookie.serialize(name, value, this._getCookieOptions(STATE_COOKIE));
+    }
+
+    /*
+     * Read the state cookie object when a login ends
+     */
+    public readStateCookie(event: APIGatewayProxyEvent): any {
+
+        const name = this._getCookieName(STATE_COOKIE);
+        const ciphertext = HeaderProcessor.readCookieValue(event, name);
+        if (ciphertext) {
+
+            const serialized = this._encrypter.decryptCookie(name, ciphertext);
+            return JSON.parse(serialized);
+        }
+
+        return null;
+    }
+
+    /*
+     * Write the refresh token cookie
+     */
+    public writeRefreshCookie(refreshToken: string): string {
+
+        const name = this._getCookieName(REFRESH_COOKIE);
+        const value = this._encrypter.encryptCookie(refreshToken);
+        return cookie.serialize(name, value, this._getCookieOptions(REFRESH_COOKIE));
+    }
+
+    /*
+     * Read the refresh token from the cookie
+     */
+    public readRefreshCookie(event: APIGatewayProxyEvent): string | null {
+
+        const name = this._getCookieName(REFRESH_COOKIE);
+        const ciphertext = HeaderProcessor.readCookieValue(event, name);
+        if (ciphertext) {
+            return this._encrypter.decryptCookie(name, ciphertext);
+        }
+
+        return null;
+    }
+
+    /*
+     * Write the access token cookie
+     */
+    public writeAccessCookie(accessToken: string): string {
+
+        const name = this._getCookieName(ACCESS_COOKIE);
+        const value = this._encrypter.encryptCookie(accessToken);
+        return cookie.serialize(name, value, this._getCookieOptions(ACCESS_COOKIE));
+    }
+
+    /*
+     * Read the access token from the cookie
+     */
+    public readAccessCookie(event: APIGatewayProxyEvent): string | null {
+
+        const name = this._getCookieName(ACCESS_COOKIE);
+        const ciphertext = HeaderProcessor.readCookieValue(event, name);
+        if (ciphertext) {
+            return this._encrypter.decryptCookie(name, ciphertext);
+        }
+
+        return null;
+    }
+
+    /*
+     * Write the ID token cookie
+     */
+    public writeIdCookie(idToken: string): string {
+
+        const parts = idToken.split('.');
+        if (parts.length !== 3) {
+            throw ErrorUtils.createInvalidOAuthResponseError('An invalid ID token was received');
+
+        }
+
+        const name = this._getCookieName(ID_COOKIE);
+        const value = this._encrypter.encryptCookie(parts[1]);
+        return cookie.serialize(name, value, this._getCookieOptions(ID_COOKIE));
+    }
+
+    /*
+     * Read the ID token from the cookie
+     */
+    public readIdCookie(event: APIGatewayProxyEvent): string | null {
+
+        const name = this._getCookieName(ID_COOKIE);
+        const ciphertext = HeaderProcessor.readCookieValue(event, name);
+        if (ciphertext) {
+            return this._encrypter.decryptCookie(name, ciphertext);
+        }
+
+        return null;
+    }
+
+    /*
+     * Clear the temporary state cookie used during login
+     */
+    public expireStateCookie(): string {
+        return cookie.serialize(this._getCookieName(STATE_COOKIE), '', this._getExpireCookieOptions(STATE_COOKIE));
+    }
+
+    /*
+     * Clear all cookies when the user session expires
+     */
+    public expireAllCookies(): string[] {
+
+        return [
+            cookie.serialize(this._getCookieName(REFRESH_COOKIE), '', this._getExpireCookieOptions(REFRESH_COOKIE)),
+            cookie.serialize(this._getCookieName(ACCESS_COOKIE),  '', this._getExpireCookieOptions(ACCESS_COOKIE)),
+            cookie.serialize(this._getCookieName(ID_COOKIE),      '', this._getExpireCookieOptions(ID_COOKIE)),
+        ];
+    }
+
+    /*
+     * Return a cookie name from its type
+     */
+    private _getCookieName(type: string) {
+        return `${this._configuration.prefix}-${type}`;
+    }
+
+    /*
+     * All cookies use largely identical options
+     */
+    private _getCookieOptions(type: string): CookieSerializeOptions {
+
+        return {
+
+            // The cookie cannot be read by Javascript code
+            httpOnly: true,
+
+            // The cookie should be sent over an HTTPS connection
+            secure: true,
+
+            // Set the cookie path
+            path: this._getCookiePath(type),
+
+            // Other domains cannot send the cookie
+            sameSite: 'strict',
+        };
+    }
+
+    /*
+     * Calculate the path, depending on the type of cookie
+     */
+    private _getCookiePath(type: string): string {
+
+        if (type === STATE_COOKIE) {
+
+            // The state cookie is restricted to login paths
+            return '/oauth-agent/login';
+
+        } else if (type === REFRESH_COOKIE) {
+
+            // The refresh cookie is restricted to the refresh path
+            return '/oauth-agent/refresh';
+
+        } else if (type === ID_COOKIE) {
+
+            // The ID cookie is restricted to the claims path
+            return '/oauth-agent/claims';
+
+        } else {
+
+            // The base path is used for APIs, and requires the access token cookie
+            return '/';
+        }
+    }
+
+    /*
+     * Get options when expiring a cookie
+     */
+    private _getExpireCookieOptions(type: string): CookieSerializeOptions {
+
+        const options = this._getCookieOptions(type);
+        options.expires = new Date(0);
+        return options;
+    }
+}

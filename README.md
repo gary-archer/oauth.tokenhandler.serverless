@@ -6,8 +6,8 @@
 
 The components are deployed in these main scenarios:
 
-- To secure local SPA development, via deployed endpoints hosted at https://bff.authsamples-dev.com
-- To secure the AWS Cloudfront deployed SPA, via deployed endpoints hosted at https://bff.authsamples.com
+- To secure local SPA development, via deployed endpoints hosted at https://bff.authsamples-dev.com.
+- To secure the AWS Cloudfront deployed SPA, via deployed endpoints hosted at https://bff.authsamples.com.
 
 ## Development
 

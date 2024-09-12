@@ -23,24 +23,23 @@
     "remove": "sls remove --stage deployed"
   },
   "dependencies": {
-    "@middy/core": "^5.4.2",
-    "axios": "^1.7.4",
+    "@middy/core": "^5.4.7",
+    "axios": "^1.7.7",
     "cookie": "^0.6.0",
     "fs-extra": "^11.2.0",
     "guid-typescript": "^1.0.9"
   },
   "devDependencies": {
-    "@eslint/js": "^9.8.0",
+    "@eslint/js": "^9.10.0",
     "@types/aws-lambda": "^8.10.136",
     "@types/cookie": "^0.6.0",
-    "@types/eslint__js": "^8.42.3",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.11.30",
-    "eslint": "^9.8.0",
-    "https-proxy-agent": "^7.0.2",
-    "serverless": "^4.2.5",
+    "eslint": "^9.10.0",
+    "https-proxy-agent": "^7.0.5",
+    "serverless": "^4.3.2",
     "serverless-domain-manager": "7.4.0",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^8.0.0"
+    "typescript": "5.5.4",
+    "typescript-eslint": "^8.5.0"
   }
 }

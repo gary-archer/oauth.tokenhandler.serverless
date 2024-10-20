@@ -277,7 +277,7 @@ HTTP_STATUS=$(curl -i -s -X GET "$API_BASE_URL/companies" \
 -H 'token-handler-version: 1' \
 -H 'x-authsamples-api-client: httpTest' \
 -H "x-authsamples-session-id: $SESSION_ID" \
--H 'x-authsamples-test-exception: SampleApi' \
+-H 'x-authsamples-test-exception: FinalApi' \
 -b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '500' ]; then

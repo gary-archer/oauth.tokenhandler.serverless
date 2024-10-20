@@ -359,7 +359,7 @@ path='\/investments/companies' \
 headers=$(jo -- -s origin="$WEB_BASE_URL" \
 token-handler-version=1 \
 x-authsamples-api-client='lambdaTest' \
-x-authsamples-test-exception='SampleApi' \
+x-authsamples-test-exception='FinalApi' \
 x-authsamples-session-id="$SESSION_ID") \
 multiValueHeaders=$(jo cookie=$(jo -a "$COOKIE_PREFIX-at=$ACCESS_COOKIE")) \
 | jq > $REQUEST_FILE

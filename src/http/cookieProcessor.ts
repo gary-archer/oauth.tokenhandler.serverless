@@ -1,9 +1,9 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
-import cookie, {CookieSerializeOptions} from 'cookie';
+import cookie, {SerializeOptions} from 'cookie';
 import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
+import {ErrorUtils} from '../errors/errorUtils.js';
 import {CookieEncrypter} from '../utilities/cookieEncrypter.js';
 import {HeaderProcessor} from './headerProcessor.js';
-import { ErrorUtils } from '../errors/errorUtils.js';
 
 const STATE_COOKIE   = 'state';
 const ACCESS_COOKIE  = 'at';
@@ -157,7 +157,7 @@ export class CookieProcessor {
     /*
      * All cookies use largely identical options
      */
-    private _getCookieOptions(type: string): CookieSerializeOptions {
+    private _getCookieOptions(type: string): SerializeOptions {
 
         return {
 
@@ -205,7 +205,7 @@ export class CookieProcessor {
     /*
      * Get options when expiring a cookie
      */
-    private _getExpireCookieOptions(type: string): CookieSerializeOptions {
+    private _getExpireCookieOptions(type: string): SerializeOptions {
 
         const options = this._getCookieOptions(type);
         options.expires = new Date(0);

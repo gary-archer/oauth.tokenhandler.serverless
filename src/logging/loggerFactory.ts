@@ -8,22 +8,22 @@ import {LogEntry} from './logEntry.js';
  */
 export class LoggerFactory {
 
-    private _name: string;
-    private _prettyPrint: boolean;
+    private name: string;
+    private prettyPrint: boolean;
 
     public constructor() {
-        this._name = 'TokenHandler';
-        this._prettyPrint = false;
+        this.name = 'TokenHandler';
+        this.prettyPrint = false;
     }
 
     public configure(configuration: LoggingConfiguration): void {
-        this._name = configuration.apiName;
-        this._prettyPrint = configuration.prettyPrint;
+        this.name = configuration.apiName;
+        this.prettyPrint = configuration.prettyPrint;
 
     }
 
     public get apiName(): string {
-        return this._name;
+        return this.name;
     }
 
     public logStartupError(exception: any): ClientError {
@@ -34,10 +34,10 @@ export class LoggerFactory {
         logEntry.setServerError(error);
         logEntry.write();
 
-        return error.toClientError(this._name);
+        return error.toClientError(this.name);
     }
 
     public createLogEntry(): LogEntry {
-        return new LogEntry(this._name, this._prettyPrint);
+        return new LogEntry(this.name, this.prettyPrint);
     }
 }

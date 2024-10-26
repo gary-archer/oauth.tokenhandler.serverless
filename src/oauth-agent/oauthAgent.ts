@@ -15,11 +15,11 @@ import {EndLoginResponse} from './endLoginResponse.js';
  */
 export class OAuthAgent {
 
-    private readonly _container: Container;
-    private readonly _configuration: OAuthAgentConfiguration;
-    private readonly _httpProxy: HttpProxy;
-    private readonly _cookieProcessor: CookieProcessor;
-    private readonly _authorizationServerClient: AuthorizationServerClient;
+    private readonly container: Container;
+    private readonly configuration: OAuthAgentConfiguration;
+    private readonly httpProxy: HttpProxy;
+    private readonly cookieProcessor: CookieProcessor;
+    private readonly authorizationServerClient: AuthorizationServerClient;
 
     public constructor(
         container: Container,
@@ -27,12 +27,11 @@ export class OAuthAgent {
         cookieConfiguration: CookieConfiguration,
         httpProxy: HttpProxy) {
 
-        this._container = container;
-        this._configuration = agentConfiguration;
-        this._httpProxy = httpProxy;
-
-        this._authorizationServerClient = new AuthorizationServerClient(this._configuration, this._httpProxy);
-        this._cookieProcessor = new CookieProcessor(cookieConfiguration);
+        this.container = container;
+        this.configuration = agentConfiguration;
+        this.httpProxy = httpProxy;
+        this.authorizationServerClient = new AuthorizationServerClient(this.configuration, this.httpProxy);
+        this.cookieProcessor = new CookieProcessor(cookieConfiguration);
     }
 
     /*
@@ -88,21 +87,21 @@ export class OAuthAgent {
     /* eslint-disable @typescript-eslint/no-unused-vars */
     public async startLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this._container.getLogEntry().setOperationName('startLogin');
+        this.container.getLogEntry().setOperationName('startLogin');
 
         // First create a random login state
-        const loginState = this._authorizationServerClient.generateLoginState();
+        const loginState = this.authorizationServerClient.generateLoginState();
 
         // Get the full authorization URL as response data
         const body = {} as any;
-        body.authorizationRequestUrl = this._authorizationServerClient.getAuthorizationRequestUrl(loginState);
+        body.authorizationRequestUrl = this.authorizationServerClient.getAuthorizationRequestUrl(loginState);
 
         // Create a temporary state cookie
         const cookiePayload = {
-            state: loginState.state,
-            codeVerifier: loginState.codeVerifier,
+            state: loginState.getState(),
+            codeVerifier: loginState.getCodeVerifier(),
         };
-        const cookie = this._cookieProcessor.writeStateCookie(cookiePayload);
+        const cookie = this.cookieProcessor.writeStateCookie(cookiePayload);
 
         // Return data in the AWS format
         const response = ResponseWriter.objectResponse(200, body);
@@ -118,7 +117,7 @@ export class OAuthAgent {
      */
     public async endLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this._container.getLogEntry().setOperationName('endLogin');
+        this.container.getLogEntry().setOperationName('endLogin');
 
         // Process the URL posted by the SPA
         const urlString = FormProcessor.readJsonField(event, 'pageUrl');
@@ -157,7 +156,7 @@ export class OAuthAgent {
         } else {
 
             // Start processing a login response by checking the state matches that in the cookie
-            const stateCookie = this._cookieProcessor.readStateCookie(event);
+            const stateCookie = this.cookieProcessor.readStateCookie(event);
             if (!stateCookie) {
                 throw ErrorUtils.fromMissingCookieError('state');
             }
@@ -167,7 +166,7 @@ export class OAuthAgent {
             }
 
             // Send the authorization code grant message to the authorization server
-            const authCodeGrantData = await this._authorizationServerClient.sendAuthorizationCodeGrant(
+            const authCodeGrantData = await this.authorizationServerClient.sendAuthorizationCodeGrant(
                 code,
                 stateCookie.codeVerifier);
 
@@ -186,10 +185,10 @@ export class OAuthAgent {
             const response = ResponseWriter.objectResponse(200, body);
             response.multiValueHeaders = {
                 'set-cookie': [
-                    this._cookieProcessor.expireStateCookie(),
-                    this._cookieProcessor.writeRefreshCookie(refreshToken),
-                    this._cookieProcessor.writeAccessCookie(accessToken),
-                    this._cookieProcessor.writeIdCookie(idToken),
+                    this.cookieProcessor.expireStateCookie(),
+                    this.cookieProcessor.writeRefreshCookie(refreshToken),
+                    this.cookieProcessor.writeAccessCookie(accessToken),
+                    this.cookieProcessor.writeIdCookie(idToken),
                 ]
             };
             return response;
@@ -201,28 +200,28 @@ export class OAuthAgent {
      */
     public async refresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this._container.getLogEntry().setOperationName('refresh');
+        this.container.getLogEntry().setOperationName('refresh');
 
         // Get the refresh token from the cookie
-        const refreshToken = this._cookieProcessor.readRefreshCookie(event);
+        const refreshToken = this.cookieProcessor.readRefreshCookie(event);
         if (!refreshToken) {
             throw ErrorUtils.fromMissingCookieError('rt');
         }
 
         // Send the request for a new access token to the authorization server
         const refreshTokenGrantData =
-            await this._authorizationServerClient.sendRefreshTokenGrant(refreshToken);
+            await this.authorizationServerClient.sendRefreshTokenGrant(refreshToken);
 
         const newRefreshToken = refreshTokenGrantData.refresh_token;
         const newIdToken = refreshTokenGrantData.id_token;
 
         const cookies = [
-            this._cookieProcessor.writeAccessCookie(refreshTokenGrantData.access_token),
-            this._cookieProcessor.writeRefreshCookie(newRefreshToken ?? refreshToken),
+            this.cookieProcessor.writeAccessCookie(refreshTokenGrantData.access_token),
+            this.cookieProcessor.writeRefreshCookie(newRefreshToken ?? refreshToken),
         ];
 
         if (newIdToken) {
-            cookies.push(this._cookieProcessor.writeIdCookie(newIdToken));
+            cookies.push(this.cookieProcessor.writeIdCookie(newIdToken));
         }
 
         // Return an empty response to the browser, with attached cookies
@@ -238,16 +237,16 @@ export class OAuthAgent {
      */
     public async userInfo(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this._container.getLogEntry().setOperationName('userInfo');
+        this.container.getLogEntry().setOperationName('userInfo');
 
         // Get the access token from the cookie
-        const accessToken = this._cookieProcessor.readAccessCookie(event);
+        const accessToken = this.cookieProcessor.readAccessCookie(event);
         if (!accessToken) {
             throw ErrorUtils.fromMissingCookieError('at');
         }
 
         // Get and return the user info
-        const userInfo = await this._authorizationServerClient.getUserInfo(accessToken);
+        const userInfo = await this.authorizationServerClient.getUserInfo(accessToken);
         return ResponseWriter.objectResponse(200, userInfo);
     }
 
@@ -256,10 +255,10 @@ export class OAuthAgent {
      */
     public async claims(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this._container.getLogEntry().setOperationName('claims');
+        this.container.getLogEntry().setOperationName('claims');
 
         // Get the ID token from the cookie
-        const idTokenPayload = this._cookieProcessor.readIdCookie(event);
+        const idTokenPayload = this.cookieProcessor.readIdCookie(event);
         if (!idTokenPayload) {
             throw ErrorUtils.fromMissingCookieError('id');
         }
@@ -274,17 +273,17 @@ export class OAuthAgent {
      */
     public async expireAccess(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this._container.getLogEntry().setOperationName('expireAccessToken');
+        this.container.getLogEntry().setOperationName('expireAccessToken');
 
         // Get the current access token
-        const accessToken = this._cookieProcessor.readAccessCookie(event);
+        const accessToken = this.cookieProcessor.readAccessCookie(event);
         if (!accessToken) {
             throw ErrorUtils.fromMissingCookieError('at');
         }
 
         // Make the access cookie act expired to cause an API 401
         const cookies = [
-            this._cookieProcessor.writeAccessCookie(`${accessToken}x`),
+            this.cookieProcessor.writeAccessCookie(`${accessToken}x`),
         ];
 
         // Return the response with the expired header
@@ -300,24 +299,24 @@ export class OAuthAgent {
      */
     public async expireRefresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this._container.getLogEntry().setOperationName('expireRefreshToken');
+        this.container.getLogEntry().setOperationName('expireRefreshToken');
 
         // Get the current access token
-        const accessToken = this._cookieProcessor.readAccessCookie(event);
+        const accessToken = this.cookieProcessor.readAccessCookie(event);
         if (!accessToken) {
             throw ErrorUtils.fromMissingCookieError('at');
         }
 
         // Get the current refresh token
-        const refreshToken = this._cookieProcessor.readRefreshCookie(event);
+        const refreshToken = this.cookieProcessor.readRefreshCookie(event);
         if (!refreshToken) {
             throw ErrorUtils.fromMissingCookieError('rt');
         }
 
         // Always make the access cookie act expired to cause an API 401
         const cookies = [
-            this._cookieProcessor.writeAccessCookie(`${accessToken}x`),
-            this._cookieProcessor.writeRefreshCookie(`${refreshToken}x`),
+            this.cookieProcessor.writeAccessCookie(`${accessToken}x`),
+            this.cookieProcessor.writeRefreshCookie(`${refreshToken}x`),
         ];
 
         // Return the response with the expired header
@@ -333,17 +332,17 @@ export class OAuthAgent {
      */
     public async logout(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this._container.getLogEntry().setOperationName('logout');
+        this.container.getLogEntry().setOperationName('logout');
 
         // Write the full end session URL to the response body
         const body = {
-            url: this._authorizationServerClient.getEndSessionRequestUrl(),
+            url: this.authorizationServerClient.getEndSessionRequestUrl(),
         };
 
         // Clear all cookies in the browser
         const response = ResponseWriter.objectResponse(200, body);
         response.multiValueHeaders = {
-            'set-cookie': this._cookieProcessor.expireAllCookies()
+            'set-cookie': this.cookieProcessor.expireAllCookies()
         };
         return response;
     }

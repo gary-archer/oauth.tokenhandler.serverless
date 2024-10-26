@@ -15,13 +15,13 @@ const ID_COOKIE      = 'id';
  */
 export class CookieProcessor {
 
-    private readonly _configuration: CookieConfiguration;
-    private readonly _encrypter: CookieEncrypter;
+    private readonly configuration: CookieConfiguration;
+    private readonly encrypter: CookieEncrypter;
 
     public constructor(configuration: CookieConfiguration) {
 
-        this._configuration = configuration;
-        this._encrypter = new CookieEncrypter(configuration);
+        this.configuration = configuration;
+        this.encrypter = new CookieEncrypter(configuration);
     }
 
     /*
@@ -29,9 +29,9 @@ export class CookieProcessor {
      */
     public writeStateCookie(data: any): string {
 
-        const name = this._getCookieName(STATE_COOKIE);
-        const value = this._encrypter.encryptCookie(JSON.stringify(data));
-        return cookie.serialize(name, value, this._getCookieOptions(STATE_COOKIE));
+        const name = this.getCookieName(STATE_COOKIE);
+        const value = this.encrypter.encryptCookie(JSON.stringify(data));
+        return cookie.serialize(name, value, this.getCookieOptions(STATE_COOKIE));
     }
 
     /*
@@ -39,11 +39,11 @@ export class CookieProcessor {
      */
     public readStateCookie(event: APIGatewayProxyEvent): any {
 
-        const name = this._getCookieName(STATE_COOKIE);
+        const name = this.getCookieName(STATE_COOKIE);
         const ciphertext = HeaderProcessor.readCookieValue(event, name);
         if (ciphertext) {
 
-            const serialized = this._encrypter.decryptCookie(name, ciphertext);
+            const serialized = this.encrypter.decryptCookie(name, ciphertext);
             return JSON.parse(serialized);
         }
 
@@ -55,9 +55,9 @@ export class CookieProcessor {
      */
     public writeRefreshCookie(refreshToken: string): string {
 
-        const name = this._getCookieName(REFRESH_COOKIE);
-        const value = this._encrypter.encryptCookie(refreshToken);
-        return cookie.serialize(name, value, this._getCookieOptions(REFRESH_COOKIE));
+        const name = this.getCookieName(REFRESH_COOKIE);
+        const value = this.encrypter.encryptCookie(refreshToken);
+        return cookie.serialize(name, value, this.getCookieOptions(REFRESH_COOKIE));
     }
 
     /*
@@ -65,10 +65,10 @@ export class CookieProcessor {
      */
     public readRefreshCookie(event: APIGatewayProxyEvent): string | null {
 
-        const name = this._getCookieName(REFRESH_COOKIE);
+        const name = this.getCookieName(REFRESH_COOKIE);
         const ciphertext = HeaderProcessor.readCookieValue(event, name);
         if (ciphertext) {
-            return this._encrypter.decryptCookie(name, ciphertext);
+            return this.encrypter.decryptCookie(name, ciphertext);
         }
 
         return null;
@@ -79,9 +79,9 @@ export class CookieProcessor {
      */
     public writeAccessCookie(accessToken: string): string {
 
-        const name = this._getCookieName(ACCESS_COOKIE);
-        const value = this._encrypter.encryptCookie(accessToken);
-        return cookie.serialize(name, value, this._getCookieOptions(ACCESS_COOKIE));
+        const name = this.getCookieName(ACCESS_COOKIE);
+        const value = this.encrypter.encryptCookie(accessToken);
+        return cookie.serialize(name, value, this.getCookieOptions(ACCESS_COOKIE));
     }
 
     /*
@@ -89,10 +89,10 @@ export class CookieProcessor {
      */
     public readAccessCookie(event: APIGatewayProxyEvent): string | null {
 
-        const name = this._getCookieName(ACCESS_COOKIE);
+        const name = this.getCookieName(ACCESS_COOKIE);
         const ciphertext = HeaderProcessor.readCookieValue(event, name);
         if (ciphertext) {
-            return this._encrypter.decryptCookie(name, ciphertext);
+            return this.encrypter.decryptCookie(name, ciphertext);
         }
 
         return null;
@@ -109,9 +109,9 @@ export class CookieProcessor {
 
         }
 
-        const name = this._getCookieName(ID_COOKIE);
-        const value = this._encrypter.encryptCookie(parts[1]);
-        return cookie.serialize(name, value, this._getCookieOptions(ID_COOKIE));
+        const name = this.getCookieName(ID_COOKIE);
+        const value = this.encrypter.encryptCookie(parts[1]);
+        return cookie.serialize(name, value, this.getCookieOptions(ID_COOKIE));
     }
 
     /*
@@ -119,10 +119,10 @@ export class CookieProcessor {
      */
     public readIdCookie(event: APIGatewayProxyEvent): string | null {
 
-        const name = this._getCookieName(ID_COOKIE);
+        const name = this.getCookieName(ID_COOKIE);
         const ciphertext = HeaderProcessor.readCookieValue(event, name);
         if (ciphertext) {
-            return this._encrypter.decryptCookie(name, ciphertext);
+            return this.encrypter.decryptCookie(name, ciphertext);
         }
 
         return null;
@@ -132,7 +132,7 @@ export class CookieProcessor {
      * Clear the temporary state cookie used during login
      */
     public expireStateCookie(): string {
-        return cookie.serialize(this._getCookieName(STATE_COOKIE), '', this._getExpireCookieOptions(STATE_COOKIE));
+        return cookie.serialize(this.getCookieName(STATE_COOKIE), '', this.getExpireCookieOptions(STATE_COOKIE));
     }
 
     /*
@@ -141,23 +141,23 @@ export class CookieProcessor {
     public expireAllCookies(): string[] {
 
         return [
-            cookie.serialize(this._getCookieName(REFRESH_COOKIE), '', this._getExpireCookieOptions(REFRESH_COOKIE)),
-            cookie.serialize(this._getCookieName(ACCESS_COOKIE),  '', this._getExpireCookieOptions(ACCESS_COOKIE)),
-            cookie.serialize(this._getCookieName(ID_COOKIE),      '', this._getExpireCookieOptions(ID_COOKIE)),
+            cookie.serialize(this.getCookieName(REFRESH_COOKIE), '', this.getExpireCookieOptions(REFRESH_COOKIE)),
+            cookie.serialize(this.getCookieName(ACCESS_COOKIE),  '', this.getExpireCookieOptions(ACCESS_COOKIE)),
+            cookie.serialize(this.getCookieName(ID_COOKIE),      '', this.getExpireCookieOptions(ID_COOKIE)),
         ];
     }
 
     /*
      * Return a cookie name from its type
      */
-    private _getCookieName(type: string) {
-        return `${this._configuration.prefix}-${type}`;
+    private getCookieName(type: string) {
+        return `${this.configuration.prefix}-${type}`;
     }
 
     /*
      * All cookies use largely identical options
      */
-    private _getCookieOptions(type: string): SerializeOptions {
+    private getCookieOptions(type: string): SerializeOptions {
 
         return {
 
@@ -168,7 +168,7 @@ export class CookieProcessor {
             secure: true,
 
             // Set the cookie path
-            path: this._getCookiePath(type),
+            path: this.getCookiePath(type),
 
             // Other domains cannot send the cookie
             sameSite: 'strict',
@@ -178,7 +178,7 @@ export class CookieProcessor {
     /*
      * Calculate the path, depending on the type of cookie
      */
-    private _getCookiePath(type: string): string {
+    private getCookiePath(type: string): string {
 
         if (type === STATE_COOKIE) {
 
@@ -205,9 +205,9 @@ export class CookieProcessor {
     /*
      * Get options when expiring a cookie
      */
-    private _getExpireCookieOptions(type: string): SerializeOptions {
+    private getExpireCookieOptions(type: string): SerializeOptions {
 
-        const options = this._getCookieOptions(type);
+        const options = this.getCookieOptions(type);
         options.expires = new Date(0);
         return options;
     }

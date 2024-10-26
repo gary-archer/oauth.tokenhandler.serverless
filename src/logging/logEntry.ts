@@ -9,13 +9,13 @@ import {LogEntryData} from './logEntryData.js';
 
 export class LogEntry {
 
-    private readonly _data: LogEntryData;
-    private readonly _prettyPrint: boolean;
+    private readonly data: LogEntryData;
+    private readonly prettyPrint: boolean;
 
     public constructor(apiName: string, prettyPrint: boolean) {
-        this._data = new LogEntryData(apiName);
-        this._data.operationName = 'api';
-        this._prettyPrint = prettyPrint;
+        this.data = new LogEntryData(apiName);
+        this.data.operationName = 'api';
+        this.prettyPrint = prettyPrint;
     }
 
     /*
@@ -23,53 +23,53 @@ export class LogEntry {
      */
     public start(event: APIGatewayProxyEvent): void {
 
-        this._data.performance.start();
-        this._data.path = PathProcessor.getFullPath(event);
-        this._data.method = event.httpMethod;
+        this.data.performance.start();
+        this.data.path = PathProcessor.getFullPath(event);
+        this.data.method = event.httpMethod;
 
         const clientApplicationName = HeaderProcessor.readHeader(event, 'x-authsamples-api-client');
         if (clientApplicationName) {
-            this._data.clientApplicationName = clientApplicationName;
+            this.data.clientApplicationName = clientApplicationName;
         }
 
         const correlationId = HeaderProcessor.readHeader(event, 'x-authsamples-correlation-id');
-        this._data.correlationId = correlationId ? correlationId : Guid.create().toString();
+        this.data.correlationId = correlationId ? correlationId : Guid.create().toString();
 
         const sessionId = HeaderProcessor.readHeader(event, 'x-authsamples-session-id');
         if (sessionId) {
-            this._data.sessionId = sessionId;
+            this.data.sessionId = sessionId;
         }
     }
 
     public getCorrelationId(): string {
-        return this._data.correlationId;
+        return this.data.correlationId;
     }
 
     public setOperationName(name: string): void {
-        this._data.operationName = name;
+        this.data.operationName = name;
     }
 
     public setUserId(userId: string): void {
-        this._data.userId = userId;
+        this.data.userId = userId;
     }
 
     public setResponseStatus(statusCode: number): void {
-        this._data.statusCode = statusCode;
+        this.data.statusCode = statusCode;
     }
 
     public setClientError(error: ClientError): void {
-        this._data.errorData = error.toLogFormat();
-        this._data.errorCode = error.getErrorCode();
+        this.data.errorData = error.toLogFormat();
+        this.data.errorCode = error.getErrorCode();
     }
 
     public setServerError(error: ServerError): void {
-        this._data.errorData = error.toLogFormat(this._data.apiName);
-        this._data.errorCode = error.getErrorCode();
-        this._data.errorId = error.getInstanceId();
+        this.data.errorData = error.toLogFormat(this.data.apiName);
+        this.data.errorCode = error.getErrorCode();
+        this.data.errorId = error.getInstanceId();
     }
 
     public setErrorCodeOverride(code: string): void {
-        this._data.errorCode = code;
+        this.data.errorCode = code;
     }
 
     /*
@@ -77,22 +77,22 @@ export class LogEntry {
      */
     public write(): void {
 
-        this._data.performance.dispose();
-        this._data.millisecondsTaken = this._data.performance.millisecondsTaken;
+        this.data.performance.dispose();
+        this.data.millisecondsTaken = this.data.performance.getMillisecondsTaken();
 
-        if (this._willLog()) {
+        if (this.willLog()) {
 
-            if (this._prettyPrint) {
+            if (this.prettyPrint) {
 
                 // On a developer PC, output from 'npm run lambda' is written with pretty printing to a file
-                const data = JSON.stringify(this._data.toLogFormat(), null, 2);
+                const data = JSON.stringify(this.data.toLogFormat(), null, 2);
                 fs.appendFileSync('./test/lambdatest.log', data);
 
             } else {
 
                 // In AWS Cloudwatch we use bare JSON logging that will work best with log shippers
                 // Note that the format remains readable in the Cloudwatch console
-                process.stdout.write(JSON.stringify(this._data.toLogFormat()) + '\n');
+                process.stdout.write(JSON.stringify(this.data.toLogFormat()) + '\n');
             }
         }
     }
@@ -101,13 +101,13 @@ export class LogEntry {
      * The OAuth Agent acts like an API, so all requests are logged except preflight OPTIONS requests
      * OAuth Proxy requests are not logged unless there are errors, since the request is logged by the target API
      */
-    private _willLog(): boolean {
+    private  willLog(): boolean {
 
-        if (this._data.errorData) {
+        if (this.data.errorData) {
             return true;
         }
 
-        if (this._data.path.toLowerCase().startsWith('/oauth-agent') && this._data.method.toLowerCase() !== 'options') {
+        if (this.data.path.toLowerCase().startsWith('/oauth-agent') && this.data.method.toLowerCase() !== 'options') {
             return true;
         }
 

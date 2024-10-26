@@ -14,10 +14,10 @@ import {HttpProxy} from '../utilities/httpProxy.js';
  */
 export class OAuthProxy {
 
-    private readonly _container: Container;
-    private readonly _routes: RouteConfiguration[];
-    private readonly _cookieProcessor: CookieProcessor;
-    private readonly _httpProxy: HttpProxy;
+    private readonly container: Container;
+    private readonly routes: RouteConfiguration[];
+    private readonly cookieProcessor: CookieProcessor;
+    private readonly httpProxy: HttpProxy;
 
     public constructor(
         container: Container,
@@ -25,23 +25,22 @@ export class OAuthProxy {
         cookieConfiguration: CookieConfiguration,
         httpProxy: HttpProxy) {
 
-        this._container = container;
-        this._routes = routes;
-        this._httpProxy = httpProxy;
-
-        this._cookieProcessor = new CookieProcessor(cookieConfiguration);
+        this.container = container;
+        this.routes = routes;
+        this.httpProxy = httpProxy;
+        this.cookieProcessor = new CookieProcessor(cookieConfiguration);
     }
 
     public async handleRequest(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
         // Decrypt the access token cookie
-        const accessToken = this._cookieProcessor.readAccessCookie(event);
+        const accessToken = this.cookieProcessor.readAccessCookie(event);
         if (!accessToken) {
             throw ErrorUtils.fromMissingCookieError('access token');
         }
 
         // Forward the access token to the target API
-        const apiResponse = await this._callApi(event, accessToken);
+        const apiResponse = await this.callApi(event, accessToken);
 
         // Write the response to the container
         return ResponseWriter.objectResponse(apiResponse.status, apiResponse.data);
@@ -50,10 +49,10 @@ export class OAuthProxy {
     /*
      * Call the target API with an access token
      */
-    public async _callApi(event: APIGatewayProxyEvent, accessToken: string): Promise<AxiosResponse> {
+    public async callApi(event: APIGatewayProxyEvent, accessToken: string): Promise<AxiosResponse> {
 
         // Get the route, which has been verified by the authorizer middleware
-        const route = PathProcessor.findRoute(event, this._routes);
+        const route = PathProcessor.findRoute(event, this.routes);
         if (!route) {
             throw ErrorUtils.fromInvalidRouteError();
         }
@@ -73,7 +72,7 @@ export class OAuthProxy {
             url: targetUrl,
             method: event.httpMethod as Method,
             headers,
-            httpsAgent: this._httpProxy.agent,
+            httpsAgent: this.httpProxy.getAgent(),
         };
 
         // Add any custom headers we have received from the client
@@ -87,7 +86,7 @@ export class OAuthProxy {
         }
 
         // Ensure that the correlation id from the log entry is forwarded
-        headers['x-authsamples-correlation-id'] = this._container.getLogEntry().getCorrelationId();
+        headers['x-authsamples-correlation-id'] = this.container.getLogEntry().getCorrelationId();
 
         // Supply a body if required
         if (event.body) {

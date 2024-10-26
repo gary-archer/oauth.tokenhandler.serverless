@@ -8,13 +8,13 @@ import {Container} from '../utilities/container.js';
  */
 export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
-    private readonly _container: Container;
-    private readonly _loggerFactory: LoggerFactory;
+    private readonly container: Container;
+    private readonly loggerFactory: LoggerFactory;
 
     public constructor(container: Container, loggerFactory: LoggerFactory) {
-        this._container = container;
-        this._loggerFactory = loggerFactory;
-        this._setupCallbacks();
+        this.container = container;
+        this.loggerFactory = loggerFactory;
+        this.setupCallbacks();
     }
 
     /*
@@ -23,8 +23,8 @@ export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEven
     public before(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
 
         // Create the log entry for the current request
-        const logEntry = this._loggerFactory.createLogEntry();
-        this._container.setLogEntry(logEntry);
+        const logEntry = this.loggerFactory.createLogEntry();
+        this.container.setLogEntry(logEntry);
 
         // Start request logging
         logEntry.start(request.event);
@@ -36,7 +36,7 @@ export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEven
     public after(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
 
         // Get the log entry
-        const logEntry = this._container.getLogEntry();
+        const logEntry = this.container.getLogEntry();
 
         // End logging
         if (request.response && request.response.statusCode) {
@@ -48,7 +48,7 @@ export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEven
     /*
      * Plumbing to ensure that the this parameter is available in async callbacks
      */
-    private _setupCallbacks(): void {
+    private setupCallbacks(): void {
         this.before = this.before.bind(this);
         this.after = this.after.bind(this);
     }

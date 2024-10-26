@@ -8,18 +8,18 @@ import {PathProcessor} from '../http/pathProcessor.js';
  */
 export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
-    private readonly _configuration: Configuration;
+    private readonly configuration: Configuration;
 
     public constructor(configuration: Configuration) {
-        this._configuration = configuration;
-        this._setupCallbacks();
+        this.configuration = configuration;
+        this.setupCallbacks();
     }
 
     /*
      * Run after a lambda completes successfully
      */
     public after(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
-        this._addResponseHeaders(request);
+        this.addResponseHeaders(request);
     }
 
     /*
@@ -27,17 +27,17 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
      */
     public onError(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
 
-        this._addResponseHeaders(request);
+        this.addResponseHeaders(request);
     }
 
     /*
      * Do the work of adding the CORS repsonse headers needed by the SPA
      */
-    private _addResponseHeaders(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
+    private addResponseHeaders(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
 
         // Only add headers for trusted origins
-        const origin = this._readHeader('origin', request.event);
-        if (origin && this._isTrustedOrigin(request.event, origin) && request.response) {
+        const origin = this.readHeader('origin', request.event);
+        if (origin && this.isTrustedOrigin(request.event, origin) && request.response) {
 
             const headers = request.response?.headers || {};
 
@@ -54,7 +54,7 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
                 headers['access-control-max-age'] = 86400;
 
                 // Return the headers requested by the browser
-                const requestedHeaders = this._readHeader('access-control-request-headers', request.event);
+                const requestedHeaders = this.readHeader('access-control-request-headers', request.event);
                 if (requestedHeaders) {
                     headers['access-control-allow-headers'] = requestedHeaders;
                     headers['vary'] = 'origin,access-control-request-headers';
@@ -69,13 +69,13 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
     /*
      * We only add CORS response headers for trusted web origins
      */
-    private _isTrustedOrigin(event: APIGatewayProxyEvent, origin: string | null): boolean {
+    private isTrustedOrigin(event: APIGatewayProxyEvent, origin: string | null): boolean {
 
         if (!origin) {
             return false;
         }
 
-        const route = PathProcessor.findRoute(event, this._configuration.routes);
+        const route = PathProcessor.findRoute(event, this.configuration.routes);
         if (!route) {
             return false;
         }
@@ -85,7 +85,7 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
             return false;
         }
 
-        if (origin.toLowerCase() !== this._configuration.cors.trustedWebOrigin.toLowerCase()) {
+        if (origin.toLowerCase() !== this.configuration.cors.trustedWebOrigin.toLowerCase()) {
             return false;
         }
 
@@ -95,7 +95,7 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
     /*
      * Read a single value header value
      */
-    private _readHeader(name: string, event: APIGatewayProxyEvent): string | null {
+    private readHeader(name: string, event: APIGatewayProxyEvent): string | null {
 
         if (event.headers) {
 
@@ -111,7 +111,7 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
     /*
      * Plumbing to ensure that the this parameter is available in async callbacks
      */
-    private _setupCallbacks(): void {
+    private setupCallbacks(): void {
         this.after = this.after.bind(this);
         this.onError = this.onError.bind(this);
     }

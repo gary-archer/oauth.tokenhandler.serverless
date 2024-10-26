@@ -14,13 +14,13 @@ import {Container} from '../utilities/container.js';
  */
 export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
-    private readonly _container: Container;
-    private readonly _apiName: string;
+    private readonly container: Container;
+    private readonly apiName: string;
 
     public constructor(container: Container, loggerFactory: LoggerFactory) {
-        this._container = container;
-        this._apiName = loggerFactory.apiName;
-        this._setupCallbacks();
+        this.container = container;
+        this.apiName = loggerFactory.apiName;
+        this.setupCallbacks();
     }
 
     /*
@@ -29,7 +29,7 @@ export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyE
     public onError(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
 
         // Get the log entry
-        const logEntry = this._container.getLogEntry();
+        const logEntry = this.container.getLogEntry();
 
         // Get the error into a known object
         const error = ErrorUtils.fromException(request.error);
@@ -39,7 +39,7 @@ export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyE
 
             // Log the exception and convert to the client error
             logEntry.setServerError(error);
-            clientError = error.toClientError(this._apiName);
+            clientError = error.toClientError(this.apiName);
 
         } else {
 
@@ -65,7 +65,7 @@ export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyE
         // In this case we clear all cookies, to inform the SPA that the user must re-authenticate
         if (clientError.getStatusCode() === 401 && clientError.getErrorCode() === ErrorCodes.sessionExpiredError) {
 
-            const cookieProcessor = new CookieProcessor(this._container.getConfiguration().cookie);
+            const cookieProcessor = new CookieProcessor(this.container.getConfiguration().cookie);
             request.response.multiValueHeaders = {
                 'set-cookie': cookieProcessor.expireAllCookies()
             };
@@ -75,7 +75,7 @@ export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyE
     /*
      * Plumbing to ensure that the this parameter is available in async callbacks
      */
-    private _setupCallbacks(): void {
+    private setupCallbacks(): void {
         this.onError = this.onError.bind(this);
     }
 }

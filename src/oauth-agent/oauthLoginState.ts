@@ -5,44 +5,44 @@ import {createHash, randomBytes} from 'crypto';
  */
 export class OAuthLoginState {
 
-    private _state: string;
-    private _codeVerifier: string;
-    private _codeChallenge: string;
+    private state: string;
+    private codeVerifier: string;
+    private codeChallenge: string;
 
     /*
      * Generate the login state when constructed
      */
     public constructor() {
 
-        const verifierBytes = this._getBytes();
-        this._state = this._base64UrlEncode(this._getBytes());
-        this._codeVerifier = this._base64UrlEncode(verifierBytes);
-        this._codeChallenge = this._base64UrlEncode(this._sha256(this._codeVerifier));
+        const verifierBytes = this.getBytes();
+        this.state = this.base64UrlEncode(this.getBytes());
+        this.codeVerifier = this.base64UrlEncode(verifierBytes);
+        this.codeChallenge = this.base64UrlEncode(this.sha256(this.codeVerifier));
     }
 
-    public get state(): string {
-        return this._state;
+    public getState(): string {
+        return this.state;
     }
 
-    public get codeVerifier(): string {
-        return this._codeVerifier;
+    public getCodeVerifier(): string {
+        return this.codeVerifier;
     }
 
-    public get codeChallenge(): string {
-        return this._codeChallenge;
+    public getCodeChallenge(): string {
+        return this.codeChallenge;
     }
 
     /*
      * Return random bytes
      */
-    private _getBytes(): Buffer {
+    private getBytes(): Buffer {
         return randomBytes(32);
     }
 
     /*
      * Convert a previously generated buffer to a string
      */
-    private _base64UrlEncode(buffer: Buffer): string {
+    private base64UrlEncode(buffer: Buffer): string {
 
         return buffer.toString('base64')
             .replace(/\+/g, '-')
@@ -53,7 +53,7 @@ export class OAuthLoginState {
     /*
      * Convert a previously generated buffer to a string
      */
-    private _sha256(input: string): Buffer {
+    private sha256(input: string): Buffer {
         return createHash('sha256').update(input).digest();
     }
 }

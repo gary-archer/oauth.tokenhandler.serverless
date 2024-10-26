@@ -12,13 +12,13 @@ import {OAuthLoginState} from './oauthLoginState.js';
  */
 export class AuthorizationServerClient {
 
-    private readonly _configuration: OAuthAgentConfiguration;
-    private readonly _httpProxy: HttpProxy;
+    private readonly configuration: OAuthAgentConfiguration;
+    private readonly httpProxy: HttpProxy;
 
     public constructor(configuration: OAuthAgentConfiguration, httpProxy: HttpProxy) {
 
-        this._configuration = configuration;
-        this._httpProxy = httpProxy;
+        this.configuration = configuration;
+        this.httpProxy = httpProxy;
     }
 
     /*
@@ -33,19 +33,19 @@ export class AuthorizationServerClient {
      */
     public getAuthorizationRequestUrl(loginState: OAuthLoginState): string {
 
-        let url = this._configuration.api.authorizeEndpoint;
+        let url = this.configuration.api.authorizeEndpoint;
         url += '?';
-        url += QueryProcessor.createQueryParameter('client_id', this._configuration.client.clientId);
+        url += QueryProcessor.createQueryParameter('client_id', this.configuration.client.clientId);
         url += '&';
-        url += QueryProcessor.createQueryParameter('redirect_uri', this._configuration.client.redirectUri);
+        url += QueryProcessor.createQueryParameter('redirect_uri', this.configuration.client.redirectUri);
         url += '&';
         url += QueryProcessor.createQueryParameter('response_type', 'code');
         url += '&';
-        url += QueryProcessor.createQueryParameter('scope', this._configuration.client.scope);
+        url += QueryProcessor.createQueryParameter('scope', this.configuration.client.scope);
         url += '&';
-        url += QueryProcessor.createQueryParameter('state', loginState.state);
+        url += QueryProcessor.createQueryParameter('state', loginState.getState());
         url += '&';
-        url += QueryProcessor.createQueryParameter('code_challenge', loginState.codeChallenge);
+        url += QueryProcessor.createQueryParameter('code_challenge', loginState.getCodeChallenge());
         url += '&';
         url += QueryProcessor.createQueryParameter('code_challenge_method', 'S256');
         return url;
@@ -58,13 +58,13 @@ export class AuthorizationServerClient {
 
         const formData = new URLSearchParams();
         formData.append('grant_type', 'authorization_code');
-        formData.append('client_id', this._configuration.client.clientId);
-        formData.append('client_secret', this._configuration.client.clientSecret);
+        formData.append('client_id', this.configuration.client.clientId);
+        formData.append('client_secret', this.configuration.client.clientSecret);
         formData.append('code', code);
-        formData.append('redirect_uri', this._configuration.client.redirectUri);
+        formData.append('redirect_uri', this.configuration.client.redirectUri);
         formData.append('code_verifier', codeVerifier);
 
-        const response = await this._postGrantMessage(formData);
+        const response = await this.postGrantMessage(formData);
 
         if (!response.refresh_token) {
             throw ErrorUtils.createInvalidOAuthResponseError(
@@ -92,11 +92,11 @@ export class AuthorizationServerClient {
 
         const formData = new URLSearchParams();
         formData.append('grant_type', 'refresh_token');
-        formData.append('client_id', this._configuration.client.clientId);
-        formData.append('client_secret', this._configuration.client.clientSecret);
+        formData.append('client_id', this.configuration.client.clientId);
+        formData.append('client_secret', this.configuration.client.clientSecret);
         formData.append('refresh_token', refreshToken);
 
-        const response = await this._postGrantMessage(formData);
+        const response = await this.postGrantMessage(formData);
         if (!response.access_token) {
             throw ErrorUtils.createInvalidOAuthResponseError(
                 'No access token was received in a refresh token grant response');
@@ -111,13 +111,13 @@ export class AuthorizationServerClient {
     public async getUserInfo(accessToken: string): Promise<any> {
 
         const options = {
-            url: this._configuration.api.userInfoEndpoint,
+            url: this.configuration.api.userInfoEndpoint,
             method: 'GET',
             headers: {
                 'accept': 'application/json',
                 'Authorization': `Bearer ${accessToken}`,
             },
-            httpsAgent: this._httpProxy.agent,
+            httpsAgent: this.httpProxy.getAgent(),
         };
 
         try {
@@ -154,24 +154,24 @@ export class AuthorizationServerClient {
     public getEndSessionRequestUrl(): string {
 
         // Start the URL
-        let url = this._configuration.api.endSessionEndpoint;
+        let url = this.configuration.api.endSessionEndpoint;
         url += '?';
-        url += QueryProcessor.createQueryParameter('client_id', this._configuration.client.clientId);
+        url += QueryProcessor.createQueryParameter('client_id', this.configuration.client.clientId);
         url += '&';
 
-        if (this._configuration.api.provider === 'cognito') {
+        if (this.configuration.api.provider === 'cognito') {
 
             // Cognito has non standard parameters
             url += QueryProcessor.createQueryParameter(
                 'logout_uri',
-                this._configuration.client.postLogoutRedirectUri);
+                this.configuration.client.postLogoutRedirectUri);
 
         } else {
 
             // For other providers supply the most standard values
             url += QueryProcessor.createQueryParameter(
                 'post_logout_redirect_uri',
-                this._configuration.client.postLogoutRedirectUri);
+                this.configuration.client.postLogoutRedirectUri);
         }
 
         return url;
@@ -180,18 +180,18 @@ export class AuthorizationServerClient {
     /*
      * Send a grant message to the authorization server
      */
-    private async _postGrantMessage(formData: URLSearchParams): Promise<any> {
+    private async postGrantMessage(formData: URLSearchParams): Promise<any> {
 
         // Define request options
         const options = {
-            url: this._configuration.api.tokenEndpoint,
+            url: this.configuration.api.tokenEndpoint,
             method: 'POST',
             data: formData,
             headers: {
                 'content-type': 'application/x-www-form-urlencoded',
                 'accept': 'application/json',
             },
-            httpsAgent: this._httpProxy.agent,
+            httpsAgent: this.httpProxy.getAgent(),
         };
 
         try {

@@ -14,13 +14,13 @@ import {HttpProxy} from '../utilities/httpProxy.js';
  */
 export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
-    private readonly _container: Container;
-    private readonly _configuration: Configuration;
+    private readonly container: Container;
+    private readonly configuration: Configuration;
 
     public constructor(container: Container) {
-        this._container = container;
-        this._configuration = container.getConfiguration();
-        this._setupCallbacks();
+        this.container = container;
+        this.configuration = container.getConfiguration();
+        this.setupCallbacks();
     }
 
     /*
@@ -35,14 +35,14 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
         }
 
         // Always enforce the required custom header
-        this._verifyCustomHeader(request.event);
+        this.verifyCustomHeader(request.event);
 
         // Create the HTTP proxy object, for debugging requests to the authorization server
-        const httpProxy = new HttpProxy(this._configuration.host.useProxy, this._configuration.host.proxyUrl);
+        const httpProxy = new HttpProxy(this.configuration.host.useProxy, this.configuration.host.proxyUrl);
         await httpProxy.initialize();
 
         // Try to find the route, or return a 404 if not found
-        const route = PathProcessor.findRoute(request.event, this._configuration.routes);
+        const route = PathProcessor.findRoute(request.event, this.configuration.routes);
         if (!route) {
             throw ErrorUtils.fromInvalidRouteError();
         }
@@ -52,13 +52,13 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
         if (oauthAgentPlugin) {
 
             const oauthAgent = new OAuthAgent(
-                this._container,
-                this._configuration.oauthAgent,
-                this._configuration.cookie,
+                this.container,
+                this.configuration.oauthAgent,
+                this.configuration.cookie,
                 httpProxy);
 
             const response = await oauthAgent.handleRequest(request.event);
-            this._container.setResponse(response);
+            this.container.setResponse(response);
 
         }
 
@@ -67,13 +67,13 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
         if (oauthProxyPlugin) {
 
             const oauthProxy = new OAuthProxy(
-                this._container,
-                this._configuration.routes,
-                this._configuration.cookie,
+                this.container,
+                this.configuration.routes,
+                this.configuration.cookie,
                 httpProxy);
 
             const response = await oauthProxy.handleRequest(request.event);
-            this._container.setResponse(response);
+            this.container.setResponse(response);
         }
 
         // Each route should either do OAuth or API work
@@ -85,7 +85,7 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
     /*
      * Ensure that all requests contain the header that triggers CORS preflights
      */
-    private _verifyCustomHeader(event: APIGatewayProxyEvent) {
+    private verifyCustomHeader(event: APIGatewayProxyEvent) {
 
         const headerValue = HeaderProcessor.readHeader(event, 'token-handler-version');
         if (headerValue != '1') {
@@ -96,7 +96,7 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
     /*
      * Plumbing to ensure that the this parameter is available in async callbacks
      */
-    private _setupCallbacks(): void {
+    private setupCallbacks(): void {
         this.before = this.before.bind(this);
     }
 }

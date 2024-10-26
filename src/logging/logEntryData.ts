@@ -97,32 +97,32 @@ export class LogEntryData {
 
         // Output fields used as top level queryable columns
         const output: any = {};
-        this._outputString((x) => output.id = x, this.id);
-        this._outputString((x) => output.utcTime = x, this.utcTime.toISOString());
-        this._outputString((x) => output.apiName = x, this.apiName);
-        this._outputString((x) => output.operationName = x, this.operationName);
-        this._outputString((x) => output.hostName = x, this.hostName);
-        this._outputString((x) => output.method = x, this.method);
-        this._outputString((x) => output.path = x, this.path);
-        this._outputString((x) => output.clientApplicationName = x, this.clientApplicationName);
-        this._outputString((x) => output.userId = x, this.userId);
-        this._outputNumber((x) => output.statusCode = x, this.statusCode);
-        this._outputString((x) => output.errorCode = x, this.errorCode);
-        this._outputNumber((x) => output.errorId = x, this.errorId);
-        this._outputString((x) => output.correlationId = x, this.correlationId);
-        this._outputNumber((x) => output.millisecondsTaken = x, this.millisecondsTaken, true);
-        this._outputNumber((x) => output.millisecondsThreshold = x, this.performanceThresholdMilliseconds, true);
-        this._outputString((x) => output.sessionId = x, this.sessionId);
+        this.outputString((x) => output.id = x, this.id);
+        this.outputString((x) => output.utcTime = x, this.utcTime.toISOString());
+        this.outputString((x) => output.apiName = x, this.apiName);
+        this.outputString((x) => output.operationName = x, this.operationName);
+        this.outputString((x) => output.hostName = x, this.hostName);
+        this.outputString((x) => output.method = x, this.method);
+        this.outputString((x) => output.path = x, this.path);
+        this.outputString((x) => output.clientApplicationName = x, this.clientApplicationName);
+        this.outputString((x) => output.userId = x, this.userId);
+        this.outputNumber((x) => output.statusCode = x, this.statusCode);
+        this.outputString((x) => output.errorCode = x, this.errorCode);
+        this.outputNumber((x) => output.errorId = x, this.errorId);
+        this.outputString((x) => output.correlationId = x, this.correlationId);
+        this.outputNumber((x) => output.millisecondsTaken = x, this.millisecondsTaken, true);
+        this.outputNumber((x) => output.millisecondsThreshold = x, this.performanceThresholdMilliseconds, true);
+        this.outputString((x) => output.sessionId = x, this.sessionId);
 
         // Output errors as an object
-        this._outputError(output);
+        this.outputError(output);
         return output;
     }
 
     /*
      * Add a string to the output unless empty
      */
-    private _outputString(setter: (val: string) => void, value: string): void {
+    private outputString(setter: (val: string) => void, value: string): void {
 
         if (value.length > 0) {
             setter(value);
@@ -132,7 +132,7 @@ export class LogEntryData {
     /*
      * Add a number to the output unless zero or forced
      */
-    private _outputNumber(setter: (val: number) => void, value: number, force = false): void {
+    private outputNumber(setter: (val: number) => void, value: number, force = false): void {
 
         if (value > 0 || force) {
             setter(value);
@@ -142,7 +142,7 @@ export class LogEntryData {
     /*
      * Add error details if applicable
      */
-    private _outputError(output: any): void {
+    private outputError(output: any): void {
 
         if (this.errorData !== null) {
             output.errorData = this.errorData;

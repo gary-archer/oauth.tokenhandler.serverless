@@ -26,7 +26,7 @@ export class LambdaConfiguration {
         const loggerFactory = new LoggerFactory();
         try {
             // Load our JSON configuration
-            const configuration = this._loadConfiguration();
+            const configuration = this.loadConfiguration();
             container.setConfiguration(configuration);
             loggerFactory.configure(configuration.logging);
 
@@ -50,14 +50,14 @@ export class LambdaConfiguration {
         } catch (e: any) {
 
             // Handle any startup exceptions
-            return this._handleStartupError(loggerFactory, e);
+            return this.handleStartupError(loggerFactory, e);
         }
     }
 
     /*
      * Load the configuration JSON file
      */
-    private _loadConfiguration(): Configuration {
+    private loadConfiguration(): Configuration {
 
         const configBuffer = fs.readFileSync('config.json');
         return JSON.parse(configBuffer.toString()) as Configuration;
@@ -66,7 +66,7 @@ export class LambdaConfiguration {
     /*
      * Ensure that any startup errors are logged and then return a handler that will provide the client response
      */
-    private _handleStartupError(loggerFactory: LoggerFactory, error: any): AsyncHandler {
+    private handleStartupError(loggerFactory: LoggerFactory, error: any): AsyncHandler {
 
         const clientError = loggerFactory.logStartupError(error);
         return async () => {

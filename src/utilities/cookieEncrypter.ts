@@ -3,20 +3,18 @@ import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
 import {ErrorUtils} from '../errors/errorUtils.js';
 import {Base64Url} from './base64url.js';
 
-const VERSION_SIZE = 1;
 const GCM_IV_SIZE = 12;
 const GCM_TAG_SIZE = 16;
-const CURRENT_VERSION = 1;
 
 /*
  * A class to deal with cookie encryption
  */
 export class CookieEncrypter {
 
-    private readonly _configuration: CookieConfiguration;
+    private readonly configuration: CookieConfiguration;
 
     public constructor(configuration: CookieConfiguration) {
-        this._configuration = configuration;
+        this.configuration = configuration;
     }
 
     /*
@@ -25,18 +23,17 @@ export class CookieEncrypter {
     public encryptCookie(plaintext: string): string {
 
         const ivBytes = crypto.randomBytes(GCM_IV_SIZE);
-        const encKeyBytes = Buffer.from(this._configuration.encryptionKey, 'hex');
+        const encKeyBytes = Buffer.from(this.configuration.encryptionKey, 'hex');
 
         const cipher = crypto.createCipheriv('aes-256-gcm', encKeyBytes, ivBytes);
 
         const encryptedBytes = cipher.update(plaintext);
         const finalBytes = cipher.final();
 
-        const versionBytes = Buffer.from(new Uint8Array([CURRENT_VERSION]));
         const ciphertextBytes = Buffer.concat([encryptedBytes, finalBytes]);
         const tagBytes = cipher.getAuthTag();
 
-        const allBytes = Buffer.concat([versionBytes, ivBytes, ciphertextBytes, tagBytes]);
+        const allBytes = Buffer.concat([ivBytes, ciphertextBytes, tagBytes]);
         return Base64Url.encode(allBytes);
     }
 
@@ -47,17 +44,12 @@ export class CookieEncrypter {
 
         const allBytes = Base64Url.decode(ciphertext);
 
-        const minSize = VERSION_SIZE + GCM_IV_SIZE + 1 + GCM_TAG_SIZE;
+        const minSize = GCM_IV_SIZE + 1 + GCM_TAG_SIZE;
         if (allBytes.length < minSize) {
             throw ErrorUtils.fromMalformedCookieError(cookieName, 'The received cookie has an invalid length');
         }
 
-        const version = allBytes[0];
-        if (version != CURRENT_VERSION) {
-            throw ErrorUtils.fromMalformedCookieError(cookieName, 'The received cookie has an invalid format');
-        }
-
-        let offset = VERSION_SIZE;
+        let offset = 0;
         const ivBytes = allBytes.slice(offset, offset + GCM_IV_SIZE);
 
         offset += GCM_IV_SIZE;
@@ -68,7 +60,7 @@ export class CookieEncrypter {
 
         try {
 
-            const encKeyBytes = Buffer.from(this._configuration.encryptionKey, 'hex');
+            const encKeyBytes = Buffer.from(this.configuration.encryptionKey, 'hex');
             const decipher = crypto.createDecipheriv('aes-256-gcm', encKeyBytes, ivBytes);
             decipher.setAuthTag(tagBytes);
 

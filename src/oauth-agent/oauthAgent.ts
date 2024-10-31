@@ -113,7 +113,7 @@ export class OAuthAgent {
      */
     public async endLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        const claims = this.preProcessRequest('endLogin', event);
+        const existingClaims = this.preProcessRequest('endLogin', event);
 
         // Process the URL posted by the SPA
         const urlString = FormProcessor.readJsonField(event, 'pageUrl');
@@ -144,7 +144,7 @@ export class OAuthAgent {
             // Handle normal page loads, such as loading a new browser tab
             const body = {
                 handled: false,
-                isLoggedIn: !!claims,
+                isLoggedIn: !!existingClaims,
             } as EndLoginResponse;
 
             return ResponseWriter.objectResponse(200, body);
@@ -175,11 +175,8 @@ export class OAuthAgent {
             const body = {
                 handled: true,
                 isLoggedIn: true,
+                claims: JSON.parse(Base64Url.decode(idToken.split('.')[1]).toString()),
             } as EndLoginResponse;
-
-            if (claims) {
-                body.claims = claims;
-            }
 
             // Write the response and attach secure cookies
             const response = ResponseWriter.objectResponse(200, body);

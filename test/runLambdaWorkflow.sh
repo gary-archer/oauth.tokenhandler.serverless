@@ -631,10 +631,11 @@ content-type='application/json' \
 token-handler-version=1 \
 x-authsamples-api-client='lambdaTest' \
 x-authsamples-session-id="$SESSION_ID") \
-multiValueHeaders=$(jo -a cookie=$(jo -a \
+multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
 "$COOKIE_PREFIX-id=$ID_COOKIE")) \
+| sed 's/\\\\\\/\\/g' \
 | jq > $REQUEST_FILE
 
 echo '18. Trying to refresh the access token when the session is expired ...'

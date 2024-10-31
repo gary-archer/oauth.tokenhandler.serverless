@@ -292,7 +292,7 @@ fi
 # Get user info
 #
 echo '11. GET request for user info with a valid access cookie returns JSON data ...'
-HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/userinfo" \
+HTTP_STATUS=$(curl -i -s -X GET $USERINFO_BASE_URL \
 -H "origin: $WEB_BASE_URL" \
 -H 'token-handler-version: 1' \
 -H 'x-authsamples-api-client: httpTest' \
@@ -364,7 +364,7 @@ fi
 # Verify that an expired access token returns 401 when sent to the OAuth user info endpoint
 #
 echo '15. GET request for user info with an expired access cookie returns 401 ...'
-HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/userinfo" \
+HTTP_STATUS=$(curl -i -s -X GET $USERINFO_BASE_URL \
 -H "origin: $WEB_BASE_URL" \
 -H 'token-handler-version: 1' \
 -H 'x-authsamples-api-client: httpTest' \

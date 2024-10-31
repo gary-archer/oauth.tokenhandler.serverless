@@ -81,9 +81,10 @@ export class OAuthAgent {
     /*
      * Calculate the authorization redirect URL and write a state cookie
      */
+    /* eslint-disable @typescript-eslint/no-unused-vars */
     public async startLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this.preProcessRequest('startLogin', event);
+        this.container.getLogEntry().setOperationName('startLogin');
 
         // First create a random login state
         const loginState = this.authorizationServerClient.generateLoginState();
@@ -113,7 +114,7 @@ export class OAuthAgent {
      */
     public async endLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        const existingClaims = this.preProcessRequest('endLogin', event);
+        this.container.getLogEntry().setOperationName('endLogin');
 
         // Process the URL posted by the SPA
         const urlString = FormProcessor.readJsonField(event, 'pageUrl');
@@ -144,7 +145,7 @@ export class OAuthAgent {
             // Handle normal page loads, such as loading a new browser tab
             const body = {
                 handled: false,
-                isLoggedIn: !!existingClaims,
+                isLoggedIn: this.cookieProcessor.isLoggedIn(event),
             } as EndLoginResponse;
 
             return ResponseWriter.objectResponse(200, body);
@@ -171,11 +172,15 @@ export class OAuthAgent {
             const accessToken = authCodeGrantData.access_token;
             const idToken = authCodeGrantData.id_token;
 
+            // Log the user ID
+            const claims = JSON.parse(Base64Url.decode(idToken.split('.')[1]).toString());
+            this.container.getLogEntry().setUserId(claims.sub);
+
             // Inform the SPA that that a login response was handled
             const body = {
                 handled: true,
                 isLoggedIn: true,
-                claims: JSON.parse(Base64Url.decode(idToken.split('.')[1]).toString()),
+                claims,
             } as EndLoginResponse;
 
             // Write the response and attach secure cookies

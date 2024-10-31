@@ -129,6 +129,15 @@ export class CookieProcessor {
     }
 
     /*
+     * Get the cookie without reading it to detect whether logged in
+     */
+    public isLoggedIn(event: APIGatewayProxyEvent): boolean {
+        const name = this.getCookieName(ID_COOKIE);
+        const ciphertext = HeaderProcessor.readCookieValue(event, name);
+        return !!ciphertext;
+    }
+
+    /*
      * Clear the temporary state cookie used during login
      */
     public expireStateCookie(): string {

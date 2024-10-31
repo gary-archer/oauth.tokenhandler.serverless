@@ -6,6 +6,7 @@ import {OAuthErrorStatus} from '../errors/oauthErrorStatus.js';
 import {QueryProcessor} from '../http/queryProcessor.js';
 import {HttpProxy} from '../utilities/httpProxy.js';
 import {OAuthLoginState} from './oauthLoginState.js';
+import { createRemoteJWKSet, JWTPayload, jwtVerify, JWTVerifyOptions } from 'jose';
 
 /*
  * A class to deal with calls to the authorization server and other OAuth responsibilities
@@ -76,12 +77,12 @@ export class AuthorizationServerClient {
                 'No access token was received in an authorization code grant response');
         }
 
-        // We do not validate the id token since it is received in a direct HTTPS request
         if (!response.id_token) {
             throw ErrorUtils.createInvalidOAuthResponseError(
                 'No id token was received in an authorization code grant response');
         }
 
+        await this.validateIdToken(response.id_token);
         return response;
     }
 
@@ -100,6 +101,10 @@ export class AuthorizationServerClient {
         if (!response.access_token) {
             throw ErrorUtils.createInvalidOAuthResponseError(
                 'No access token was received in a refresh token grant response');
+        }
+
+        if (response.id_token) {
+            await this.validateIdToken(response.id_token);
         }
 
         return response;
@@ -182,6 +187,34 @@ export class AuthorizationServerClient {
 
             // Throw a generic client connectivity error
             throw ErrorUtils.fromOAuthHttpRequestError(e, options.url);
+        }
+    }
+
+    /*
+     * Do standard ID token validation
+     */
+    private async validateIdToken(idToken: string): Promise<JWTPayload> {
+
+        const remoteJWKSet = createRemoteJWKSet(new URL(this.configuration.api.jwksEndpoint));
+
+        const options = {
+            algorithms: [this.configuration.api.idTokenAlgorithm],
+            audience: this.configuration.client.clientId,
+            issuer: this.configuration.api.issuer,
+        } as JWTVerifyOptions;
+
+        try {
+            const result = await jwtVerify(idToken, remoteJWKSet, options);
+            return result.payload;
+
+        } catch (e: any) {
+
+            let details = 'ID token validation failure';
+            if (e.message) {
+                details += ` : ${e.message}`;
+            }
+
+            throw ErrorUtils.fromIdTokenValidationError(details);
         }
     }
 }

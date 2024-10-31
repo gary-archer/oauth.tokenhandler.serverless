@@ -9,6 +9,7 @@ import {Container} from '../utilities/container.js';
 import {HttpProxy} from '../utilities/httpProxy.js';
 import {AuthorizationServerClient} from './authorizationServerClient.js';
 import {EndLoginResponse} from './endLoginResponse.js';
+import { Base64Url } from '../utilities/base64url.js';
 
 /*
  * The entry point for OAuth Agent handling
@@ -50,13 +51,13 @@ export class OAuthAgent {
 
             return this.endLogin(event);
 
+        } else if (method === 'get' && path.endsWith('/oauth-agent/session')) {
+
+            return this.session(event);
+
         } else if (method === 'post' && path.endsWith('/oauth-agent/refresh')) {
 
             return this.refresh(event);
-
-        } else if (method === 'get' && path.endsWith('/oauth-agent/claims')) {
-
-            return this.claims(event);
 
         } else if (method === 'post' && path.endsWith('/oauth-agent/access/expire')) {
 
@@ -176,6 +177,10 @@ export class OAuthAgent {
                 isLoggedIn: true,
             } as EndLoginResponse;
 
+            if (claims) {
+                body.claims = claims;
+            }
+
             // Write the response and attach secure cookies
             const response = ResponseWriter.objectResponse(200, body);
             response.multiValueHeaders = {
@@ -188,6 +193,24 @@ export class OAuthAgent {
             };
             return response;
         }
+    }
+
+    /*
+     * Return session information to the SPA
+     */
+    public async session(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        const claims = this.preProcessRequest('session', event);
+        const body: any = {
+            handled: false,
+            isLoggedIn: !!claims,
+        };
+
+        if (claims) {
+            body.claims = claims;
+        }
+
+        return ResponseWriter.objectResponse(200, body);
     }
 
     /*
@@ -225,19 +248,6 @@ export class OAuthAgent {
             'set-cookie': cookies,
         };
         return response;
-    }
-
-    /*
-     * Return claims from the ID token to the SPA
-     */
-    public async claims(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
-
-        const claims = this.preProcessRequest('claims', event);
-        if (!claims) {
-            throw ErrorUtils.fromMissingCookieError('id');
-        }
-
-        return ResponseWriter.objectResponse(200, claims);
     }
 
     /*
@@ -329,7 +339,7 @@ export class OAuthAgent {
         const idTokenPayload = this.cookieProcessor.readIdCookie(event);
         if (idTokenPayload) {
 
-            const claims = JSON.parse(Buffer.from(idTokenPayload, 'base64').toString());
+            const claims = JSON.parse(Base64Url.decode(idTokenPayload).toString());
             this.container.getLogEntry().setUserId(claims.sub);
             return claims;
         }

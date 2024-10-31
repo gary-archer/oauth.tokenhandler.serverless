@@ -413,10 +413,10 @@ if [ "$HTTP_STATUS" != '200' ]; then
 fi
 
 #
-# Get ID token claims with the access token
+# Get session information with cookies
 #
 jo -p \
-path='\/oauth-agent/claims' \
+path='\/oauth-agent/session' \
 httpMethod='GET' \
 headers=$(jo -- -s origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -430,10 +430,10 @@ multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-id=$ID_COOKIE")) \
 | jq > $REQUEST_FILE
 
-echo '12. Get ID token claims returns the expected 200 response ...'
+echo '12. Get session returns the expected 200 response ...'
 $SLS invoke local -f wildcard --stage dev -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
-  echo 'GET request for ID token claims failed to execute'
+  echo 'GET request for session failed to execute'
   exit
 fi
 JSON=$(cat $RESPONSE_FILE)
@@ -579,6 +579,7 @@ if [ "$HTTP_STATUS" != '204' ]; then
 fi
 ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_HEADERS")
 REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_HEADERS")
+ID_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-id" "$MULTI_VALUE_HEADERS")
 
 #
 # Next expire both the access token and refresh token in the secure cookies, for test purposes

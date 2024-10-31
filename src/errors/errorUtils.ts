@@ -111,6 +111,17 @@ export class ErrorUtils {
     }
 
     /*
+     * If there is an error validation ID tokens report it as a server error
+     */
+    public static fromIdTokenValidationError(details: string): ServerError {
+
+        const description = 'ID token validation failure';
+        const error = ErrorFactory.createServerError(ErrorCodes.idTokenValidationError, description);
+        error.setDetails(details);
+        return error;
+    }
+
+    /*
      * Indicate if a token is missing, which most commonly would be caused by a configuration problem
      */
     public static createInvalidOAuthResponseError(message: string): ServerError {

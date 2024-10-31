@@ -383,7 +383,7 @@ fi
 # Get user info with the access token
 #
 jo -p \
-path='\/oauth-agent/userinfo' \
+path='\/oauthuserinfo' \
 httpMethod='GET' \
 headers=$(jo -- -s origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -413,10 +413,10 @@ if [ "$HTTP_STATUS" != '200' ]; then
 fi
 
 #
-# Get ID token claims with the access token
+# Get session information with cookies
 #
 jo -p \
-path='\/oauth-agent/claims' \
+path='\/oauth-agent/session' \
 httpMethod='GET' \
 headers=$(jo -- -s origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -430,10 +430,10 @@ multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-id=$ID_COOKIE")) \
 | jq > $REQUEST_FILE
 
-echo '12. Get ID token claims returns the expected 200 response ...'
+echo '12. Get session returns the expected 200 response ...'
 $SLS invoke local -f wildcard --stage dev -p $REQUEST_FILE > $RESPONSE_FILE
 if [ "$?" != '0' ]; then
-  echo 'GET request for ID token claims failed to execute'
+  echo 'GET request for session failed to execute'
   exit
 fi
 JSON=$(cat $RESPONSE_FILE)
@@ -514,7 +514,7 @@ fi
 # Verify that an expired user info call returns a 401
 #
 jo -p \
-path='\/oauth-agent/userinfo' \
+path='\/oauthuserinfo' \
 httpMethod='GET' \
 headers=$(jo -- -s origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -579,6 +579,7 @@ if [ "$HTTP_STATUS" != '204' ]; then
 fi
 ACCESS_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-at" "$MULTI_VALUE_HEADERS")
 REFRESH_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-rt" "$MULTI_VALUE_HEADERS")
+ID_COOKIE=$(getLambdaResponseCookieValue "$COOKIE_PREFIX-id" "$MULTI_VALUE_HEADERS")
 
 #
 # Next expire both the access token and refresh token in the secure cookies, for test purposes
@@ -630,10 +631,11 @@ content-type='application/json' \
 token-handler-version=1 \
 x-authsamples-api-client='lambdaTest' \
 x-authsamples-session-id="$SESSION_ID") \
-multiValueHeaders=$(jo -a cookie=$(jo -a \
+multiValueHeaders=$(jo cookie=$(jo -a \
 "$COOKIE_PREFIX-at=$ACCESS_COOKIE" \
 "$COOKIE_PREFIX-rt=$REFRESH_COOKIE" \
 "$COOKIE_PREFIX-id=$ID_COOKIE")) \
+| sed 's/\\\\\\/\\/g' \
 | jq > $REQUEST_FILE
 
 echo '18. Trying to refresh the access token when the session is expired ...'

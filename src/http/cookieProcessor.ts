@@ -192,8 +192,8 @@ export class CookieProcessor {
 
         } else if (type === ID_COOKIE) {
 
-            // The ID cookie is restricted to the claims path
-            return '/oauth-agent/claims';
+            // The ID cookie is used by the OAuth Agent to indicate that the user is logged in
+            return '/oauth-agent';
 
         } else {
 

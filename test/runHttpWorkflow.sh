@@ -73,12 +73,14 @@ if [ "$STAGE" == 'dev' ]; then
   WEB_BASE_URL='https://www.authsamples-dev.com'
   OAUTH_AGENT_BASE_URL='https://bff.authsamples-dev.com/oauth-agent'
   API_BASE_URL='https://bff.authsamples-dev.com/investments'
+  USERINFO_BASE_URL='https://bff.authsamples-dev.com/oauthuserinfo'
 else
 
   # Use the deployed endpoints that the deployed SPA uses
   WEB_BASE_URL='https://www.authsamples.com'
   OAUTH_AGENT_BASE_URL='https://bff.authsamples.com/oauth-agent'
   API_BASE_URL='https://bff.authsamples.com/investments'
+  USERINFO_BASE_URL='https://bff.authsamples.com/oauthuserinfo'
 fi
 
 #
@@ -290,7 +292,7 @@ fi
 # Get user info
 #
 echo '11. GET request for user info with a valid access cookie returns JSON data ...'
-HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/userinfo" \
+HTTP_STATUS=$(curl -i -s -X GET $USERINFO_BASE_URL \
 -H "origin: $WEB_BASE_URL" \
 -H 'token-handler-version: 1' \
 -H 'x-authsamples-api-client: httpTest' \
@@ -306,8 +308,8 @@ fi
 #
 # Get ID token claims
 #
-echo '12. Get ID token claims with a valid ID cookie returns JSON data ...'
-HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/claims" \
+echo '12. Get session information with a valid ID cookie returns JSON data ...'
+HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/session" \
 -H "origin: $WEB_BASE_URL" \
 -H 'token-handler-version: 1' \
 -H 'x-authsamples-api-client: httpTest' \
@@ -315,7 +317,7 @@ HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/claims" \
 -b "$MAIN_COOKIES_FILE" \
 -o $RESPONSE_FILE -w '%{http_code}')
 if [ "$HTTP_STATUS" != '200' ]; then
-  echo "*** GET request for ID token claims returned an unexpected HTTP status: $HTTP_STATUS"
+  echo "*** GET request for session returned an unexpected HTTP status: $HTTP_STATUS"
   apiError "$BODY"
   exit
 fi
@@ -362,7 +364,7 @@ fi
 # Verify that an expired access token returns 401 when sent to the OAuth user info endpoint
 #
 echo '15. GET request for user info with an expired access cookie returns 401 ...'
-HTTP_STATUS=$(curl -i -s -X GET "$OAUTH_AGENT_BASE_URL/userinfo" \
+HTTP_STATUS=$(curl -i -s -X GET $USERINFO_BASE_URL \
 -H "origin: $WEB_BASE_URL" \
 -H 'token-handler-version: 1' \
 -H 'x-authsamples-api-client: httpTest' \

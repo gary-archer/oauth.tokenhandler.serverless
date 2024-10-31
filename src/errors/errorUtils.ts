@@ -111,21 +111,13 @@ export class ErrorUtils {
     }
 
     /*
-     * Throw an exception for the SPA when there is an error getting user info
+     * If there is an error validation ID tokens report it as a server error
      */
-    public static fromUserInfoResponseError(
-        statusCode: number,
-        errorCode: string,
-        errorDescription: string | null,
-        url: string): ClientError {
+    public static fromIdTokenValidationError(details: string): ServerError {
 
-        const description = errorDescription || 'A user info error response was received from the authorization server';
-
-        const error = ErrorFactory.createClientError(statusCode, errorCode, description);
-        error.setLogContext({
-            url,
-        });
-
+        const description = 'ID token validation failure';
+        const error = ErrorFactory.createServerError(ErrorCodes.idTokenValidationError, description);
+        error.setDetails(details);
         return error;
     }
 

@@ -23,6 +23,8 @@ export class ErrorCodes {
 
     public static readonly invalidGrantError = 'invalid_grant';
 
+    public static readonly idTokenValidationError = 'id_token_validation_error';
+
     public static readonly sessionExpiredError = 'session_expired';
 
     public static readonly serverError = 'server_error';

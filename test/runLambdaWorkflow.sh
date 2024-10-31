@@ -383,7 +383,7 @@ fi
 # Get user info with the access token
 #
 jo -p \
-path='\/oauth-agent/userinfo' \
+path='\/oauthuserinfo' \
 httpMethod='GET' \
 headers=$(jo -- -s origin="$WEB_BASE_URL" \
 accept='application/json' \
@@ -514,7 +514,7 @@ fi
 # Verify that an expired user info call returns a 401
 #
 jo -p \
-path='\/oauth-agent/userinfo' \
+path='\/oauthuserinfo' \
 httpMethod='GET' \
 headers=$(jo -- -s origin="$WEB_BASE_URL" \
 accept='application/json' \

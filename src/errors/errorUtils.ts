@@ -111,25 +111,6 @@ export class ErrorUtils {
     }
 
     /*
-     * Throw an exception for the SPA when there is an error getting user info
-     */
-    public static fromUserInfoResponseError(
-        statusCode: number,
-        errorCode: string,
-        errorDescription: string | null,
-        url: string): ClientError {
-
-        const description = errorDescription || 'A user info error response was received from the authorization server';
-
-        const error = ErrorFactory.createClientError(statusCode, errorCode, description);
-        error.setLogContext({
-            url,
-        });
-
-        return error;
-    }
-
-    /*
      * Indicate if a token is missing, which most commonly would be caused by a configuration problem
      */
     public static createInvalidOAuthResponseError(message: string): ServerError {

@@ -54,10 +54,6 @@ export class OAuthAgent {
 
             return this.refresh(event);
 
-        } else if (method === 'get' && path.endsWith('/oauth-agent/userinfo')) {
-
-            return this.userInfo(event);
-
         } else if (method === 'get' && path.endsWith('/oauth-agent/claims')) {
 
             return this.claims(event);
@@ -230,24 +226,6 @@ export class OAuthAgent {
             'set-cookie': cookies,
         };
         return response;
-    }
-
-    /*
-     * Look up and return OAuth user info to the SPA
-     */
-    public async userInfo(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
-
-        this.container.getLogEntry().setOperationName('userInfo');
-
-        // Get the access token from the cookie
-        const accessToken = this.cookieProcessor.readAccessCookie(event);
-        if (!accessToken) {
-            throw ErrorUtils.fromMissingCookieError('at');
-        }
-
-        // Get and return the user info
-        const userInfo = await this.authorizationServerClient.getUserInfo(accessToken);
-        return ResponseWriter.objectResponse(200, userInfo);
     }
 
     /*

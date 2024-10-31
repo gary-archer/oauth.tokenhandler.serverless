@@ -106,49 +106,6 @@ export class AuthorizationServerClient {
     }
 
     /*
-     * Get user info with the access token
-     */
-    public async getUserInfo(accessToken: string): Promise<any> {
-
-        const options = {
-            url: this.configuration.api.userInfoEndpoint,
-            method: 'GET',
-            headers: {
-                'accept': 'application/json',
-                'Authorization': `Bearer ${accessToken}`,
-            },
-            httpsAgent: this.httpProxy.getAgent(),
-        };
-
-        try {
-
-            const response = await axios.request(options as AxiosRequestConfig);
-            return response.data;
-
-        } catch (e: any) {
-
-            // See if we have a response body
-            if (e.response && e.response.status && e.response.data) {
-
-                // Process error data and include the 'error' and 'error_description' fields
-                const errorData = e.response.data;
-                if (errorData.error) {
-
-                    // Throw an error with Authorization Server details
-                    throw ErrorUtils.fromUserInfoResponseError(
-                        e.response.status,
-                        errorData.error,
-                        errorData.error_description,
-                        options.url);
-                }
-            }
-
-            // Throw a generic client connectivity error
-            throw ErrorUtils.fromOAuthHttpRequestError(e, options.url);
-        }
-    }
-
-    /*
      * Create the OpenID Connect end session request URL
      */
     public getEndSessionRequestUrl(): string {

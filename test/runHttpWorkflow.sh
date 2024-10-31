@@ -73,12 +73,14 @@ if [ "$STAGE" == 'dev' ]; then
   WEB_BASE_URL='https://www.authsamples-dev.com'
   OAUTH_AGENT_BASE_URL='https://bff.authsamples-dev.com/oauth-agent'
   API_BASE_URL='https://bff.authsamples-dev.com/investments'
+  USERINFO_BASE_URL='https://bff.authsamples-dev.com/oauthuserinfo'
 else
 
   # Use the deployed endpoints that the deployed SPA uses
   WEB_BASE_URL='https://www.authsamples.com'
   OAUTH_AGENT_BASE_URL='https://bff.authsamples.com/oauth-agent'
   API_BASE_URL='https://bff.authsamples.com/investments'
+  USERINFO_BASE_URL='https://bff.authsamples.com/oauthuserinfo'
 fi
 
 #

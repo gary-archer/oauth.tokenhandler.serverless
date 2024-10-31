@@ -1,11 +1,5 @@
-1. Update cookie paths and detect login by presence of ID token
+1. Rename claims to session and return session info in new format
+   Fix up tests
 
-2. Only store the middle part of the ID token in the cookie
-
-3. Log user for all OAuth Agent operations after login
-
-4. Rename claims to session
-
-5. Return session info in new format
-
-6. Implement ID token validation
+3. Implement ID token validation after login and token refresh
+   Test error responses with invalid issuer, algorithm etc

@@ -80,10 +80,9 @@ export class OAuthAgent {
     /*
      * Calculate the authorization redirect URL and write a state cookie
      */
-    /* eslint-disable @typescript-eslint/no-unused-vars */
     public async startLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this.container.getLogEntry().setOperationName('startLogin');
+        this.preProcessRequest('startLogin', event);
 
         // First create a random login state
         const loginState = this.authorizationServerClient.generateLoginState();
@@ -113,7 +112,7 @@ export class OAuthAgent {
      */
     public async endLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this.container.getLogEntry().setOperationName('endLogin');
+        const claims = this.preProcessRequest('endLogin', event);
 
         // Process the URL posted by the SPA
         const urlString = FormProcessor.readJsonField(event, 'pageUrl');
@@ -144,7 +143,7 @@ export class OAuthAgent {
             // Handle normal page loads, such as loading a new browser tab
             const body = {
                 handled: false,
-                isLoggedIn: false,
+                isLoggedIn: !!claims,
             } as EndLoginResponse;
 
             return ResponseWriter.objectResponse(200, body);
@@ -196,7 +195,7 @@ export class OAuthAgent {
      */
     public async refresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this.container.getLogEntry().setOperationName('refresh');
+        this.preProcessRequest('refresh', event);
 
         // Get the refresh token from the cookie
         const refreshToken = this.cookieProcessor.readRefreshCookie(event);
@@ -233,17 +232,12 @@ export class OAuthAgent {
      */
     public async claims(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this.container.getLogEntry().setOperationName('claims');
-
-        // Get the ID token from the cookie
-        const idTokenPayload = this.cookieProcessor.readIdCookie(event);
-        if (!idTokenPayload) {
+        const claims = this.preProcessRequest('claims', event);
+        if (!claims) {
             throw ErrorUtils.fromMissingCookieError('id');
         }
 
-        // Read the payload
-        const payload = Buffer.from(idTokenPayload, 'base64').toString();
-        return ResponseWriter.objectResponse(200, JSON.parse(payload));
+        return ResponseWriter.objectResponse(200, claims);
     }
 
     /*
@@ -251,7 +245,7 @@ export class OAuthAgent {
      */
     public async expireAccess(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this.container.getLogEntry().setOperationName('expireAccessToken');
+        this.preProcessRequest('expireAccessToken', event);
 
         // Get the current access token
         const accessToken = this.cookieProcessor.readAccessCookie(event);
@@ -277,7 +271,7 @@ export class OAuthAgent {
      */
     public async expireRefresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this.container.getLogEntry().setOperationName('expireRefreshToken');
+        this.preProcessRequest('expireRefreshToken', event);
 
         // Get the current access token
         const accessToken = this.cookieProcessor.readAccessCookie(event);
@@ -310,7 +304,7 @@ export class OAuthAgent {
      */
     public async logout(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        this.container.getLogEntry().setOperationName('logout');
+        this.preProcessRequest('logout', event);
 
         // Write the full end session URL to the response body
         const body = {
@@ -323,5 +317,23 @@ export class OAuthAgent {
             'set-cookie': this.cookieProcessor.expireAllCookies()
         };
         return response;
+    }
+
+    /*
+     * Pre process the request to perform logging and return the ID token
+     */
+    private preProcessRequest(operationName: string, event: APIGatewayProxyEvent): any {
+
+        this.container.getLogEntry().setOperationName(operationName);
+
+        const idTokenPayload = this.cookieProcessor.readIdCookie(event);
+        if (idTokenPayload) {
+
+            const claims = JSON.parse(Buffer.from(idTokenPayload, 'base64').toString());
+            this.container.getLogEntry().setUserId(claims.sub);
+            return claims;
+        }
+
+        return '';
     }
 }

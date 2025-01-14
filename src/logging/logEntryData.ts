@@ -1,4 +1,4 @@
-import {Guid} from 'guid-typescript';
+import {randomUUID} from 'crypto';
 import os from 'os';
 import {PerformanceBreakdown} from './performanceBreakdown.js';
 
@@ -68,7 +68,7 @@ export class LogEntryData {
     public constructor(apiName: string) {
 
         // Queryable fields
-        this.id = Guid.create().toString();
+        this.id = randomUUID();
         this.utcTime = new Date();
         this.apiName = apiName;
         this.operationName = '';

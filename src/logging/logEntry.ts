@@ -1,6 +1,6 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
+import {randomUUID} from 'crypto';
 import fs from 'fs-extra';
-import {Guid} from 'guid-typescript';
 import {ClientError} from '../errors/clientError.js';
 import {ServerError} from '../errors/serverError.js';
 import {HeaderProcessor} from '../http/headerProcessor.js';
@@ -33,7 +33,7 @@ export class LogEntry {
         }
 
         const correlationId = HeaderProcessor.readHeader(event, 'x-authsamples-correlation-id');
-        this.data.correlationId = correlationId ? correlationId : Guid.create().toString();
+        this.data.correlationId = correlationId ? correlationId : randomUUID();
 
         const sessionId = HeaderProcessor.readHeader(event, 'x-authsamples-session-id');
         if (sessionId) {

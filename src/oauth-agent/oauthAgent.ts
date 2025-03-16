@@ -5,11 +5,11 @@ import {ErrorUtils} from '../errors/errorUtils.js';
 import {CookieProcessor} from '../http/cookieProcessor.js';
 import {FormProcessor} from '../http/formProcessor.js';
 import {ResponseWriter} from '../http/responseWriter.js';
+import {Base64Url} from '../utilities/base64url.js';
 import {Container} from '../utilities/container.js';
 import {HttpProxy} from '../utilities/httpProxy.js';
 import {AuthorizationServerClient} from './authorizationServerClient.js';
 import {EndLoginResponse} from './endLoginResponse.js';
-import { Base64Url } from '../utilities/base64url.js';
 
 /*
  * The entry point for OAuth Agent handling

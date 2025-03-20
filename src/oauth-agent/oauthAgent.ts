@@ -7,7 +7,6 @@ import {FormProcessor} from '../http/formProcessor.js';
 import {ResponseWriter} from '../http/responseWriter.js';
 import {Base64Url} from '../utilities/base64url.js';
 import {Container} from '../utilities/container.js';
-import {HttpProxy} from '../utilities/httpProxy.js';
 import {AuthorizationServerClient} from './authorizationServerClient.js';
 import {EndLoginResponse} from './endLoginResponse.js';
 
@@ -18,20 +17,17 @@ export class OAuthAgent {
 
     private readonly container: Container;
     private readonly configuration: OAuthAgentConfiguration;
-    private readonly httpProxy: HttpProxy;
     private readonly cookieProcessor: CookieProcessor;
     private readonly authorizationServerClient: AuthorizationServerClient;
 
     public constructor(
         container: Container,
         agentConfiguration: OAuthAgentConfiguration,
-        cookieConfiguration: CookieConfiguration,
-        httpProxy: HttpProxy) {
+        cookieConfiguration: CookieConfiguration) {
 
         this.container = container;
         this.configuration = agentConfiguration;
-        this.httpProxy = httpProxy;
-        this.authorizationServerClient = new AuthorizationServerClient(this.configuration, this.httpProxy);
+        this.authorizationServerClient = new AuthorizationServerClient(this.configuration);
         this.cookieProcessor = new CookieProcessor(cookieConfiguration);
     }
 

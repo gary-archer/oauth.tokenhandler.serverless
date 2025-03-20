@@ -7,7 +7,6 @@ import {ErrorUtils} from '../errors/errorUtils.js';
 import {HeaderProcessor} from '../http/headerProcessor.js';
 import {PathProcessor} from '../http/pathProcessor.js';
 import {Container} from '../utilities/container.js';
-import {HttpProxy} from '../utilities/httpProxy.js';
 
 /*
  * The entry point for authorization
@@ -37,10 +36,6 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
         // Always enforce the required custom header
         this.verifyCustomHeader(request.event);
 
-        // Create the HTTP proxy object, for debugging requests to the authorization server
-        const httpProxy = new HttpProxy(this.configuration.host.useProxy, this.configuration.host.proxyUrl);
-        await httpProxy.initialize();
-
         // Try to find the route, or return a 404 if not found
         const route = PathProcessor.findRoute(request.event, this.configuration.routes);
         if (!route) {
@@ -54,8 +49,7 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
             const oauthAgent = new OAuthAgent(
                 this.container,
                 this.configuration.oauthAgent,
-                this.configuration.cookie,
-                httpProxy);
+                this.configuration.cookie);
 
             const response = await oauthAgent.handleRequest(request.event);
             this.container.setResponse(response);
@@ -69,8 +63,7 @@ export class AuthorizerMiddleware implements middy.MiddlewareObj<APIGatewayProxy
             const oauthProxy = new OAuthProxy(
                 this.container,
                 this.configuration.routes,
-                this.configuration.cookie,
-                httpProxy);
+                this.configuration.cookie);
 
             const response = await oauthProxy.handleRequest(request.event);
             this.container.setResponse(response);

@@ -1,7 +1,7 @@
 {
   "name": "tokenhandler",
   "version": "1.0.0",
-  "description": "A custom serverless token handler implementation for the Final SPA",
+  "description": "An AWS serverless token handler with low cost hosting for my blog's Final SPA",
   "author": "Gary Archer",
   "license": "Apache-2.0",
   "type": "module",
@@ -9,16 +9,10 @@
     "node": ">=20"
   },
   "scripts": {
-    "login": "sls login",
     "lint": "npx eslint . --ignore-pattern dist",
-    "build": "rm -rf dist && tsc",
     "buildRelease": "rimraf dist && tsc --sourceMap false",
-    "start": "./start.sh",
-    "test": "./start.sh",
     "deployDev": "./deploy.sh dev",
     "deploy": "./deploy.sh deployed",
-    "httpDev": "./test/runHttpWorkflow.sh dev",
-    "http": "./test/runHttpWorkflow.sh deployed",
     "removeDev": "sls remove --stage dev",
     "remove": "sls remove --stage deployed"
   },
@@ -35,7 +29,6 @@
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.16.13",
     "eslint": "^9.22.0",
-    "https-proxy-agent": "^7.0.5",
     "serverless": "^4.7.0",
     "serverless-domain-manager": "8.0.0",
     "typescript": "^5.8",

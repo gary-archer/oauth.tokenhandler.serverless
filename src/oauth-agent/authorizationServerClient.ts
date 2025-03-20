@@ -5,7 +5,6 @@ import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration.
 import {ErrorUtils} from '../errors/errorUtils.js';
 import {OAuthErrorStatus} from '../errors/oauthErrorStatus.js';
 import {QueryProcessor} from '../http/queryProcessor.js';
-import {HttpProxy} from '../utilities/httpProxy.js';
 import {OAuthLoginState} from './oauthLoginState.js';
 
 /*
@@ -14,12 +13,9 @@ import {OAuthLoginState} from './oauthLoginState.js';
 export class AuthorizationServerClient {
 
     private readonly configuration: OAuthAgentConfiguration;
-    private readonly httpProxy: HttpProxy;
 
-    public constructor(configuration: OAuthAgentConfiguration, httpProxy: HttpProxy) {
-
+    public constructor(configuration: OAuthAgentConfiguration) {
         this.configuration = configuration;
-        this.httpProxy = httpProxy;
     }
 
     /*
@@ -153,7 +149,6 @@ export class AuthorizationServerClient {
                 'content-type': 'application/x-www-form-urlencoded',
                 'accept': 'application/json',
             },
-            httpsAgent: this.httpProxy.getAgent(),
         };
 
         try {

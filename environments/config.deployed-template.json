@@ -1,8 +1,4 @@
 {
-    "host": {
-        "useProxy": false,
-        "proxyUrl": ""
-    },
     "logging": {
         "apiName": "TokenHandler",
         "prettyPrint": false

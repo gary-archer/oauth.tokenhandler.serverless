@@ -70,7 +70,6 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# Finally restore the local development configuration
+# Clean up root local configurations
 #
-rm ./config-template.json
-cp environments/config.local.json ./config.json
+rm ./config*.json

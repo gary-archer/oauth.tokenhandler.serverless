@@ -7,7 +7,6 @@ import {CookieProcessor} from '../http/cookieProcessor.js';
 import {PathProcessor} from '../http/pathProcessor.js';
 import {ResponseWriter} from '../http/responseWriter.js';
 import {Container} from '../utilities/container.js';
-import {HttpProxy} from '../utilities/httpProxy.js';
 
 /*
  * A demo level class to manage HTTP forwarding of API requests
@@ -17,17 +16,14 @@ export class OAuthProxy {
     private readonly container: Container;
     private readonly routes: RouteConfiguration[];
     private readonly cookieProcessor: CookieProcessor;
-    private readonly httpProxy: HttpProxy;
 
     public constructor(
         container: Container,
         routes: RouteConfiguration[],
-        cookieConfiguration: CookieConfiguration,
-        httpProxy: HttpProxy) {
+        cookieConfiguration: CookieConfiguration) {
 
         this.container = container;
         this.routes = routes;
-        this.httpProxy = httpProxy;
         this.cookieProcessor = new CookieProcessor(cookieConfiguration);
     }
 
@@ -72,7 +68,6 @@ export class OAuthProxy {
             url: targetUrl,
             method: event.httpMethod as Method,
             headers,
-            httpsAgent: this.httpProxy.getAgent(),
         };
 
         // Add any custom headers we have received from the client

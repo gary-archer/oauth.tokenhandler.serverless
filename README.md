@@ -1,4 +1,4 @@
-# Serverless Native Token Handler
+# Serverless Token Handler
 
 This repository is a wildcard lambda based on the following implementations, to provide a cookie layer for SPAs.\
 The only addition to logic is extra REST operations to rewrite cookies to simulate expiry of access and refresh tokens.

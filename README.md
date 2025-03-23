@@ -1,19 +1,7 @@
-# Serverless Token Handler
+# Serverless Native Token Handler
 
-[![Known Vulnerabilities](https://snyk.io/test/github/gary-archer/oauth.tokenhandler.serverless/badge.svg?targetFile=package.json)](https://snyk.io/test/github/gary-archer/oauth.tokenhandler.serverless?targetFile=package.json)
+This repository is a wildcard lambda based on the following implementations, to provide a cookie layer for SPAs.\
+The only addition to logic is extra REST operations to rewrite cookies to simulate expiry of access and refresh tokens.
 
-## Scenarios
-
-The components are deployed in these main scenarios:
-
-- To secure local SPA development, via deployed endpoints hosted at https://bff.authsamples-dev.com.
-- To secure the AWS Cloudfront deployed SPA, via deployed endpoints hosted at https://bff.authsamples.com.
-
-## Development
-
-First ensure that Node.js 20+ is installed, then run the following command.\
-This tests lambda logic locally using `sls invoke -f local` operations:
-
-```bash
-./start.sh
-```
+- [OAuth Agent](https://github.com/curityio/cloud-native-oauth-security-examples/tree/main/chapter-13-browser-based-apps/backend-for-frontend/oauth-agent)
+- [OAuth Proxy](https://github.com/curityio/cloud-native-oauth-security-examples/tree/main/resources/apigateway/curity-oauth-proxy)

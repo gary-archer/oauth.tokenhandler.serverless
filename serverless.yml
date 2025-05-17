@@ -12,7 +12,7 @@ stages:
 # Base details for AWS deployment
 provider:
   name: aws
-  runtime: nodejs20.x
+  runtime: nodejs22.x
   region: eu-west-2
   apiGateway:
     shouldStartNameWithService: true
@@ -37,15 +37,14 @@ functions:
 package:
   patterns:
   - '!.codacy.yaml'
-  - '!.eslintrc'
+  - '!eslint.config.mjs'
   - '!.vscode/**'
   - '!environments/**'
   - '!src/**'
   - '!test/**'
-  - '!ts*.json'
+  - '!tsconfig.json'
   - '!package-lock.json'
   - '!README.md'
-  - '!NOTICES'
   - '!LICENSE.txt'
   - '!config-template.json'
   - '!*.sh'

@@ -1,0 +1,62 @@
+service: tokenhandler
+stages:
+  dev:
+    params:
+      domainName: 'bff.authsamples-dev.com'
+      certificateDomainName: 'authsamples-dev.com'
+  deployed:
+    params:
+      domainName: 'bff.authsamples.com'
+      certificateDomainName: 'authsamples.com'
+
+# Base details for AWS deployment
+provider:
+  name: aws
+  runtime: nodejs22.x
+  region: eu-west-2
+  apiGateway:
+    shouldStartNameWithService: true
+
+# Serverless domain manager details
+custom:
+  customDomain:
+    domainName: ${param:domainName}
+    certificateDomainName: ${param:certificateDomainName}
+    endpointType: regional
+
+# A single HTTP endpoint covers all routes, with other logic handled in code
+functions:
+  wildcard:
+    handler: dist/lambda/wildcard.handler
+    events:
+      - http: 
+          path: /{proxy+}
+          method: ANY
+
+# Include the correct config file for the stage, and exclude unwanted files
+package:
+  patterns:
+  - '!.codacy.yaml'
+  - '!eslint.config.mjs'
+  - '!.vscode/**'
+  - '!environments/**'
+  - '!src/**'
+  - '!test/**'
+  - '!tsconfig.json'
+  - '!package-lock.json'
+  - '!README.md'
+  - '!LICENSE.txt'
+  - '!config-template.json'
+  - '!*.sh'
+  
+plugins:
+  - serverless-domain-manager
+
+resources:
+  Resources:
+
+    # Limit cloudwatch log retention 
+    WildcardLogGroup:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        RetentionInDays: '5'

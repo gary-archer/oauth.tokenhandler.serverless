@@ -74,14 +74,14 @@ export class OAuthProxy {
         if (event.headers) {
 
             Object.keys(event.headers).forEach((name) => {
-                if (name.startsWith('x-authsamples')) {
+                if (name.startsWith('authsamples')) {
                     headers[name] = event.headers[name] as string;
                 }
             });
         }
 
         // Ensure that the correlation id from the log entry is forwarded
-        headers['x-authsamples-correlation-id'] = this.container.getLogEntry().getCorrelationId();
+        headers['authsamples-correlation-id'] = this.container.getLogEntry().getCorrelationId();
 
         // Supply a body if required
         if (event.body) {

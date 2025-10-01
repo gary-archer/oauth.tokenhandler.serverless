@@ -74,7 +74,7 @@ export class OAuthProxy {
         if (event.headers) {
 
             Object.keys(event.headers).forEach((name) => {
-                if (name.startsWith('authsamples')) {
+                if (name.toLowerCase().startsWith('authsamples')) {
                     headers[name] = event.headers[name] as string;
                 }
             });

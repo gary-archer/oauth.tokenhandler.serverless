@@ -12,7 +12,7 @@ stages:
 # Base details for AWS deployment
 provider:
   name: aws
-  runtime: nodejs22.x
+  runtime: nodejs24.x
   region: eu-west-2
   apiGateway:
     shouldStartNameWithService: true

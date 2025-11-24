@@ -1,6 +1,6 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
 import {randomUUID} from 'crypto';
-import fs from 'fs-extra';
+import fs from 'node:fs/promises';
 import {ClientError} from '../errors/clientError.js';
 import {ServerError} from '../errors/serverError.js';
 import {HeaderProcessor} from '../http/headerProcessor.js';
@@ -77,7 +77,7 @@ export class LogEntry {
      */
     public write(): void {
 
-        this.data.performance.dispose();
+        this.data.performance[Symbol.dispose]();
         this.data.millisecondsTaken = this.data.performance.getMillisecondsTaken();
 
         if (this.willLog()) {
@@ -86,7 +86,7 @@ export class LogEntry {
 
                 // On a developer PC, output from 'npm run lambda' is written with pretty printing to a file
                 const data = JSON.stringify(this.data.toLogFormat(), null, 2);
-                fs.appendFileSync('./test/lambdatest.log', data);
+                fs.appendFile('./test/lambdatest.log', data);
 
             } else {
 

@@ -1,6 +1,6 @@
 import middy from '@middy/core';
 import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
-import fs from 'fs-extra';
+import fs from 'fs';
 import {Configuration} from '../configuration/configuration.js';
 import {ResponseWriter} from '../http/responseWriter.js';
 import {LoggerFactory} from '../logging/loggerFactory.js';

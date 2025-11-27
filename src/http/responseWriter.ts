@@ -7,14 +7,18 @@ export class ResponseWriter {
 
     /*
      * Return data to the caller, which could be a success or error object
+     * Invalid lambda response data results in a cryptic 502 error so ensure that we have a Javascript object
      */
-    public static objectResponse(statusCode: number, body: any): APIGatewayProxyResult {
+    public static objectResponse(statusCode: number, body: any, headers: any = null): APIGatewayProxyResult {
 
         const response = {
             statusCode,
         } as APIGatewayProxyResult;
 
-        // Invalid lambda response data results in a cryptic 502 error so ensure that we have a Javascript object
+        if (headers) {
+            response.headers = headers;
+        }
+
         if (body && typeof body === 'object') {
             response.body = JSON.stringify(body);
         }

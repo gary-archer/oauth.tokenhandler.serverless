@@ -39,7 +39,7 @@ export class OAuthProxy {
         const apiResponse = await this.callApi(event, accessToken);
 
         // Write the response to the container
-        return ResponseWriter.objectResponse(apiResponse.status, apiResponse.data);
+        return ResponseWriter.objectResponse(apiResponse.status, apiResponse.data, apiResponse.headers);
     }
 
     /*
@@ -103,6 +103,7 @@ export class OAuthProxy {
 
                 return {
                     status: e.response.status,
+                    headers: this.getResponseHeaders(e.response),
                     data: e.response.data,
                 };
             }
@@ -113,7 +114,9 @@ export class OAuthProxy {
     }
 
     /*
-     * Add selected response headers for API requests
+     * APIs implement zero trust security in the lambdas themselves, which can return a 'www-authenticate header'
+     * However, the AWS API gateway adds a prefix of 'x-amzn-remapped-' so clients cannot use the header
+     * Therefore, this code does not currently work
      */
     private getResponseHeaders(response: any): any {
 

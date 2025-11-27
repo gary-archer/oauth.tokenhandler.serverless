@@ -1,5 +1,5 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import axios, {AxiosRequestConfig, AxiosResponse, Method} from 'axios';
+import axios, {AxiosRequestConfig, Method} from 'axios';
 import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
 import {RouteConfiguration} from '../configuration/routeConfiguration.js';
 import {ErrorUtils} from '../errors/errorUtils.js';
@@ -45,7 +45,7 @@ export class OAuthProxy {
     /*
      * Call the target API with an access token
      */
-    public async callApi(event: APIGatewayProxyEvent, accessToken: string): Promise<AxiosResponse> {
+    public async callApi(event: APIGatewayProxyEvent, accessToken: string): Promise<any> {
 
         // Get the route, which has been verified by the authorizer middleware
         const route = PathProcessor.findRoute(event, this.routes);
@@ -91,16 +91,42 @@ export class OAuthProxy {
         try {
 
             // Try the request, and return the response on success
-            return await axios.request(options);
+            const response = await axios.request(options);
+            return {
+                status: response.status,
+                data: response.data,
+            };
 
         } catch (e: any) {
 
             if (e.response && e.response.status && e.response.data) {
-                return e.response;
+
+                return {
+                    status: e.response.status,
+                    data: e.response.data,
+                };
             }
 
-            // Otherwise rethrow the exception, eg for a connectivity error
+            // Otherwise rethrow the exception, such as connectivity errors
             throw ErrorUtils.fromApiHttpRequestError(e, options.url || '');
         }
+    }
+
+    /*
+     * Add selected response headers for API requests
+     */
+    private getResponseHeaders(response: any): any {
+
+        const headers: any = {};
+
+        if (response.headers) {
+
+            const wwwAuthenticate = response.headers['www-authenticate'];
+            if (wwwAuthenticate) {
+                headers['www-authenticate'] = wwwAuthenticate;
+            }
+        }
+
+        return headers;
     }
 }

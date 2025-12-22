@@ -8,7 +8,7 @@ import {PerformanceBreakdown} from './performanceBreakdown.js';
  */
 export class LogEntryData {
 
-    // A unique generated client side id, which becomes the unique id in the aggregated logs database
+    // A generated ID, which becomes the unique id in the aggregated logs database
     public id: string;
 
     // The time when the API received the request
@@ -29,10 +29,7 @@ export class LogEntryData {
     // The request path
     public path: string;
 
-    // The calling application name
-    public clientApplicationName: string;
-
-    // The subject claim from the OAuth 2.0 access token
+    // The subject claim from the access token
     public userId: string;
 
     // The status code returned
@@ -50,10 +47,10 @@ export class LogEntryData {
     // The specific error instance id, for 500 errors
     public errorId: number;
 
-    // The correlation id, used to link related API requests together
+    // The correlation ID, used to link related API requests together
     public correlationId: string;
 
-    // A session id, to group related calls from a client together
+    // A session ID, to group related calls from a client together
     public sessionId: string;
 
     // An object containing performance data, written when performance is slow
@@ -75,7 +72,6 @@ export class LogEntryData {
         this.hostName = os.hostname();
         this.method = '';
         this.path = '';
-        this.clientApplicationName = '';
         this.userId = '';
         this.statusCode = 0;
         this.millisecondsTaken = 0;
@@ -104,7 +100,6 @@ export class LogEntryData {
         this.outputString((x) => output.hostName = x, this.hostName);
         this.outputString((x) => output.method = x, this.method);
         this.outputString((x) => output.path = x, this.path);
-        this.outputString((x) => output.clientApplicationName = x, this.clientApplicationName);
         this.outputString((x) => output.userId = x, this.userId);
         this.outputNumber((x) => output.statusCode = x, this.statusCode);
         this.outputString((x) => output.errorCode = x, this.errorCode);

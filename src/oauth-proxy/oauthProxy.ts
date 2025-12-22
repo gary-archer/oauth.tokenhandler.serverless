@@ -80,8 +80,14 @@ export class OAuthProxy {
             });
         }
 
-        // Ensure that the correlation id from the log entry is forwarded
-        headers['authsamples-correlation-id'] = this.container.getLogEntry().getCorrelationId();
+        // Forward the correlation id from the log entry
+        headers['correlation-id'] = this.container.getLogEntry().getCorrelationId();
+
+        // Also forward the exception testing header if present
+        const headerValue = event.headers['api-exception-simulation'] as string;
+        if (headerValue) {
+            headers['api-exception-simulation'] = headerValue;
+        }
 
         // Supply a body if required
         if (event.body) {

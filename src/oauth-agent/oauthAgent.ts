@@ -168,9 +168,10 @@ export class OAuthAgent {
             const accessToken = authCodeGrantData.access_token;
             const idToken = authCodeGrantData.id_token;
 
-            // Log the user ID
-            const claims = JSON.parse(Base64Url.decode(idToken.split('.')[1]).toString());
-            this.container.getLogEntry().setUserId(claims.sub);
+            // Log ID token info
+            const idTokenPayload = idToken.split('.')[1];
+            const claims = JSON.parse(Base64Url.decode(idTokenPayload).toString());
+            this.container.getLogEntry().setIdTokenInfo(claims.sub, claims.origin_jti);
 
             // Inform the SPA that that a login response was handled
             const body = {
@@ -338,7 +339,7 @@ export class OAuthAgent {
         if (idTokenPayload) {
 
             const claims = JSON.parse(Base64Url.decode(idTokenPayload).toString());
-            this.container.getLogEntry().setUserId(claims.sub);
+            this.container.getLogEntry().setIdTokenInfo(claims.sub, claims.origin_jti);
             return claims;
         }
 

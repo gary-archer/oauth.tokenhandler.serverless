@@ -5,6 +5,7 @@ import {ClientError} from '../errors/clientError.js';
 import {ServerError} from '../errors/serverError.js';
 import {HeaderProcessor} from '../http/headerProcessor.js';
 import {PathProcessor} from '../http/pathProcessor.js';
+import {TextValidator} from '../utilities/textValidator.js';
 import {LogEntryData} from './logEntryData.js';
 
 export class LogEntry {
@@ -27,18 +28,12 @@ export class LogEntry {
         this.data.path = PathProcessor.getFullPath(event);
         this.data.method = event.httpMethod;
 
-        const clientApplicationName = HeaderProcessor.readHeader(event, 'authsamples-api-client');
-        if (clientApplicationName) {
-            this.data.clientApplicationName = clientApplicationName;
+        // Use the correlation id from request headers or create one
+        let correlationId = HeaderProcessor.readHeader(event, 'correlation-id');
+        if (correlationId) {
+            correlationId = TextValidator.sanitize(correlationId);
         }
-
-        const correlationId = HeaderProcessor.readHeader(event, 'authsamples-correlation-id');
         this.data.correlationId = correlationId ? correlationId : randomUUID();
-
-        const sessionId = HeaderProcessor.readHeader(event, 'authsamples-session-id');
-        if (sessionId) {
-            this.data.sessionId = sessionId;
-        }
     }
 
     public getCorrelationId(): string {
@@ -49,8 +44,9 @@ export class LogEntry {
         this.data.operationName = name;
     }
 
-    public setUserId(userId: string): void {
+    public setIdTokenInfo(userId: string, sessionId: string): void {
         this.data.userId = userId;
+        this.data.sessionId = sessionId;
     }
 
     public setResponseStatus(statusCode: number): void {

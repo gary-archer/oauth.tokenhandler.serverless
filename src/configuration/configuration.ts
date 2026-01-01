@@ -1,9 +1,9 @@
-import {CookieConfiguration} from './cookieConfiguration.js';
-import {CorsConfiguration} from './corsConfiguration.js';
-import {HostConfiguration} from './hostConfiguration.js';
-import {LoggingConfiguration} from './loggingConfiguration.js';
-import {OAuthAgentConfiguration} from './oauthAgentConfiguration.js';
-import {RouteConfiguration} from './routeConfiguration.js';
+import {CookieConfiguration} from './cookieConfiguration';
+import {CorsConfiguration} from './corsConfiguration';
+import {HostConfiguration} from './hostConfiguration';
+import {LoggingConfiguration} from './loggingConfiguration';
+import {OAuthAgentConfiguration} from './oauthAgentConfiguration';
+import {RouteConfiguration} from './routeConfiguration';
 
 /*
  * The overall configuration

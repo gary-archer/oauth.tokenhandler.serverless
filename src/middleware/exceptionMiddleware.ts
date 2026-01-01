@@ -1,13 +1,13 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import middy from '@middy/core';
-import {ClientError} from '../errors/clientError.js';
-import {ErrorCodes} from '../errors/errorCodes.js';
-import {ErrorUtils} from '../errors/errorUtils.js';
-import {ServerError} from '../errors/serverError.js';
-import {CookieProcessor} from '../http/cookieProcessor.js';
-import {ResponseWriter} from '../http/responseWriter.js';
-import {LoggerFactory} from '../logging/loggerFactory.js';
-import {Container} from '../utilities/container.js';
+import {ClientError} from '../errors/clientError';
+import {ErrorCodes} from '../errors/errorCodes';
+import {ErrorUtils} from '../errors/errorUtils';
+import {ServerError} from '../errors/serverError';
+import {CookieProcessor} from '../http/cookieProcessor';
+import {ResponseWriter} from '../http/responseWriter';
+import {LoggerFactory} from '../logging/loggerFactory';
+import {Container} from '../utilities/container';
 
 /*
  * The exception middleware coded in a class based manner

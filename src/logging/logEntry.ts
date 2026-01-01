@@ -1,12 +1,12 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
 import {randomUUID} from 'crypto';
 import fs from 'node:fs/promises';
-import {ClientError} from '../errors/clientError.js';
-import {ServerError} from '../errors/serverError.js';
-import {HeaderProcessor} from '../http/headerProcessor.js';
-import {PathProcessor} from '../http/pathProcessor.js';
-import {TextValidator} from '../utilities/textValidator.js';
-import {LogEntryData} from './logEntryData.js';
+import {ClientError} from '../errors/clientError';
+import {ServerError} from '../errors/serverError';
+import {HeaderProcessor} from '../http/headerProcessor';
+import {PathProcessor} from '../http/pathProcessor';
+import {TextValidator} from '../utilities/textValidator';
+import {LogEntryData} from './logEntryData';
 
 export class LogEntry {
 

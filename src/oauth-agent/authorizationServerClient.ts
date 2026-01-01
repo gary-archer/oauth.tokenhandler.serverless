@@ -1,11 +1,11 @@
 import axios, {AxiosRequestConfig} from 'axios';
 import {createRemoteJWKSet, JWTPayload, jwtVerify, JWTVerifyOptions} from 'jose';
 import {URLSearchParams} from 'url';
-import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration.js';
-import {ErrorUtils} from '../errors/errorUtils.js';
-import {OAuthErrorStatus} from '../errors/oauthErrorStatus.js';
-import {QueryProcessor} from '../http/queryProcessor.js';
-import {OAuthLoginState} from './oauthLoginState.js';
+import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
+import {ErrorUtils} from '../errors/errorUtils';
+import {OAuthErrorStatus} from '../errors/oauthErrorStatus';
+import {QueryProcessor} from '../http/queryProcessor';
+import {OAuthLoginState} from './oauthLoginState';
 
 /*
  * A class to deal with calls to the authorization server and other OAuth responsibilities

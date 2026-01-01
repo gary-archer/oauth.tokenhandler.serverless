@@ -68,6 +68,6 @@ if [ $? -ne 0 ]; then
 fi
 
 #
-# Clean up root local configurations
+# Remove the root local configurations
 #
 rm ./config*.json

@@ -1,5 +1,5 @@
-import {OAuthAgentApiConfiguration} from './oauthAgentApiConfiguration.js';
-import {OAuthAgentClientConfiguration} from './oauthAgentClientConfiguration.js';
+import {OAuthAgentApiConfiguration} from './oauthAgentApiConfiguration';
+import {OAuthAgentClientConfiguration} from './oauthAgentClientConfiguration';
 
 /*
  * A holder for OAuth Agent settings

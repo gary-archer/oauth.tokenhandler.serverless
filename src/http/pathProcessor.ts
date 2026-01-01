@@ -1,5 +1,5 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
-import {RouteConfiguration} from '../configuration/routeConfiguration.js';
+import {RouteConfiguration} from '../configuration/routeConfiguration';
 
 /*
  * A utility to deal with paths

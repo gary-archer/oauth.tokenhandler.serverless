@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
-import {ErrorUtils} from '../errors/errorUtils.js';
-import {Base64Url} from './base64url.js';
+import {CookieConfiguration} from '../configuration/cookieConfiguration';
+import {ErrorUtils} from '../errors/errorUtils';
+import {Base64Url} from './base64url';
 
 const GCM_IV_SIZE = 12;
 const GCM_TAG_SIZE = 16;

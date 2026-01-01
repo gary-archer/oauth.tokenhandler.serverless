@@ -1,9 +1,9 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
-import cookie, {SerializeOptions} from 'cookie';
-import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
-import {ErrorUtils} from '../errors/errorUtils.js';
-import {CookieEncrypter} from '../utilities/cookieEncrypter.js';
-import {HeaderProcessor} from './headerProcessor.js';
+import {SerializeOptions, stringifySetCookie} from 'cookie';
+import {CookieConfiguration} from '../configuration/cookieConfiguration';
+import {ErrorUtils} from '../errors/errorUtils';
+import {CookieEncrypter} from '../utilities/cookieEncrypter';
+import {HeaderProcessor} from './headerProcessor';
 
 const STATE_COOKIE   = 'state';
 const ACCESS_COOKIE  = 'at';
@@ -31,7 +31,7 @@ export class CookieProcessor {
 
         const name = this.getCookieName(STATE_COOKIE);
         const value = this.encrypter.encryptCookie(JSON.stringify(data));
-        return cookie.serialize(name, value, this.getCookieOptions(STATE_COOKIE));
+        return stringifySetCookie(name, value, this.getCookieOptions(STATE_COOKIE));
     }
 
     /*
@@ -57,7 +57,7 @@ export class CookieProcessor {
 
         const name = this.getCookieName(REFRESH_COOKIE);
         const value = this.encrypter.encryptCookie(refreshToken);
-        return cookie.serialize(name, value, this.getCookieOptions(REFRESH_COOKIE));
+        return stringifySetCookie(name, value, this.getCookieOptions(REFRESH_COOKIE));
     }
 
     /*
@@ -81,7 +81,7 @@ export class CookieProcessor {
 
         const name = this.getCookieName(ACCESS_COOKIE);
         const value = this.encrypter.encryptCookie(accessToken);
-        return cookie.serialize(name, value, this.getCookieOptions(ACCESS_COOKIE));
+        return stringifySetCookie(name, value, this.getCookieOptions(ACCESS_COOKIE));
     }
 
     /*
@@ -111,7 +111,7 @@ export class CookieProcessor {
 
         const name = this.getCookieName(ID_COOKIE);
         const value = this.encrypter.encryptCookie(parts[1]);
-        return cookie.serialize(name, value, this.getCookieOptions(ID_COOKIE));
+        return stringifySetCookie(name, value, this.getCookieOptions(ID_COOKIE));
     }
 
     /*
@@ -141,7 +141,7 @@ export class CookieProcessor {
      * Clear the temporary state cookie used during login
      */
     public expireStateCookie(): string {
-        return cookie.serialize(this.getCookieName(STATE_COOKIE), '', this.getExpireCookieOptions(STATE_COOKIE));
+        return stringifySetCookie(this.getCookieName(STATE_COOKIE), '', this.getExpireCookieOptions(STATE_COOKIE));
     }
 
     /*
@@ -150,9 +150,9 @@ export class CookieProcessor {
     public expireAllCookies(): string[] {
 
         return [
-            cookie.serialize(this.getCookieName(REFRESH_COOKIE), '', this.getExpireCookieOptions(REFRESH_COOKIE)),
-            cookie.serialize(this.getCookieName(ACCESS_COOKIE),  '', this.getExpireCookieOptions(ACCESS_COOKIE)),
-            cookie.serialize(this.getCookieName(ID_COOKIE),      '', this.getExpireCookieOptions(ID_COOKIE)),
+            stringifySetCookie(this.getCookieName(REFRESH_COOKIE), '', this.getExpireCookieOptions(REFRESH_COOKIE)),
+            stringifySetCookie(this.getCookieName(ACCESS_COOKIE),  '', this.getExpireCookieOptions(ACCESS_COOKIE)),
+            stringifySetCookie(this.getCookieName(ID_COOKIE),      '', this.getExpireCookieOptions(ID_COOKIE)),
         ];
     }
 

@@ -1,7 +1,7 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import {ResponseWriter} from '../http/responseWriter.js';
-import {Container} from '../utilities/container.js';
-import {LambdaConfiguration} from './lambdaConfiguration.js';
+import {ResponseWriter} from '../http/responseWriter';
+import {Container} from '../utilities/container';
+import {LambdaConfiguration} from './lambdaConfiguration';
 
 /*
  * A wildcard lambda through which the SPA calls APIs and the authorization server

@@ -2,4 +2,4 @@
 node_modules
 dist
 .serverless
-config*.json
+/config*.json

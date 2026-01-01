@@ -1,7 +1,7 @@
 import middy from '@middy/core';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import {LoggerFactory} from '../logging/loggerFactory.js';
-import {Container} from '../utilities/container.js';
+import {LoggerFactory} from '../logging/loggerFactory';
+import {Container} from '../utilities/container';
 
 /*
  * The middleware coded in a class based manner

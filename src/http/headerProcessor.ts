@@ -1,5 +1,5 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
-import cookie from 'cookie';
+import {parseCookie} from 'cookie';
 
 /*
  * A utility to deal with lambda header formats
@@ -47,7 +47,7 @@ export class HeaderProcessor {
         const headers = HeaderProcessor.readMultiValueHeader(event, 'cookie');
         headers.forEach((h) => {
 
-            const data = cookie.parse(h);
+            const data = parseCookie(h);
             if (data[name]) {
                 result = data[name];
             }

@@ -1,4 +1,6 @@
 service: tokenhandler
+
+# Details for the two AWS deployed stages
 stages:
   dev:
     params:
@@ -9,7 +11,7 @@ stages:
       domainName: 'bff.authsamples.com'
       certificateDomainName: 'authsamples.com'
 
-# Base details for AWS deployment
+# AWS deployment details
 provider:
   name: aws
   runtime: nodejs24.x
@@ -17,40 +19,40 @@ provider:
   apiGateway:
     shouldStartNameWithService: true
 
-# Serverless domain manager details
-custom:
-  customDomain:
-    domainName: ${param:domainName}
-    certificateDomainName: ${param:certificateDomainName}
-    endpointType: regional
-
-# A single HTTP endpoint covers all routes, with other logic handled in code
+# A single lambda function covers all token handler routes
 functions:
   wildcard:
-    handler: dist/lambda/wildcard.handler
+    handler: dist/wildcard.handler
+    package:
+      include:
+        - dist/wildcard.js
+        - config.json
+        - package.json
     events:
       - http: 
           path: /{proxy+}
           method: ANY
 
-# Include the correct config file for the stage, and exclude unwanted files
+# Disable the default build which we are overriding with webpack
+build:
+  esbuild: false
+
+# Exclude all files by default and choose files in the function packaging above
 package:
+  individually: true
   patterns:
-  - '!.codacy.yaml'
-  - '!eslint.config.mjs'
-  - '!.vscode/**'
-  - '!environments/**'
-  - '!src/**'
-  - '!test/**'
-  - '!tsconfig.json'
-  - '!package-lock.json'
-  - '!README.md'
-  - '!LICENSE.txt'
-  - '!config-template.json'
-  - '!*.sh'
+  - '!/**'
   
+# Support configuring domain details in AWS
 plugins:
   - serverless-domain-manager
+
+# AWS custom domain integration details
+custom:
+  customDomain:
+    domainName: ${param:domainName}
+    certificateName: ${param:certificateDomainName}
+    endpointType: regional
 
 resources:
   Resources:

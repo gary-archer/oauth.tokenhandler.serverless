@@ -1,4 +1,4 @@
-import {ErrorCodes} from './errorCodes.js';
+import {ErrorCodes} from './errorCodes';
 
 /*
  * Return the correct status code for OAuth errors

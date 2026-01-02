@@ -1,7 +1,7 @@
-import {ClientError} from './clientError.js';
-import {ErrorCodes} from './errorCodes.js';
-import {ErrorFactory} from './errorFactory.js';
-import {ServerError} from './serverError.js';
+import {ClientError} from './clientError';
+import {ErrorCodes} from './errorCodes';
+import {ErrorFactory} from './errorFactory';
+import {ServerError} from './serverError';
 
 /*
  * Error utility functions for OAuth and general processing

@@ -1,6 +1,6 @@
 import {randomUUID} from 'crypto';
 import os from 'os';
-import {PerformanceBreakdown} from './performanceBreakdown.js';
+import {PerformanceBreakdown} from './performanceBreakdown';
 
 /*
  * Each API request writes a structured log entry containing fields we will query by

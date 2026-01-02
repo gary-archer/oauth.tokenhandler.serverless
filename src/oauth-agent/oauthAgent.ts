@@ -1,14 +1,14 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
-import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration.js';
-import {ErrorUtils} from '../errors/errorUtils.js';
-import {CookieProcessor} from '../http/cookieProcessor.js';
-import {FormProcessor} from '../http/formProcessor.js';
-import {ResponseWriter} from '../http/responseWriter.js';
-import {Base64Url} from '../utilities/base64url.js';
-import {Container} from '../utilities/container.js';
-import {AuthorizationServerClient} from './authorizationServerClient.js';
-import {EndLoginResponse} from './endLoginResponse.js';
+import {CookieConfiguration} from '../configuration/cookieConfiguration';
+import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
+import {ErrorUtils} from '../errors/errorUtils';
+import {CookieProcessor} from '../http/cookieProcessor';
+import {FormProcessor} from '../http/formProcessor';
+import {ResponseWriter} from '../http/responseWriter';
+import {Base64Url} from '../utilities/base64url';
+import {Container} from '../utilities/container';
+import {AuthorizationServerClient} from './authorizationServerClient';
+import {EndLoginResponse} from './endLoginResponse';
 
 /*
  * The entry point for OAuth Agent handling

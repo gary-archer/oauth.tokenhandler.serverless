@@ -1,12 +1,12 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import axios, {AxiosRequestConfig, Method} from 'axios';
-import {CookieConfiguration} from '../configuration/cookieConfiguration.js';
-import {RouteConfiguration} from '../configuration/routeConfiguration.js';
-import {ErrorUtils} from '../errors/errorUtils.js';
-import {CookieProcessor} from '../http/cookieProcessor.js';
-import {PathProcessor} from '../http/pathProcessor.js';
-import {ResponseWriter} from '../http/responseWriter.js';
-import {Container} from '../utilities/container.js';
+import {CookieConfiguration} from '../configuration/cookieConfiguration';
+import {RouteConfiguration} from '../configuration/routeConfiguration';
+import {ErrorUtils} from '../errors/errorUtils';
+import {CookieProcessor} from '../http/cookieProcessor';
+import {PathProcessor} from '../http/pathProcessor';
+import {ResponseWriter} from '../http/responseWriter';
+import {Container} from '../utilities/container';
 
 /*
  * A demo level class to manage HTTP forwarding of API requests

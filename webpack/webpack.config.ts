@@ -16,7 +16,7 @@ const config: webpack.Configuration = {
 
     // Provide the lambda entry point
     entry: {
-        wildcard: ['./src/lambda/wildcard.ts'],
+        wildcard: './src/lambda/wildcard.ts',
     },
     module: {
         rules: [

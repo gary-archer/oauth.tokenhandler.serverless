@@ -1,5 +1,5 @@
 import path from 'path';
-import webpack from 'webpack';
+import webpack, {Compiler} from 'webpack';
 import {removeSourceMapReferences} from './rewriteSourceMaps';
 
 /*
@@ -50,7 +50,8 @@ const config: webpack.Configuration = {
     plugins:[
         {
             // Remove source map references from release builds
-            apply: (compiler: any) => {
+            /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
+            apply: (compiler: Compiler) => {
                 compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
                     removeSourceMapReferences(['wildcard.js']);
                 });

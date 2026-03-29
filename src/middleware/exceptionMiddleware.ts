@@ -61,8 +61,7 @@ export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyE
         // Set the client error as the lambda response error, which will be serialized and returned via the API gateway
         request.response = ResponseWriter.objectResponse(clientError.getStatusCode(), clientError.toResponseFormat());
 
-        // Handle the special case where the OAuth Agent has failed to get a new access token with the refresh token
-        // In this case we clear all cookies, to inform the SPA that the user must re-authenticate
+        // Handle the special session expire case, and clear all cookies
         if (clientError.getStatusCode() === 401 && clientError.getErrorCode() === ErrorCodes.sessionExpiredError) {
 
             const cookieProcessor = new CookieProcessor(this.container.getConfiguration().cookie);

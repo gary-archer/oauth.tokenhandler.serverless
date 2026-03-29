@@ -1,9 +1,6 @@
-import axios, {AxiosRequestConfig} from 'axios';
 import {createRemoteJWKSet, JWTPayload, jwtVerify, JWTVerifyOptions} from 'jose';
-import {URLSearchParams} from 'url';
 import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
-import {OAuthErrorStatus} from '../errors/oauthErrorStatus';
 import {QueryProcessor} from '../http/queryProcessor';
 import {OAuthLoginState} from './oauthLoginState';
 
@@ -141,10 +138,10 @@ export class AuthorizationServerClient {
     private async postGrantMessage(formData: URLSearchParams): Promise<any> {
 
         // Define request options
-        const options = {
-            url: this.configuration.api.tokenEndpoint,
+        const url = this.configuration.api.tokenEndpoint;
+        const options: RequestInit = {
             method: 'POST',
-            data: formData,
+            body: formData.toString(),
             headers: {
                 'content-type': 'application/x-www-form-urlencoded',
                 'accept': 'application/json',
@@ -154,34 +151,19 @@ export class AuthorizationServerClient {
         try {
 
             // Call the authorization server and return the data
-            const authServerResponse = await axios.request(options as AxiosRequestConfig);
-            return authServerResponse.data;
+            const response = await fetch(url, options);
+            if (response.ok) {
+                return await response.json();
+            }
+
+            // Handle response errors, including session expiry
+            const grantType = formData.get('grant_type') || '';
+            throw await ErrorUtils.fromOAuthGrantResponseError(response, grantType);
 
         } catch (e: any) {
 
-            // See if we have a response body
-            if (e.response && e.response.status && e.response.data) {
-
-                // Process error data and include the 'error' and 'error_description' fields
-                const errorData = e.response.data;
-                if (errorData.error) {
-
-                    // Throw an error with Authorization Server details
-                    const [statusCode, errorCode] = OAuthErrorStatus.processTokenResponseError(
-                        formData.get('grant_type') || '',
-                        e.response.status,
-                        errorData.error);
-
-                    throw ErrorUtils.fromTokenResponseError(
-                        statusCode,
-                        errorCode,
-                        errorData.error_description,
-                        options.url);
-                }
-            }
-
-            // Throw a generic client connectivity error
-            throw ErrorUtils.fromOAuthHttpRequestError(e, options.url);
+            // Handle connectivity errors
+            throw ErrorUtils.fromFetchError(e, url, 'authorization server');
         }
     }
 

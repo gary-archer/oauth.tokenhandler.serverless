@@ -41,7 +41,7 @@ export class ErrorUtils {
             message || defaultMessage,
             exception.stack);
 
-        error.setDetails(ErrorUtils.getExceptionDetailsMessage(exception));
+        error.setDetails(ErrorUtils.getExceptionMessage(exception));
         return error;
     }
 
@@ -92,22 +92,54 @@ export class ErrorUtils {
     }
 
     /*
-     * Throw an exception for the SPA when there is a back channel response error from the authorization server
+     * Exceptions during fetches could be caused by misconfiguration, server unavailable or JSON parsing failures
      */
-    public static fromTokenResponseError(
-        statusCode: number,
-        errorCode: string,
-        errorDescription: string | null,
-        url: string): ClientError {
+    public static fromFetchError(exception: any, url: string, source: string): ClientError | ServerError {
 
-        const description = errorDescription || 'A token error response was received from the authorization server';
+        if (exception instanceof ServerError || exception instanceof ClientError) {
+            return exception;
+        }
 
-        const error = ErrorFactory.createClientError(statusCode, errorCode, description);
-        error.setLogContext({
-            url,
-        });
+        const error = ErrorFactory.createServerError(
+            ErrorCodes.fetchError,
+            `Problem encountered connecting to the ${source}`,
+            exception.stack);
 
+        error.setDetails(`${ErrorUtils.getExceptionMessage(exception)}, URL: ${url}`);
         return error;
+    }
+
+    /*
+     * Handle OAuth grant errors, where session expiry is an expected condition
+     */
+    public static async fromOAuthGrantResponseError(response: Response, grantType: string):
+        Promise<ClientError | ServerError> {
+
+        let code = ErrorCodes.fetchError;
+        let message = 'An error response was returned from the token endpoint';
+
+        try {
+
+            const data = await response.json() as any;
+            if (data) {
+
+                if (data.error) {
+                    code = data.error;
+                }
+                if (data.error_description) {
+                    message = data.error_description;
+                }
+            }
+
+        } catch {
+            // Swallow JSON parse errors for unexpected responses
+        }
+
+        if (grantType === 'refresh_token' && code === ErrorCodes.invalidGrantError) {
+            return ErrorFactory.createClientError(401, ErrorCodes.sessionExpiredError, 'The user must reauthenticate');
+        }
+
+        return ErrorFactory.createServerError(code, message);
     }
 
     /*
@@ -126,34 +158,6 @@ export class ErrorUtils {
      */
     public static createInvalidOAuthResponseError(message: string): ServerError {
         return ErrorFactory.createServerError(ErrorCodes.invalidOAuthResponse, message);
-    }
-
-    /*
-     * Handle failed HTTP connectivity problems in OAuth requests
-     */
-    public static fromOAuthHttpRequestError(exception: any, url: string): ServerError {
-
-        const error = ErrorFactory.createServerError(
-            ErrorCodes.httpRequestError,
-            'Problem encountered connecting to the authorization server',
-            exception.stack);
-
-        error.setDetails(`${ErrorUtils.getExceptionDetailsMessage(exception)}, URL: ${url}`);
-        return error;
-    }
-
-    /*
-     * Handle failed HTTP connectivity problems in API requests
-     */
-    public static fromApiHttpRequestError(exception: any, url: string): ServerError {
-
-        const error = ErrorFactory.createServerError(
-            ErrorCodes.httpRequestError,
-            'Problem encountered connecting to a target API',
-            exception.stack);
-
-        error.setDetails(`${ErrorUtils.getExceptionDetailsMessage(exception)}, URL: ${url}`);
-        return error;
     }
 
     /*
@@ -204,7 +208,7 @@ export class ErrorUtils {
      */
     public static fromCookieDecryptionError(name: string, exception: any): ClientError {
 
-        const details = `Cookie decryption failed: ${ErrorUtils.getExceptionDetailsMessage(exception)}`;
+        const details = `Cookie decryption failed: ${ErrorUtils.getExceptionMessage(exception)}`;
         const error = ErrorFactory.createClient401Error(details);
 
         const logContext = error.getLogContext();
@@ -240,15 +244,28 @@ export class ErrorUtils {
     }
 
     /*
-     * Get the message from an exception and avoid returning [object Object]
+     * Get the message from an exception
      */
-    public static getExceptionDetailsMessage(e: any): string {
+    private static getExceptionMessage(exception: any): string {
 
-        if (e.message) {
-            return e.message;
+        // Prefer to return a code and message
+        const code = exception?.code || exception?.cause?.code || '';
+        const message = exception.message || '';
+
+        const parts = [];
+        if (code) {
+            parts.push(code);
+        }
+        if (code) {
+            parts.push(message);
         }
 
-        const details = e.toString();
+        if (parts.length > 0) {
+            return parts.join(', ');
+        }
+
+        // Otherwise get raw details and avoid returning [object Object]
+        const details = exception.toString();
         if (details !== {}.toString()) {
             return details;
         }

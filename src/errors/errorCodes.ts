@@ -9,7 +9,7 @@ export class ErrorCodes {
 
     public static readonly invalidStateError = 'invalid_state';
 
-    public static readonly httpRequestError = 'http_request_error';
+    public static readonly fetchError = 'fetch_error';
 
     public static readonly fieldNotFoundError = 'field_not_found';
 

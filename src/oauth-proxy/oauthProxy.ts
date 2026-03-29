@@ -95,23 +95,19 @@ export class OAuthProxy {
 
         try {
 
-            // Try the request, and return the response on success
+            // Make the request
             const response = await fetch(url, options);
-            if (response.ok) {
 
-                const data = await response.json();
-                return {
-                    status: response.status,
-                    data,
-                };
-            }
-
-            // Handle response errors
-            throw await ErrorUtils.fromApiFetchResponseError(response);
+            // Try to read either a valid response or an error response as JSON
+            const data = await response.json();
+            return {
+                status: response.status,
+                data,
+            };
 
         } catch (e: any) {
 
-            // Handle connectivity errors
+            // If JSON handling fails or there is a connectivity problem, process the error here
             throw ErrorUtils.fromFetchError(e, url, 'web API');
         }
     }

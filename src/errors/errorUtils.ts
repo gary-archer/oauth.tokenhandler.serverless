@@ -94,7 +94,11 @@ export class ErrorUtils {
     /*
      * Exceptions during fetches could be caused by misconfiguration, server unavailable or JSON parsing failures
      */
-    public static fromFetchError(exception: any, url: string, source: string): ServerError {
+    public static fromFetchError(exception: any, url: string, source: string): ClientError | ServerError {
+
+        if (exception instanceof ServerError || exception instanceof ClientError) {
+            return exception;
+        }
 
         const error = ErrorFactory.createServerError(
             ErrorCodes.fetchError,
@@ -133,32 +137,6 @@ export class ErrorUtils {
 
         if (grantType === 'refresh_token' && code === ErrorCodes.invalidGrantError) {
             return ErrorFactory.createClientError(401, ErrorCodes.sessionExpiredError, 'The user must reauthenticate');
-        }
-
-        return ErrorFactory.createServerError(code, message);
-    }
-
-    /*
-     * Handle fetch response errors to the API, which can originate from the API or an API gateway
-     */
-    public static async fromApiFetchResponseError(response: Response): Promise<ServerError> {
-
-        let code = ErrorCodes.fetchError;
-        let message = 'An error response was returned from the API';
-
-        try {
-
-            const data = await response.json() as any;
-            if (data) {
-
-                if (data.code && data.message) {
-                    code = data.code;
-                    message = data.message;
-                }
-            }
-
-        } catch {
-            // Swallow JSON parse errors for unexpected responses
         }
 
         return ErrorFactory.createServerError(code, message);

@@ -1,5 +1,4 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import axios, {AxiosRequestConfig, Method} from 'axios';
 import {CookieConfiguration} from '../configuration/cookieConfiguration';
 import {RouteConfiguration} from '../configuration/routeConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
@@ -56,17 +55,16 @@ export class OAuthProxy {
         // Calculate the full target path
         const fullPath = PathProcessor.getFullPath(event);
         const fullPathToForward = fullPath.replace(route.path, '');
-        const targetUrl = `${route.target}${fullPathToForward}`;
+        const url = `${route.target}${fullPathToForward}`;
 
-        const headers: any = {
-            authorization: `Bearer ${accessToken}`,
+        const headers: any  = {
+            'accept': 'application/json',
+            'authorization': `Bearer ${accessToken}`,
         };
 
         // Set request options
-        const options: AxiosRequestConfig = {
-
-            url: targetUrl,
-            method: event.httpMethod as Method,
+        const options: RequestInit = {
+            method: event.httpMethod,
             headers,
         };
 
@@ -89,53 +87,32 @@ export class OAuthProxy {
             headers['api-exception-simulation'] = headerValue;
         }
 
-        // Supply a body if required
+        // Supply a body to the API if required
         if (event.body) {
-            options.data = event.body;
+            headers['content-type'] = 'application/json';
+            options.body = JSON.stringify(event.body);
         }
 
         try {
 
             // Try the request, and return the response on success
-            const response = await axios.request(options);
-            return {
-                status: response.status,
-                data: response.data,
-            };
+            const response = await fetch(url, options);
+            if (response.ok) {
 
-        } catch (e: any) {
-
-            if (e.response && e.response.status && e.response.data) {
-
+                const data = await response.json();
                 return {
-                    status: e.response.status,
-                    headers: this.getResponseHeaders(e.response),
-                    data: e.response.data,
+                    status: response.status,
+                    data,
                 };
             }
 
-            // Otherwise rethrow the exception, such as connectivity errors
-            throw ErrorUtils.fromApiHttpRequestError(e, options.url || '');
+            // Handle response errors
+            throw await ErrorUtils.fromApiFetchResponseError(response);
+
+        } catch (e: any) {
+
+            // Handle connectivity errors
+            throw ErrorUtils.fromFetchError(e, url, 'web API');
         }
-    }
-
-    /*
-     * APIs implement zero trust security in the lambdas themselves, which can return a 'www-authenticate header'
-     * However, the AWS API gateway adds a prefix of 'x-amzn-remapped-' so clients cannot use the header
-     * Therefore, this code does not currently work
-     */
-    private getResponseHeaders(response: any): any {
-
-        const headers: any = {};
-
-        if (response.headers) {
-
-            const wwwAuthenticate = response.headers['www-authenticate'];
-            if (wwwAuthenticate) {
-                headers['www-authenticate'] = wwwAuthenticate;
-            }
-        }
-
-        return headers;
     }
 }

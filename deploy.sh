@@ -32,6 +32,7 @@ if [ $? -ne 0 ]; then
   echo 'Problem encountered building the code'
   exit
 fi
+exit 0
 
 #
 # Ensure that the correct deployed configuration is in the root folder

@@ -1,6 +1,5 @@
 import path from 'path';
 import webpack, {Compiler} from 'webpack';
-import {removeSourceMapReferences} from './rewriteSourceMaps';
 
 /*
  * Performs tree shaking to reduce lambda sizes and improve cold start times
@@ -47,17 +46,6 @@ const config: webpack.Configuration = {
     experiments: {
         outputModule: true,
     },
-    plugins:[
-        {
-            // Remove source map references from release builds
-            /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
-            apply: (compiler: Compiler) => {
-                compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
-                    removeSourceMapReferences(['wildcard.js']);
-                });
-            }
-        },
-    ]
 };
 
 export default config;

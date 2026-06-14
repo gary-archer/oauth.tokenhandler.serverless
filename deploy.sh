@@ -27,7 +27,7 @@ fi
 #
 # Do a release build of the API code
 #
-npm run buildRelease
+npm run build
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the code'
   exit

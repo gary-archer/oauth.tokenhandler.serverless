@@ -33,7 +33,7 @@ functions:
           path: /{proxy+}
           method: ANY
 
-# Disable the default build which we are overriding with webpack
+# Disable the default build which we are overriding with a bundler
 build:
   esbuild: false
 

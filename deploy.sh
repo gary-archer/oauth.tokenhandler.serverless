@@ -57,7 +57,7 @@ if [ $? -ne 0 ]; then
   echo 'Problem encountered building the AWS package'
   exit
 fi
-exit 0
+
 #
 # Do the deployment
 #

@@ -27,7 +27,7 @@ fi
 #
 # Do a release build of the API code
 #
-npm run buildRelease
+npm run build
 if [ $? -ne 0 ]; then
   echo 'Problem encountered building the code'
   exit
@@ -57,7 +57,7 @@ if [ $? -ne 0 ]; then
   echo 'Problem encountered building the AWS package'
   exit
 fi
-
+exit 0
 #
 # Do the deployment
 #

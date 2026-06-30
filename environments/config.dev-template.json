@@ -23,7 +23,7 @@
         "client": {
             "clientId": "7q5pope8rki7okarj2u8l4in7o",
             "clientSecret": "1d18g4v05sesjkv161borl012j009l7ooktnfs10ph9p6nkbbfl9",
-            "redirectUri": "https://www.authsamples-dev.com/spa/",
+            "redirectUri": "https://www.authsamples-dev.com/spa/callback",
             "postLogoutRedirectUri": "https://www.authsamples-dev.com/spa/loggedout",
             "scope": "openid profile https://api.authsamples.com/investments"
         }

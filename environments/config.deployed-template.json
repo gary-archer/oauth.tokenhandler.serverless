@@ -24,7 +24,7 @@
             "clientId": "4g2i321jh9dcqbj0lpnsk6413p",
             "clientSecret": "1jhst3gm7aci5m5g0kb5vfcn0n28n82g2t1fc7d8sfqmgm87capf",
             "redirectUri": "https://www.authsamples.com/spa/callback",
-            "postLogoutRedirectUri": "https://www.authsamples.com/spa/loggedout",
+            "postLogoutRedirectUri": "https://www.authsamples.com/spa/logoutcallback",
             "scope": "openid profile https://api.authsamples.com/investments"
         }
     },

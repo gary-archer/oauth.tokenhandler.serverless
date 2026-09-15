@@ -6,10 +6,13 @@ import path from 'path';
 import {defineConfig, RollupOptions} from 'rollup';
 import esbuild from 'rollup-plugin-esbuild';
 
+// Set base values and use the watch flag to distinguish between development v production builds
+const isDevelopment = process.env.ROLLUP_WATCH === 'true';
 const outputFolder = 'dist';
+
 const options: RollupOptions = {
 
-    input: `./src/lambda/wildcard.ts`,
+    input: './src/lambda/wildcard.ts',
     output: {
 
         // Output ECMAScript modules
@@ -52,7 +55,7 @@ const options: RollupOptions = {
         }),
 
         // Minimize release bundles
-        terser(),
+        ...(isDevelopment ? [] : [ terser() ]),
     ],
 };
 

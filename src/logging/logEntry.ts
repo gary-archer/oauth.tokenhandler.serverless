@@ -82,7 +82,7 @@ export class LogEntry {
 
                 // On a developer PC, output from 'npm run lambda' is written with pretty printing to a file
                 const data = JSON.stringify(this.data.toLogFormat(), null, 2);
-                fs.appendFile('./test/lambdatest.log', data);
+                fs.appendFile('./lambdatest.log', data);
 
             } else {
 

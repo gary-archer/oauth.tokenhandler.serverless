@@ -85,11 +85,11 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
             return false;
         }
 
-        if (origin.toLowerCase() !== this.configuration.cors.trustedWebOrigin.toLowerCase()) {
-            return false;
+        if (origin.toLowerCase() === this.configuration.cors.trustedWebOrigin.toLowerCase()) {
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /*

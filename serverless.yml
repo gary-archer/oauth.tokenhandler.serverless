@@ -39,6 +39,7 @@ functions:
       - http: 
           path: /{proxy+}
           method: ANY
+          cors: false
 
 # Disable the default build which we are overriding with a bundler
 build:
@@ -49,6 +50,10 @@ package:
   individually: true
   patterns:
   - '!/**'
+
+# Support running locally
+plugins:
+  - serverless-offline
 
 resources:
   Resources:

@@ -17,20 +17,20 @@
     "remove": "sls remove --stage deployed"
   },
   "dependencies": {
-    "@middy/core": "^6.4.5",
+    "@middy/core": "^7.9.2",
     "cookie": "^1.1.1",
-    "jose": "^6.2.3"
+    "jose": "^6.2.12"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/aws-lambda": "^8.10.159",
-    "@types/node": "^24.10.3",
-    "eslint": "^10.5.0",
-    "serverless": "^4.37.0",
-    "serverless-domain-manager": "10.0.0",
-    "tsx": "^4.22.4",
+    "@types/aws-lambda": "^8.10.163",
+    "@types/node": "^24.13.4",
+    "eslint": "^10.10.0",
+    "serverless": "^4.42.0",
+    "serverless-domain-manager": "10.3.1",
+    "tsx": "^4.23.13",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.0"
+    "typescript-eslint": "^8.70.0"
   },
   "workspaces": [
     "build"

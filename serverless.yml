@@ -17,14 +17,6 @@ provider:
   runtime: nodejs24.x
   region: eu-west-2
 
-  # Domain and certificate details
-  domain:
-    name: ${param:domainName}
-    securityPolicy: SecurityPolicy_TLS13_1_3_2025_09
-    accessMode: strict
-    endpointType: regional
-    certificateArn: ${param:certificateArn}
-
 
 # A single lambda function covers all token handler routes
 functions:
@@ -52,6 +44,28 @@ package:
 
 resources:
   Resources:
+
+    # Take ownership of the BFF domain
+    BffDomain:
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        DomainName: ${param:domainName}
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+        RegionalCertificateArn: ${param:certificateArn}
+        SecurityPolicy: SecurityPolicy_TLS13_1_3_2025_09
+        EndpointAccessMode: STRICT
+
+    # Use the root path
+    BffDomainMapping:
+      Type: AWS::ApiGateway::BasePathMapping
+      Properties:
+        DomainName: !Ref BffDomain
+        BasePath: oauth-agent
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Stage: ${sls:stage}
 
     # Limit cloudwatch log retention 
     WildcardLogGroup:

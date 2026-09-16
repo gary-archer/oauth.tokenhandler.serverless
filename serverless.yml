@@ -62,7 +62,6 @@ resources:
       Type: AWS::ApiGateway::BasePathMapping
       Properties:
         DomainName: !Ref BffDomain
-        BasePath: oauth-agent
         RestApiId:
           Ref: ApiGatewayRestApi
         Stage: ${sls:stage}

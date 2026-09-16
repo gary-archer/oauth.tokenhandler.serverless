@@ -61,6 +61,7 @@ async function logout(endSessionRequestUrl: string): Promise<void> {
     );
 
     page.goto(endSessionRequestUrl).catch(() => {});
+    await callbackPromise;
     browser.close();
 }
 

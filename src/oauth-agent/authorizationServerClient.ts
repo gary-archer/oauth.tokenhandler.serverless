@@ -3,6 +3,8 @@ import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration'
 import {ErrorUtils} from '../errors/errorUtils';
 import {QueryProcessor} from '../http/queryProcessor';
 import {OAuthLoginState} from './oauthLoginState';
+import { ErrorFactory } from '../errors/errorFactory';
+import { ErrorCodes } from '../errors/errorCodes';
 
 /*
  * A class to deal with calls to the authorization server and other OAuth responsibilities
@@ -157,8 +159,17 @@ export class AuthorizationServerClient {
             }
 
             // Handle response errors, including session expiry
+            const error = await ErrorUtils.fromOAuthResponseError(response);
+
             const grantType = formData.get('grant_type') || '';
-            throw await ErrorUtils.fromOAuthGrantResponseError(response, grantType);
+            if (grantType === 'refresh_token' && error.getErrorCode() === ErrorCodes.invalidGrantError) {
+
+                return ErrorFactory.createClientError(
+                    401,
+                    ErrorCodes.sessionExpiredError,
+                    'The user must reauthenticate'
+                );
+            }
 
         } catch (e: any) {
 

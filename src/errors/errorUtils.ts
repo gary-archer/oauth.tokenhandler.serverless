@@ -112,11 +112,10 @@ export class ErrorUtils {
     /*
      * Handle OAuth grant errors, where session expiry is an expected condition
      */
-    public static async fromOAuthGrantResponseError(response: Response, grantType: string):
-        Promise<ClientError | ServerError> {
+    public static async fromOAuthResponseError(response: Response): Promise<ClientError | ServerError> {
 
         let code = ErrorCodes.fetchError;
-        let message = 'An error response was returned from the token endpoint';
+        let message = 'The authorization server returned an error response';
 
         try {
 
@@ -135,11 +134,7 @@ export class ErrorUtils {
             // Swallow JSON parse errors for unexpected responses
         }
 
-        if (grantType === 'refresh_token' && code === ErrorCodes.invalidGrantError) {
-            return ErrorFactory.createClientError(401, ErrorCodes.sessionExpiredError, 'The user must reauthenticate');
-        }
-
-        return ErrorFactory.createServerError(code, message);
+        return ErrorFactory.createClientError(response.status, code, message);
     }
 
     /*

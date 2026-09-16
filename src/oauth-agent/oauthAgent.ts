@@ -174,12 +174,39 @@ export class OAuthAgent {
      */
     public async userInfo(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
 
-        const claims = this.preProcessRequest('userinfo', event);
-        const body: any = {
-            yay: true,
+        this.preProcessRequest('userinfo', event);
+
+        const headers: any  = {
+            'accept': 'application/json',
         };
 
-        return ResponseWriter.objectResponse(200, body);
+        const options: RequestInit = {
+            method: 'GET',
+            headers,
+        };
+
+        try {
+
+            // Make the request and handle errors
+            const response = await fetch(this.configuration.api.userInfoEndpoint, options);
+            if (!response.ok) {
+                throw await ErrorUtils.fromOAuthResponseError(response);
+            }
+
+            // Read valid responses
+            const data = await response.json();
+            const body = {
+                status: 200,
+                data,
+            };
+
+            return ResponseWriter.objectResponse(response.status, body);
+
+        } catch (e: any) {
+
+            // If JSON handling fails or there is a connectivity problem, process the error here
+            throw ErrorUtils.fromFetchError(e, this.configuration.api.userInfoEndpoint, 'web API');
+        }
     }
 
     /*

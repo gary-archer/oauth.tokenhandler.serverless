@@ -1,7 +1,6 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import middy from '@middy/core';
 import {Configuration} from '../configuration/configuration';
-import {PathProcessor} from '../http/pathProcessor';
 
 /*
  * A middleware to add CORS response headers
@@ -72,16 +71,6 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
     private isTrustedOrigin(event: APIGatewayProxyEvent, origin: string | null): boolean {
 
         if (!origin) {
-            return false;
-        }
-
-        const route = PathProcessor.findRoute(event, this.configuration.routes);
-        if (!route) {
-            return false;
-        }
-
-        const cors = route.plugins.find((p) => p === 'cors');
-        if (!cors) {
             return false;
         }
 

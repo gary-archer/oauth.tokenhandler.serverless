@@ -15,6 +15,7 @@
             "issuer": "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_CuhLeqiE9",
             "authorizeEndpoint": "https://login.authsamples.com/oauth2/authorize",
             "tokenEndpoint": "https://login.authsamples.com/oauth2/token",
+            "userInfoEndpoint": "https://login.authsamples.com/oauth2/userInfo",
             "endSessionEndpoint": "https://login.authsamples.com/logout",
             "jwksEndpoint": "https://cognito-idp.eu-west-2.amazonaws.com/eu-west-2_CuhLeqiE9/.well-known/jwks.json",
             "idTokenAlgorithm": "RS256",

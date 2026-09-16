@@ -1,18 +1,9 @@
 import {APIGatewayProxyEvent} from 'aws-lambda';
-import {RouteConfiguration} from '../configuration/routeConfiguration';
 
 /*
  * A utility to deal with paths
  */
 export class PathProcessor {
-
-    /*
-     * Try to find a reverse proxy route for the current path
-     */
-    public static findRoute(event: APIGatewayProxyEvent, routes: RouteConfiguration[]): RouteConfiguration | undefined {
-
-        return routes.find(r => event.path.toLowerCase().startsWith(r.path.toLowerCase()));
-    }
 
     /*
      * Get the full request path, including query parameters

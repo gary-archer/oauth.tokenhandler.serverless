@@ -16,11 +16,11 @@ import {Container} from '../utilities/container';
 type AsyncHandler = (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>;
 
 /*
- * A class to configure the lambda and manage cross cutting concerns
+ * Each instance of the lambda receives multiple HTTP requests
  */
-export class LambdaConfiguration {
+export class LambdaInstance {
 
-    public enrichHandler(baseHandler: AsyncHandler, container: Container)
+    public prepare(baseHandler: AsyncHandler, container: Container)
         : middy.MiddyfiedHandler<APIGatewayProxyEvent, APIGatewayProxyResult> | AsyncHandler {
 
         const loggerFactory = new LoggerFactory();

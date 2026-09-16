@@ -2,61 +2,67 @@ import commonjs from '@rollup/plugin-commonjs';
 import {nodeResolve} from '@rollup/plugin-node-resolve';
 import terser from '@rollup/plugin-terser';
 import {builtinModules} from 'module';
-import path from 'path';
-import {defineConfig, RollupOptions} from 'rollup';
+import fs from 'node:fs';
+import path from 'node:path';
+import {RollupOptions} from 'rollup';
 import esbuild from 'rollup-plugin-esbuild';
 
 // Set base values and use the watch flag to distinguish between development v production builds
 const isDevelopment = process.env.ROLLUP_WATCH === 'true';
 const outputFolder = 'dist';
 
-const options: RollupOptions = {
+// Export a rollup configuration for each lambda file
+const lambdaFilenames = fs.readdirSync('./src/lambda');
+export default lambdaFilenames.map((filename: string) => {
+    
+    const options: RollupOptions = {
 
-    input: './src/lambda/wildcard.ts',
-    output: {
+        input: `./src/lambda/${filename}`,
+        output: {
 
-        // Output ECMAScript modules
-        dir: outputFolder,
-        format: 'esm',
-        entryFileNames: 'wildcard.js',
+            // Output ECMAScript modules
+            dir: outputFolder,
+            format: 'esm',
+            entryFileNames: `${filename.replace('.ts', '')}.js`,
 
-        // Enable source maps and use correct paths to support debugging
-        sourcemap: true,
-        sourcemapPathTransform: (relativeSourcePath: string, sourcemapPath: string) => {
-            return path.resolve(path.dirname(sourcemapPath), relativeSourcePath);
+            // Enable source maps and use correct paths to support debugging
+            sourcemap: true,
+            sourcemapPathTransform: (relativeSourcePath: string, sourcemapPath: string) => {
+                return path.resolve(path.dirname(sourcemapPath), relativeSourcePath);
+            },
         },
-    },
 
-    // Avoid packaging built in modules
-    external: [
-        ...builtinModules,
-        ...builtinModules.map((m: string) => `node:${m}`),
-        'aws-sdk',
-    ],
+        // Avoid packaging built in modules
+        external: [
+            ...builtinModules,
+            ...builtinModules.map((m: string) => `node:${m}`),
+            'aws-sdk',
+        ],
 
-    watch: {
-        clearScreen: false,
-    },
+        watch: {
+            clearScreen: false,
+        },
 
-    plugins: [
+        plugins: [
 
-        // Use Node.js resolution for node_modules
-        nodeResolve({
-            preferBuiltins: true,
-        }),
+            // Use Node.js resolution for node_modules
+            nodeResolve({
+                preferBuiltins: true,
+            }),
 
-        // Convert any commonjs libraries from the node_modules folder to ECMAScript
-        commonjs(),
+            // Convert any commonjs libraries from the node_modules folder to ECMAScript
+            commonjs(),
 
-        // Use esbuild as an up to date plugin for building typescript code
-        esbuild({
-            tsconfig: './tsconfig.json',
-            target: 'es2022',
-        }),
+            // Use esbuild as an up to date plugin for building typescript code
+            esbuild({
+                tsconfig: './tsconfig.json',
+                target: 'es2022',
+            }),
 
-        // Minimize release bundles
-        ...(isDevelopment ? [] : [ terser() ]),
-    ],
-};
+            // Minimize release bundles
+            ...(isDevelopment ? [] : [ terser() ]),
+        ],
+    };
 
-export default defineConfig(options);
+    return options;
+});

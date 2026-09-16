@@ -1,45 +1,36 @@
 service: tokenhandler
 
-# Details for the two AWS deployed stages
-stages:
-  dev:
-    params:
-      domainName: 'bff.authsamples-dev.com'
-      certificateArn: 'arn:aws:acm:eu-west-2:090109105180:certificate/b2f2c46a-582a-4e3a-9521-91b54a455703'
-  deployed:
-    params:
-      domainName: 'bff.authsamples.com'
-      certificateArn: 'arn:aws:acm:eu-west-2:090109105180:certificate/953873fe-43f7-4e6f-90fe-3227ce194d6e'
-
 # AWS base details
 provider:
   name: aws
   runtime: nodejs24.x
   region: eu-west-2
 
-  # Domain and certificate details
-  domain:
-    name: ${param:domainName}
-    securityPolicy: SecurityPolicy_TLS13_1_3_2025_09
-    accessMode: strict
-    endpointType: regional
-    certificateArn: ${param:certificateArn}
-
-
-# A single lambda function covers all token handler routes
+# Lambda functions for the OAuth agent endpoints
 functions:
-  wildcard:
-    handler: dist/wildcard.handler
+  startLogin:
+    handler: dist/startLogin.handler
     package:
       include:
-        - dist/wildcard.js
+        - dist/startLogin.js
         - config.json
         - package.json
     events:
       - http: 
-          path: /{proxy+}
+          path: /login/start
           method: ANY
-          cors: false
+
+  endLogin:
+    handler: dist/endLogin.handler
+    package:
+      include:
+        - dist/endLogin.js
+        - config.json
+        - package.json
+    events:
+      - http: 
+          path: /login/start
+          method: ANY
 
 # Disable the default build which we are overriding with a bundler
 build:
@@ -51,15 +42,78 @@ package:
   patterns:
   - '!/**'
 
-# Support running locally
+# Support running OAuth agent endpoints locally
 plugins:
   - serverless-offline
 
 resources:
   Resources:
 
+    # Take ownership of the BFF domain associated to the SPA running in Cloudfront
+    BffDomain:
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        DomainName: bff.authsamples.com
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+        RegionalCertificateArn: 'arn:aws:acm:eu-west-2:090109105180:certificate/953873fe-43f7-4e6f-90fe-3227ce194d6e'
+        SecurityPolicy: SecurityPolicy_TLS13_1_3_2025_09
+        EndpointAccessMode: STRICT
+
+    # Take ownership of the BFF domain associated to the SPA running on a development computer
+    BffDomainDev:
+      Type: AWS::ApiGateway::DomainName
+      Properties:
+        DomainName: bff.authsamples-dev.com
+        EndpointConfiguration:
+          Types:
+            - REGIONAL
+        RegionalCertificateArn: 'arn:aws:acm:eu-west-2:090109105180:certificate/b2f2c46a-582a-4e3a-9521-91b54a455703'
+        SecurityPolicy: SecurityPolicy_TLS13_1_3_2025_09
+        EndpointAccessMode: STRICT
+
+    # Configure a route to the OAuth agent that the SPA running in Cloudfront calls
+    BffDomainMapping:
+      Type: AWS::ApiGateway::BasePathMapping
+      Properties:
+        DomainName: !Ref BffDomain
+        BasePath: oauth-agent
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Stage: deployed
+    
+    # Configure a route to the OAuth agent that the SPA running on a development computer calls
+    BffDomainDevMapping:
+      Type: AWS::ApiGateway::BasePathMapping
+      Properties:
+        DomainName: !Ref BffDomainDev
+        BasePath: oauth-agent
+        RestApiId:
+          Ref: ApiGatewayRestApi
+        Stage: deployed
+
     # Limit cloudwatch log retention 
-    WildcardLogGroup:
+    StartLoginLogGroup:
       Type: 'AWS::Logs::LogGroup'
       Properties:
         RetentionInDays: '5'
+    EndLoginLogGroup:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        RetentionInDays: '5'
+
+  # Export the BFF domains for use in the serverless API project
+  Outputs:
+    BffDomainName:
+      Description: The BFF for the SPA running in Cloudfront
+      Value:
+        Ref: BffDomain
+      Export:
+        Name: BffDomainName
+    BffDomainDevName:
+      Description: The BFF for the SPA running on a development computer
+      Value:
+        Ref: BffDomainDev
+      Export:
+        Name: BffDomainDevName

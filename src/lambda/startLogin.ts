@@ -1,10 +1,10 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {ResponseWriter} from '../http/responseWriter';
 import {Container} from '../utilities/container';
-import {LambdaConfiguration} from './lambdaConfiguration';
+import {LambdaInstance} from '../startup/lambdaInstance';
 
 /*
- * A wildcard lambda through which the SPA calls APIs and the authorization server
+ * The start login lambda, to provide parameters for an authorization redirect
  */
 const container = new Container();
 const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyResult> => {
@@ -18,9 +18,7 @@ const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProx
     return container.getResponse();
 };
 
-// Create an enriched handler, which wires up middleware for cross cutting concerns
-const configuration = new LambdaConfiguration();
-const handler = configuration.enrichHandler(baseHandler, container);
-
-// Export the handler to serverless.yml
+// Prepare the lambda instance, which is used for multiple HTTP requests, with cross cutting concerns
+const instance = new LambdaInstance();
+const handler = instance.prepare(baseHandler, container);
 export {handler};

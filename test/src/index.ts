@@ -12,10 +12,12 @@ const BFF_BASE_URL = 'https://bfflocal.authsamples-dev.com:444';
 try {
 
     // Get the authorization request URL
+    console.log('Starting login ...');
     const oauthAgentClient = new OAuthAgentClient(BFF_BASE_URL);
     const authorizationRequestUrl = await oauthAgentClient.startLogin();
 
     // Run the login and get the response URL
+    console.log('Running a login on the system browser ...');
     const browser = await chromium.launch({ headless: false });
     const page = await browser.newPage();
     await page.goto(authorizationRequestUrl);
@@ -39,8 +41,13 @@ try {
     browser.close();
 
     // End the login
-    const idTokenClaims = await oauthAgentClient.endLogin(authorizationResponseUrl);
-    console.log(idTokenClaims);
+    console.log('Ending login ...');
+    await oauthAgentClient.endLogin(authorizationResponseUrl);
+
+    // Get OAuth user info
+    console.log('Getting OAuth user info ...');
+    const userInfo = await oauthAgentClient.userInfo();
+    console.log(userInfo);
 
 } catch (e: any) {
 

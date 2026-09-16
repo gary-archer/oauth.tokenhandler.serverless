@@ -27,21 +27,5 @@
             "postLogoutRedirectUri": "https://www.authsamples-dev.com/spa/loggedout",
             "scope": "openid profile https://api.authsamples.com/investments"
         }
-    },
-    "routes": [
-        {
-            "path": "/oauth-agent",
-            "plugins": ["cors", "oauthAgent"]
-        },
-        {
-            "path": "/investments",
-            "target": "https://api.authsamples.com/investments",
-            "plugins": ["cors", "oauthProxy"]
-        },
-        {
-            "path": "/oauthuserinfo",
-            "target": "https://login.authsamples.com/oauth2/userInfo",
-            "plugins": ["cors", "oauthProxy"]
-        }
-    ]
+    }
 }

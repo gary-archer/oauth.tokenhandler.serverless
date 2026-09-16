@@ -14,7 +14,7 @@ const outputFolder = 'dist';
 // Export a rollup configuration for each lambda file
 const lambdaFilenames = fs.readdirSync('./src/lambda');
 export default lambdaFilenames.map((filename: string) => {
-    
+
     const options: RollupOptions = {
 
         input: `./src/lambda/${filename}`,

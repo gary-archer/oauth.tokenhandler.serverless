@@ -19,6 +19,7 @@ provider:
 
 # Lambda functions for the OAuth agent endpoints
 functions:
+
   startLogin:
     handler: dist/startLogin.handler
     package:
@@ -29,7 +30,7 @@ functions:
     events:
       - http: 
           path: /login/start
-          method: post
+          method: POST
 
   endLogin:
     handler: dist/endLogin.handler
@@ -41,7 +42,79 @@ functions:
     events:
       - http: 
           path: /login/end
-          method: post
+          method: POST
+
+  session:
+    handler: dist/session.handler
+    package:
+      include:
+        - dist/session.js
+        - config.json
+        - package.json
+    events:
+      - http: 
+          path: /session
+          method: GET
+  
+  userInfo:
+    handler: dist/userInfo.handler
+    package:
+      include:
+        - dist/userInfo.js
+        - config.json
+        - package.json
+    events:
+      - http: 
+          path: /userinfo
+          method: GET
+
+  refresh:
+    handler: dist/refresh.handler
+    package:
+      include:
+        - dist/refresh.js
+        - config.json
+        - package.json
+    events:
+      - http: 
+          path: /refresh
+          method: POST
+
+  logout:
+    handler: dist/logout.handler
+    package:
+      include:
+        - dist/logout.js
+        - config.json
+        - package.json
+    events:
+      - http: 
+          path: /logout
+          method: POST
+
+  expireAccess:
+    handler: dist/expireAccess.handler
+    package:
+      include:
+        - dist/expireAccess.js
+        - config.json
+        - package.json
+    events:
+      - http: 
+          path: /access/expire
+          method: POST
+
+  expireRefresh:
+    handler: dist/expireRefresh.handler
+    package:
+      include:
+        - dist/expireRefresh.js
+        - config.json
+        - package.json
+    events:
+      - http: 
+          path: /refresh/expire
+          method: POST          
 
 # Disable the default build which we are overriding with a bundler
 build:
@@ -83,7 +156,7 @@ resources:
         SecurityPolicy: SecurityPolicy_TLS13_1_3_2025_09
         EndpointAccessMode: STRICT
 
-    # Configure a route for the OAuth agent's path
+    # Use the root path
     BffDomainMapping:
       Type: AWS::ApiGateway::BasePathMapping
       Properties:

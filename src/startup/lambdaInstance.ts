@@ -4,10 +4,10 @@ import fs from 'fs';
 import {Configuration} from '../configuration/configuration';
 import {ResponseWriter} from '../http/responseWriter';
 import {LoggerFactory} from '../logging/loggerFactory';
-import {AuthorizerMiddleware} from '../middleware/authorizerMiddleware';
 import {CorsMiddleware} from '../middleware/corsMiddleware';
 import {ExceptionMiddleware} from '../middleware/exceptionMiddleware';
 import {LoggerMiddleware} from '../middleware/loggerMiddleware';
+import {RequiredHeaderMiddleware} from '../middleware/requiredHeaderMiddleware';
 import {Container} from '../utilities/container';
 
 /*
@@ -33,7 +33,7 @@ export class LambdaInstance {
             // Create middleware objects
             const loggerMiddleware = new LoggerMiddleware(container, loggerFactory);
             const exceptionMiddleware = new ExceptionMiddleware(container, loggerFactory);
-            const authorizerMiddleware = new AuthorizerMiddleware(container);
+            const requiredHeaderMiddleware = new RequiredHeaderMiddleware();
             const corsMiddleware = new CorsMiddleware(configuration);
 
             // Wrap the base handler and add middleware for cross cutting concerns
@@ -45,7 +45,7 @@ export class LambdaInstance {
                 .use(corsMiddleware)
                 .use(loggerMiddleware)
                 .use(exceptionMiddleware)
-                .use(authorizerMiddleware);
+                .use(requiredHeaderMiddleware);
 
         } catch (e: any) {
 

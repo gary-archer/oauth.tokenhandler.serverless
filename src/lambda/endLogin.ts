@@ -1,7 +1,8 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {ResponseWriter} from '../http/responseWriter';
-import {Container} from '../utilities/container';
+import {OAuthAgent} from '../oauth-agent/oauthAgent';
 import {LambdaInstance} from '../startup/lambdaInstance';
+import {Container} from '../utilities/container';
 
 /*
  * The end login lambda, to process the authorization response, get tokens and set cookies
@@ -14,8 +15,10 @@ const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProx
         return ResponseWriter.objectResponse(204, null);
     }
 
-    // Otherwise return the response that middleware wrote to the container
-    return container.getResponse();
+    // Otherwise, run the OAuth agent logic
+    const configuration = container.getConfiguration();
+    const oauthAgent = new OAuthAgent(container, configuration.oauthAgent, configuration.cookie);
+    return await oauthAgent.endLogin(event);
 };
 
 // Prepare the lambda instance, which is used for multiple HTTP requests, with cross cutting concerns

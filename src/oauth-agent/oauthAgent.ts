@@ -32,49 +32,6 @@ export class OAuthAgent {
     }
 
     /*
-     * The entry point for processing of OAuth requests on behalf of the SPA
-     */
-    public async handleRequest(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
-
-        const method = event.httpMethod.toLowerCase();
-        const path = event.path.toLowerCase();
-
-        if (method === 'post' && path.endsWith('/oauth-agent/login/start')) {
-
-            return this.startLogin(event);
-
-        } else if (method === 'post' && path.endsWith('/oauth-agent/login/end')) {
-
-            return this.endLogin(event);
-
-        } else if (method === 'get' && path.endsWith('/oauth-agent/session')) {
-
-            return this.session(event);
-
-        } else if (method === 'post' && path.endsWith('/oauth-agent/refresh')) {
-
-            return this.refresh(event);
-
-        } else if (method === 'post' && path.endsWith('/oauth-agent/access/expire')) {
-
-            return this.expireAccess(event);
-
-        } else if (method === 'post' && path.endsWith('/oauth-agent/refresh/expire')) {
-
-            return this.expireRefresh(event);
-
-        } else if (method === 'post' && path.endsWith('/oauth-agent/logout')) {
-
-            return this.logout(event);
-
-        } else {
-
-            // Each route should either do OAuth or API work
-            throw ErrorUtils.fromInvalidRouteError();
-        }
-    }
-
-    /*
      * Calculate the authorization redirect URL and write a state cookie
      */
     /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -208,6 +165,19 @@ export class OAuthAgent {
         if (claims) {
             body.claims = claims;
         }
+
+        return ResponseWriter.objectResponse(200, body);
+    }
+
+    /*
+     * Get OAuth user info from the authorization server
+     */
+    public async userInfo(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+
+        const claims = this.preProcessRequest('userinfo', event);
+        const body: any = {
+            yay: true,
+        };
 
         return ResponseWriter.objectResponse(200, body);
     }

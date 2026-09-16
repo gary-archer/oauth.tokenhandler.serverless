@@ -12,6 +12,8 @@ const server = spawn(
         'serverless.yml',
         '--noPrependStageInUrl',
         '--noSponsor',
+        '--prefix',
+        'oauth-agent',
         '--reloadHandler',
         '--host',
         '0.0.0.0',

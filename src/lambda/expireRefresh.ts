@@ -5,7 +5,7 @@ import {LambdaInstance} from '../startup/lambdaInstance';
 import {Container} from '../utilities/container';
 
 /*
- * The start login lambda, to provide parameters for an authorization redirect
+ * The OAuth lambda to make the refresh token act expired, and enable simulation of expiry conditions
  */
 const container = new Container();
 const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProxyResult> => {
@@ -18,7 +18,7 @@ const baseHandler = async (event: APIGatewayProxyEvent) : Promise<APIGatewayProx
     // Otherwise, run the OAuth agent logic
     const configuration = container.getConfiguration();
     const oauthAgent = new OAuthAgent(container, configuration.oauthAgent, configuration.cookie);
-    return await oauthAgent.startLogin(event);
+    return await oauthAgent.userInfo(event);
 };
 
 // Prepare the lambda instance, which is used for multiple HTTP requests, with cross cutting concerns

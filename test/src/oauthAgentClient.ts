@@ -35,6 +35,13 @@ export class OAuthAgentClient {
     }
 
     /*
+     * Get OAuth user info
+     */
+    public async userInfo(): Promise<any> {
+        return await this.callOAuthAgent('GET', 'userinfo', null, true);
+    }
+
+    /*
      * Use fetch to call the OAuth Agent
      */
     private async callOAuthAgent(

@@ -35,10 +35,47 @@ export class OAuthAgentClient {
     }
 
     /*
+     * Get the session
+     */
+    public async session(): Promise<any> {
+        return await this.callOAuthAgent('GET', 'session', null, true);
+    }
+
+    /*
      * Get OAuth user info
      */
     public async userInfo(): Promise<any> {
         return await this.callOAuthAgent('GET', 'userinfo', null, true);
+    }
+
+    /*
+     * Refresh tokens
+     */
+    public async refresh(): Promise<void> {
+        await this.callOAuthAgent('POST', 'refresh', null, false);
+    }
+
+    /*
+     * Get the end session request URL
+     */
+    public async logout(): Promise<string> {
+
+        const response = await this.callOAuthAgent('POST', 'logout', null, true);
+        return response.url;
+    }
+
+    /*
+     * Make the access token act expired
+     */
+    public async expireAccessToken(): Promise<void> {
+        await this.callOAuthAgent('POST', 'access/expire', null, false);
+    }
+
+    /*
+     * Make the refresh token act expired
+     */
+    public async expireRefreshToken(): Promise<void> {
+        await this.callOAuthAgent('POST', 'refresh/expire', null, false);
     }
 
     /*

@@ -25,16 +25,17 @@ export class LambdaInstance {
 
         const loggerFactory = new LoggerFactory();
         try {
-            // Load our JSON configuration
+
+            // Load configuration settings
             const configuration = this.loadConfiguration();
             container.setConfiguration(configuration);
             loggerFactory.configure(configuration.logging);
 
             // Create middleware objects
+            const corsMiddleware = new CorsMiddleware(configuration);
             const loggerMiddleware = new LoggerMiddleware(container, loggerFactory);
             const exceptionMiddleware = new ExceptionMiddleware(container, loggerFactory);
             const requiredHeaderMiddleware = new RequiredHeaderMiddleware();
-            const corsMiddleware = new CorsMiddleware(configuration);
 
             // Wrap the base handler and add middleware for cross cutting concerns
             return middy(async (event: APIGatewayProxyEvent, context: Context) => {

@@ -4,7 +4,7 @@ import {ErrorUtils} from '../errors/errorUtils';
 import {HeaderProcessor} from '../http/headerProcessor';
 
 /*
- * A middleware to check for the required custom header
+ * A middleware to check for the required custom header to force cookies on safe CORS requests
  */
 export class RequiredHeaderMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
 
@@ -17,7 +17,7 @@ export class RequiredHeaderMiddleware implements middy.MiddlewareObj<APIGatewayP
      */
     public async before(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): Promise<void> {
 
-        // All OPTIONS responses return 204 so avoid throwing errors
+        // Ignore OPTIONS requests, which request the required header rather than include it
         const method = request.event.httpMethod.toLowerCase();
         if (method === 'options') {
             return;

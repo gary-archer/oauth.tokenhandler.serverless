@@ -25,7 +25,6 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
      * Run after a lambda fails and returns an error
      */
     public onError(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
-
         this.addResponseHeaders(request);
     }
 

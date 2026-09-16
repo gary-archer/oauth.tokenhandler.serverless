@@ -30,6 +30,9 @@ functions:
     events:
       - http: 
           path: /login/start
+          method: OPTIONS
+      - http: 
+          path: /login/start
           method: POST
 
   endLogin:
@@ -40,6 +43,9 @@ functions:
         - config.json
         - package.json
     events:
+      - http: 
+          path: /login/end
+          method: OPTIONS
       - http: 
           path: /login/end
           method: POST
@@ -54,6 +60,9 @@ functions:
     events:
       - http: 
           path: /session
+          method: OPTIONS
+      - http: 
+          path: /session
           method: GET
   
   userInfo:
@@ -64,6 +73,9 @@ functions:
         - config.json
         - package.json
     events:
+      - http: 
+          path: /userinfo
+          method: OPTIONS
       - http: 
           path: /userinfo
           method: GET
@@ -78,6 +90,9 @@ functions:
     events:
       - http: 
           path: /refresh
+          method: OPTIONS
+      - http: 
+          path: /refresh
           method: POST
 
   logout:
@@ -88,6 +103,9 @@ functions:
         - config.json
         - package.json
     events:
+      - http: 
+          path: /logout
+          method: OPTIONS
       - http: 
           path: /logout
           method: POST
@@ -102,6 +120,9 @@ functions:
     events:
       - http: 
           path: /access/expire
+          method: OPTIONS
+      - http: 
+          path: /access/expire
           method: POST
 
   expireRefresh:
@@ -114,7 +135,10 @@ functions:
     events:
       - http: 
           path: /refresh/expire
-          method: POST          
+          method: OPTIONS
+      - http: 
+          path: /refresh/expire
+          method: POST
 
 # Disable the default build which we are overriding with a bundler
 build:
@@ -172,6 +196,30 @@ resources:
       Properties:
         RetentionInDays: '5'
     EndLoginLogGroup:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        RetentionInDays: '5'
+    SessionLogGroup:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        RetentionInDays: '5'
+    UserInfoLogGroup:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        RetentionInDays: '5'
+    RefreshLogGroup:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        RetentionInDays: '5'
+    LogoutLogGroup:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        RetentionInDays: '5'
+    ExpireAccessLogGroup:
+      Type: 'AWS::Logs::LogGroup'
+      Properties:
+        RetentionInDays: '5'
+    ExpireRefreshLogGroup:
       Type: 'AWS::Logs::LogGroup'
       Properties:
         RetentionInDays: '5'

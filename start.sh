@@ -14,6 +14,14 @@ export COOKIE_ENCRYPTION_KEY=$(openssl rand 32 | xxd -p -c 64)
 envsubst < environments/config.local-template.json > config.json
 
 #
+# Create SSL certificates if required
+#
+./certs/create.sh
+if [ $? -ne 0 ]; then
+  exit 1
+fi
+
+#
 # Install dependencies if needed
 #
 npm install

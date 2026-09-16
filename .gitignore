@@ -7,6 +7,3 @@ certs/*.p12
 certs/*.crt
 certs/*.pem
 *.log
-login_cookies.txt
-main_cookies.txt
-response.txt

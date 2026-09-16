@@ -19,8 +19,6 @@ const server = spawn(
         '444',
         '--httpsProtocol',
         'certs',
-        '--corsAllowOrigin',
-        'https://www.example.com',
     ],
     {
         stdio: 'inherit',

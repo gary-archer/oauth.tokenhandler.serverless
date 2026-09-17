@@ -1,5 +1,9 @@
 .DS_store
 node_modules
 dist
-.serverless
 /config*.json
+.serverless
+certs/*.p12
+certs/*.crt
+certs/*.pem
+*.log

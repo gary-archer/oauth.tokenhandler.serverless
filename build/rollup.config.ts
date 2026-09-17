@@ -9,7 +9,7 @@ import esbuild from 'rollup-plugin-esbuild';
 const outputFolder = 'dist';
 const options: RollupOptions = {
 
-    input: `./src/lambda/wildcard.ts`,
+    input: './src/lambda/wildcard.ts',
     output: {
 
         // Output ECMAScript modules

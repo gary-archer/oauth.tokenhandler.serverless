@@ -10,6 +10,8 @@
   },
   "scripts": {
     "lint": "eslint .",
+    "start": "./start.sh",
+    "test": "test/cookie-lifecycle.sh",
     "build": "rm -rf dist && NODE_OPTIONS='--import tsx' npx rollup --config build/rollup.config.ts",
     "deployDev": "./deploy.sh dev",
     "deploy": "./deploy.sh deployed",
@@ -27,11 +29,13 @@
     "@types/node": "^24.13.4",
     "eslint": "^10.10.0",
     "serverless": "^4.42.0",
+    "serverless-offline": "^14.8.2",
     "tsx": "^4.23.13",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.70.0"
   },
   "workspaces": [
-    "build"
+    "build",
+    "test"
   ]
 }

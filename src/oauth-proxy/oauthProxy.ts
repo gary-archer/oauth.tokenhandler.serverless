@@ -68,23 +68,13 @@ export class OAuthProxy {
             headers,
         };
 
-        // Add any custom headers we have received from the client
-        if (event.headers) {
-
-            Object.keys(event.headers).forEach((name) => {
-                if (name.toLowerCase().startsWith('authsamples')) {
-                    headers[name] = event.headers[name] as string;
-                }
-            });
-        }
-
         // Forward the correlation id from the log entry
         headers['correlation-id'] = this.container.getLogEntry().getCorrelationId();
 
         // Also forward the exception testing header if present
-        const headerValue = event.headers['api-exception-simulation'] as string;
-        if (headerValue) {
-            headers['api-exception-simulation'] = headerValue;
+        const apiToBreak = event.headers['api-exception-simulation'] as string;
+        if (apiToBreak) {
+            headers['api-exception-simulation'] = apiToBreak;
         }
 
         // Supply a body to the API if required

@@ -42,6 +42,10 @@ package:
   patterns:
   - '!/**'
 
+# Support running local token handler endpoints
+plugins:
+  - serverless-offline
+
 resources:
   Resources:
 

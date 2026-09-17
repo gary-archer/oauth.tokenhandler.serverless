@@ -2,10 +2,12 @@
 
 The token handler provides cookie-secured API entry points for an SPA that run on a BFF domain.  
 
-## Implementation Details
+## Architecture
 
-This implementation uses a wildcard lambda, that provides low cost AWS hosting for my blog's final SPA.  
+The token handler is a wildcard lambda, that provides low cost AWS hosting for my blog's final SPA.  
 The lambda manages all web specific security, to keep the [Serverless API](https://github.com/gary-archer/oauth.apisample.serverless) focused on API concerns.  
+
+![SPA Architecture](./images/spa-architecture.png)
 
 ## Run the Token Handler
 
@@ -40,21 +42,23 @@ npm test
 
 ## Deploy the Token Handler
 
-I use the following command to deploy the token handler to AWS for the subdomain `bff.authsamples-dev.com`:
+I run this command to deploy the token handler to the AWS subdomain `bff.authsamples-dev.com`:
 
 ```bash
 npm run deployDev
 ```
 
-I use the following command to deploy the token handler to AWS for the subdomain `bff.authsamples.com`:
+I run this command to deploy the token handler to the AWS subdomain `bff.authsamples.com`:
 
 ```bash
 npm run deploy
 ```
 
-## Performance
+## API Performance
 
-Although web and API concerns are cleanly separated, performance is suboptimal and could be improved with a better API gateway:
+API performance is a little suboptimal, due to the nature of the AWS API gateway:
 
-- All requests to token handler endpoints first call the AWS API gateway for the BFF domain and invoke the wildcard lambda.  
-- The wildcard lambda then makes an upstream request, such as to the AWS API gateway for the API domain.  
+- SPA requests first call the AWS API gateway for the BFF domain and invoke the wildcard lambda.  
+- The wildcard lambdas then makes an upstream request to AWS API gateway for the API domain.  
+
+See the [Cloud Native Token Handler](https://github.com/gary-archer/oauth.tokenhandler.cloudnative) for a better performing token handler with the same architecture.

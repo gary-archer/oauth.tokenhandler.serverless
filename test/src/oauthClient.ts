@@ -1,4 +1,5 @@
 import {CookieJar} from 'tough-cookie';
+import {OAuthError} from './oauthError.js';
 
 /*
  * A utility to make requests to token handler endpoints in a similar way to a browser client
@@ -42,17 +43,42 @@ export class OAuthClient {
     }
 
     /*
-     * Get OAuth user info
+     * Get OAuth user info or return null if the access token is expired
      */
     public async userInfo(): Promise<any> {
-        return await this.callOAuthAgent('GET', 'oauthuserinfo', null, true);
+
+        try {
+
+            return await this.callOAuthAgent('GET', 'oauthuserinfo', null, true);
+
+        } catch (e: any) {
+
+            if (e instanceof OAuthError && e.status === 401) {
+                return null;
+            }
+
+            throw e;
+        }
     }
 
     /*
      * Refresh tokens
      */
-    public async refresh(): Promise<void> {
-        await this.callOAuthAgent('POST', 'oauth-agent/refresh', null, false);
+    public async refresh(): Promise<boolean> {
+        
+        try {
+
+            await this.callOAuthAgent('POST', 'oauth-agent/refresh', null, false);
+            return true;
+
+        } catch (e: any) {
+
+            if (e instanceof OAuthError && e.status === 401) {
+                return false;
+            }
+
+            throw e;
+        }
     }
 
     /*
@@ -93,27 +119,25 @@ export class OAuthClient {
         // Get any existing cookie header
         const cookieHeader = await this.cookieJar.getCookieString(url);
 
-        // Add the token-handler-version custom header, which ensures CORS preflights
-        const headers: HeadersInit = {
-            'accept': 'application/json',
-            'token-handler-version': '1',
-            'correlation-id': crypto.randomUUID(),
-        };
-
-        if (cookieHeader) {
-            headers['cookie'] = cookieHeader;
-        }
-
         // Use the credentials option to send same-site cross-origin cookies to the token handler
+        // Also add the token-handler-version custom header that the token handler requires
         const options: RequestInit = {
             method,
             credentials: 'include',
-            headers,
+            headers: {
+                'accept': 'application/json',
+                'token-handler-version': '1',
+                'correlation-id': crypto.randomUUID(),
+            }
         };
+
+        if (cookieHeader) {
+            (options.headers as any)['cookie'] = cookieHeader;
+        }
 
         // Send JSON data if required
         if (dataToSend) {
-            headers['content-type'] = 'application/json';
+            (options.headers as any)['content-type'] = 'application/json';
             options.body = JSON.stringify(dataToSend);
         }
 
@@ -128,10 +152,10 @@ export class OAuthClient {
         // Report response errors
         if (!response.ok) {
 
-            const error = await response.json();
+            const error = await response.json() as any;
             const code = error.code || 'general_error';
             const message = error.message || `Problem encountered calling ${url}`;
-            throw new Error(`Status: ${response.status}, Code: ${code}, Message: ${message}`);
+            throw new OAuthError(response.status, code, message);
         }
 
         // Set any updated cookie headers

@@ -68,32 +68,54 @@ async function logout(endSessionRequestUrl: string): Promise<void> {
 try {
 
     // Get the authorization request URL
-    console.log('Starting login ...');
-    const oauthAgentClient = new OAuthClient(BFF_BASE_URL);
-    const authorizationRequestUrl = await oauthAgentClient.startLogin();
+    console.log('1. Starting login ...');
+    const oauthClient = new OAuthClient(BFF_BASE_URL);
+    const authorizationRequestUrl = await oauthClient.startLogin();
 
     // Run the login and get the response URL
-    console.log('Running a login on the system browser ...');
+    console.log('2. Running a login on the system browser ...');
     const authorizationResponseUrl = await login(authorizationRequestUrl);
 
     // End the login
-    console.log('Ending login ...');
-    await oauthAgentClient.endLogin(authorizationResponseUrl);
+    console.log('3. Ending login ...');
+    await oauthClient.endLogin(authorizationResponseUrl);
 
     // Get OAuth user info
-    console.log('Getting OAuth user info ...');
-    await oauthAgentClient.userInfo();
+    console.log('4. Calling API ...');
+    let userInfo = await oauthClient.userInfo();
+    if (userInfo) {
+        console.log('5. Successfully called API');
+    }
 
     // Test refresh operations
-    console.log('Testing expire operations ...');
-    await oauthAgentClient.expireAccessToken();
-    await oauthAgentClient.refresh();
-    await oauthAgentClient.userInfo();
-    await oauthAgentClient.expireRefreshToken();
+    console.log('6. Testing expire access token ...');
+    await oauthClient.expireAccessToken();
+    userInfo = await oauthClient.userInfo();
+    if (!userInfo) {
+
+        console.log('7. Refreshing access token ...');
+        const refreshed = await oauthClient.refresh();
+        if (refreshed) {
+            userInfo = await oauthClient.userInfo();
+            if (userInfo) {
+                console.log('8. Successfully retried API request');
+            }
+        }
+    }
+
+    console.log('9. Testing expire refresh token ...');
+    await oauthClient.expireRefreshToken();
+    userInfo = await oauthClient.userInfo();
+    if (!userInfo) {
+        const refreshed = await oauthClient.refresh();
+        if (!refreshed) {
+            console.log('10. Session is expired');
+        }
+    }
 
     // Test logout
-    console.log('Running a logout on the system browser ...');
-    const endSessionRequestUrl = await oauthAgentClient.logout();
+    console.log('11. Running a logout on the system browser ...');
+    const endSessionRequestUrl = await oauthClient.logout();
     await logout(endSessionRequestUrl);
 
 } catch (e: any) {

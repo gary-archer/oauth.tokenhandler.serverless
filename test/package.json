@@ -1,7 +1,7 @@
 {
   "name": "tokenhandler-tests",
   "version": "1.0.0",
-  "description": "An AWS serverless token handler with low cost hosting for my blog's Final SPA",
+  "description": "Tests the token handler operations",
   "author": "Gary Archer",
   "license": "Apache-2.0",
   "type": "module",

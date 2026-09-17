@@ -7,6 +7,11 @@
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
 #
+# Delete any existing logs
+#
+rm -rf tokenhandler.log 2> /dev/null
+
+#
 # Tell Node.js to trust the CA, or the user can add this CA to their own trust file
 #
 if [ "$NODE_EXTRA_CA_CERTS" == '' ]; then

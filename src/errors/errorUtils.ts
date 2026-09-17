@@ -110,12 +110,13 @@ export class ErrorUtils {
     }
 
     /*
-     * Handle error responses from the authorization server to POST requests
+     * Handle error responses from the authorization server
      */
-    public static async fromOAuthResponseError(response: Response): Promise<ClientError | ServerError> {
+    public static async fromOAuthGrantResponseError(response: Response, grantType: string):
+        Promise<ClientError | ServerError> {
 
         let code = ErrorCodes.fetchError;
-        let message = 'An error response was returned from the token endpoint';
+        let message = 'The authorization server token endpoint returned an error response';
 
         try {
 
@@ -134,7 +135,11 @@ export class ErrorUtils {
             // Swallow JSON parse errors for unexpected responses
         }
 
-        return ErrorFactory.createClientError(response.status, code, message);
+        if (grantType === 'refresh_token' && code === ErrorCodes.invalidGrantError) {
+            return ErrorFactory.createClientError(401, ErrorCodes.sessionExpiredError, 'The user must reauthenticate');
+        }
+
+        return ErrorFactory.createServerError(code, message);
     }
 
     /*

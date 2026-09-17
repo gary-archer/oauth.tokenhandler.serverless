@@ -51,6 +51,7 @@ export class OAuthProxy {
         const fullPath = PathProcessor.getFullPath(event);
         const fullPathToForward = fullPath.replace(apiRoute.path, '');
         const url = `${apiRoute.target}${fullPathToForward}`;
+        console.log(url);
 
         const headers: any  = {
             'accept': 'application/json',
@@ -78,19 +79,34 @@ export class OAuthProxy {
 
         try {
 
-            // Handle success responses
+            // Handle successful requests
             const response = await fetch(url, options);
             if (response.ok) {
 
-                const data = await response.json();
+                const data = await response.json() as any;
                 return {
                     status: response.status,
                     data,
                 };
             }
 
-            // Handle errors
-            throw await ErrorUtils.fromOAuthResponseError(response);
+            // Handle failed requests
+            const responseBody = await response.json() as any;
+
+            // Change the error field names for OAuth user info error responses
+            if (responseBody.error && responseBody.error_description) {
+
+                responseBody.code = responseBody.error;
+                responseBody.message = responseBody.error_description;
+                delete responseBody.error;
+                delete responseBody.error_description;
+            }
+
+            // Return upstream errors without additional logging
+            return {
+                status: response.status,
+                data: responseBody,
+            };
 
         } catch (e: any) {
 

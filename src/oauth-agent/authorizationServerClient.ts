@@ -1,5 +1,7 @@
 import {createRemoteJWKSet, JWTPayload, jwtVerify, JWTVerifyOptions} from 'jose';
 import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
+import {ErrorCodes} from '../errors/errorCodes';
+import {ErrorFactory} from '../errors/errorFactory';
 import {ErrorUtils} from '../errors/errorUtils';
 import {QueryProcessor} from '../http/queryProcessor';
 import {OAuthLoginState} from './oauthLoginState';
@@ -156,9 +158,21 @@ export class AuthorizationServerClient {
                 return await response.json();
             }
 
-            // Handle response errors, including session expiry
+            // Handle response errors
+            const error = await ErrorUtils.fromOAuthResponseError(response);
+
+            // Handle session expiry
             const grantType = formData.get('grant_type') || '';
-            throw await ErrorUtils.fromOAuthGrantResponseError(response, grantType);
+            if (grantType === 'refresh_token' && error.getErrorCode() === ErrorCodes.invalidGrantError) {
+
+                throw ErrorFactory.createClientError(
+                    401,
+                    ErrorCodes.sessionExpiredError,
+                    'The user must reauthenticate'
+                );
+            }
+
+            throw error;
 
         } catch (e: any) {
 

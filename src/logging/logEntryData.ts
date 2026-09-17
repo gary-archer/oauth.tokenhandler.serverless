@@ -53,7 +53,7 @@ export class LogEntryData {
     // A session ID, to group related calls from a client together
     public sessionId: string;
 
-    // An object containing performance data, written when performance is slow
+    // An object containing time taken
     public performance: PerformanceBreakdown;
 
     // An object containing error data, written for failed requests

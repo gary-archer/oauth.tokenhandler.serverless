@@ -78,15 +78,19 @@ export class OAuthProxy {
 
         try {
 
-            // Make the request
+            // Handle success responses
             const response = await fetch(url, options);
+            if (response.ok) {
 
-            // Try to read either a valid response or an error response as JSON
-            const data = await response.json();
-            return {
-                status: response.status,
-                data,
-            };
+                const data = await response.json();
+                return {
+                    status: response.status,
+                    data,
+                };
+            }
+
+            // Handle errors
+            throw await ErrorUtils.fromOAuthResponseError(response);
 
         } catch (e: any) {
 

@@ -1,32 +1,29 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {APIGatewayProxyResult} from 'aws-lambda';
+import {ApiRouteConfiguration} from '../configuration/apiRouteConfiguration';
 import {CookieConfiguration} from '../configuration/cookieConfiguration';
-import {RouteConfiguration} from '../configuration/routeConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
 import {CookieProcessor} from '../http/cookieProcessor';
 import {PathProcessor} from '../http/pathProcessor';
 import {ResponseWriter} from '../http/responseWriter';
-import {Container} from '../utilities/container';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 
 /*
- * A demo level class to manage HTTP forwarding of API requests
+ * Manage HTTP forwarding of API requests with a JWT access token
  */
 export class OAuthProxy {
 
-    private readonly container: Container;
-    private readonly routes: RouteConfiguration[];
+    private readonly apiRoutes: ApiRouteConfiguration[];
     private readonly cookieProcessor: CookieProcessor;
 
     public constructor(
-        container: Container,
-        routes: RouteConfiguration[],
+        apiRoutes: ApiRouteConfiguration[],
         cookieConfiguration: CookieConfiguration) {
 
-        this.container = container;
-        this.routes = routes;
+        this.apiRoutes = apiRoutes;
         this.cookieProcessor = new CookieProcessor(cookieConfiguration);
     }
 
-    public async handleRequest(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    public async handleRequest(event: APIGatewayProxyExtendedEvent): Promise<APIGatewayProxyResult> {
 
         // Decrypt the access token cookie
         const accessToken = this.cookieProcessor.readAccessCookie(event);
@@ -36,26 +33,24 @@ export class OAuthProxy {
 
         // Forward the access token to the target API
         const apiResponse = await this.callApi(event, accessToken);
-
-        // Write the response to the container
         return ResponseWriter.objectResponse(apiResponse.status, apiResponse.data, apiResponse.headers);
     }
 
     /*
      * Call the target API with an access token
      */
-    public async callApi(event: APIGatewayProxyEvent, accessToken: string): Promise<any> {
+    public async callApi(event: APIGatewayProxyExtendedEvent, accessToken: string): Promise<any> {
 
         // Get the route, which has been verified by the authorizer middleware
-        const route = PathProcessor.findRoute(event, this.routes);
-        if (!route) {
+        const apiRoute = PathProcessor.findApiRoute(event, this.apiRoutes);
+        if (!apiRoute) {
             throw ErrorUtils.fromInvalidRouteError();
         }
 
         // Calculate the full target path
         const fullPath = PathProcessor.getFullPath(event);
-        const fullPathToForward = fullPath.replace(route.path, '');
-        const url = `${route.target}${fullPathToForward}`;
+        const fullPathToForward = fullPath.replace(apiRoute.path, '');
+        const url = `${apiRoute.target}${fullPathToForward}`;
 
         const headers: any  = {
             'accept': 'application/json',
@@ -68,10 +63,8 @@ export class OAuthProxy {
             headers,
         };
 
-        // Forward the correlation id from the log entry
-        headers['correlation-id'] = this.container.getLogEntry().getCorrelationId();
-
-        // Also forward the exception testing header if present
+        // Forward headers that clients may send or that the API generates for correlation
+        headers['correlation-id'] = event.logEntry.getCorrelationId();
         const apiToBreak = event.headers['api-exception-simulation'] as string;
         if (apiToBreak) {
             headers['api-exception-simulation'] = apiToBreak;

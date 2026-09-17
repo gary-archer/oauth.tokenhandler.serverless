@@ -1,5 +1,5 @@
-import {APIGatewayProxyEvent} from 'aws-lambda';
 import {parseCookie} from 'cookie';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 
 /*
  * A utility to deal with lambda header formats
@@ -9,7 +9,7 @@ export class HeaderProcessor {
     /*
      * Read a single value header
      */
-    public static readHeader(event: APIGatewayProxyEvent, name: string): string | null {
+    public static readHeader(event: APIGatewayProxyExtendedEvent, name: string): string | null {
 
         if (event.headers) {
 
@@ -25,7 +25,7 @@ export class HeaderProcessor {
     /*
      * Read a multi value header, which is how cookies are received
      */
-    public static readMultiValueHeader(event: APIGatewayProxyEvent, name: string): string[] {
+    public static readMultiValueHeader(event: APIGatewayProxyExtendedEvent, name: string): string[] {
 
         if (event.multiValueHeaders) {
 
@@ -41,7 +41,7 @@ export class HeaderProcessor {
     /*
      * Parse the parts of the cookie from a multi value header
      */
-    public static readCookieValue(event: APIGatewayProxyEvent, name: string): string | null {
+    public static readCookieValue(event: APIGatewayProxyExtendedEvent, name: string): string | null {
 
         let result = '';
         const headers = HeaderProcessor.readMultiValueHeader(event, 'cookie');

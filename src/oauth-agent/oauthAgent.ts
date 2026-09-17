@@ -1,12 +1,12 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {APIGatewayProxyResult} from 'aws-lambda';
 import {CookieConfiguration} from '../configuration/cookieConfiguration';
 import {OAuthAgentConfiguration} from '../configuration/oauthAgentConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
 import {CookieProcessor} from '../http/cookieProcessor';
 import {FormProcessor} from '../http/formProcessor';
 import {ResponseWriter} from '../http/responseWriter';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 import {Base64Url} from '../utilities/base64url';
-import {Container} from '../utilities/container';
 import {AuthorizationServerClient} from './authorizationServerClient';
 import {EndLoginResponse} from './endLoginResponse';
 
@@ -15,17 +15,14 @@ import {EndLoginResponse} from './endLoginResponse';
  */
 export class OAuthAgent {
 
-    private readonly container: Container;
     private readonly configuration: OAuthAgentConfiguration;
     private readonly cookieProcessor: CookieProcessor;
     private readonly authorizationServerClient: AuthorizationServerClient;
 
     public constructor(
-        container: Container,
         agentConfiguration: OAuthAgentConfiguration,
         cookieConfiguration: CookieConfiguration) {
 
-        this.container = container;
         this.configuration = agentConfiguration;
         this.authorizationServerClient = new AuthorizationServerClient(this.configuration);
         this.cookieProcessor = new CookieProcessor(cookieConfiguration);
@@ -34,7 +31,7 @@ export class OAuthAgent {
     /*
      * The entry point for processing of OAuth requests on behalf of the SPA
      */
-    public async handleRequest(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    public async handleRequest(event: APIGatewayProxyExtendedEvent): Promise<APIGatewayProxyResult> {
 
         const method = event.httpMethod.toLowerCase();
         const path = event.path.toLowerCase();
@@ -77,10 +74,9 @@ export class OAuthAgent {
     /*
      * Calculate the authorization redirect URL and write a state cookie
      */
-    /* eslint-disable @typescript-eslint/no-unused-vars */
-    public async startLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    private async startLogin(event: APIGatewayProxyExtendedEvent): Promise<APIGatewayProxyResult> {
 
-        this.container.getLogEntry().setOperationName('startLogin');
+        event.logEntry.setOperationName('startLogin');
 
         // First create a random login state
         const loginState = this.authorizationServerClient.generateLoginState();
@@ -108,9 +104,9 @@ export class OAuthAgent {
      * The SPA sends us the full URL when the page loads, and it may contain an authorization result
      * Complete login if required, by swapping the authorization code for tokens and storing tokens in secure cookies
      */
-    public async endLogin(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    private async endLogin(event: APIGatewayProxyExtendedEvent): Promise<APIGatewayProxyResult> {
 
-        this.container.getLogEntry().setOperationName('endLogin');
+        event.logEntry.setOperationName('endLogin');
 
         // Process the URL posted by the SPA
         const urlString = FormProcessor.readJsonField(event, 'pageUrl');
@@ -171,7 +167,7 @@ export class OAuthAgent {
             // Log ID token info
             const idTokenPayload = idToken.split('.')[1];
             const claims = JSON.parse(Base64Url.decode(idTokenPayload).toString());
-            this.container.getLogEntry().setIdTokenInfo(claims.sub, claims.origin_jti);
+            event.logEntry.setIdTokenInfo(claims.sub, claims.origin_jti);
 
             // Inform the SPA that that a login response was handled
             const body = {
@@ -197,7 +193,7 @@ export class OAuthAgent {
     /*
      * Return session information to the SPA
      */
-    public async session(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    private async session(event: APIGatewayProxyExtendedEvent): Promise<APIGatewayProxyResult> {
 
         const claims = this.preProcessRequest('session', event);
         const body: any = {
@@ -215,7 +211,7 @@ export class OAuthAgent {
     /*
      * Write a new access token into the access token cookie
      */
-    public async refresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    private async refresh(event: APIGatewayProxyExtendedEvent): Promise<APIGatewayProxyResult> {
 
         this.preProcessRequest('refresh', event);
 
@@ -252,7 +248,7 @@ export class OAuthAgent {
     /*
      * Make the access token inside secure cookies act expired, for testing purposes
      */
-    public async expireAccess(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    private async expireAccess(event: APIGatewayProxyExtendedEvent): Promise<APIGatewayProxyResult> {
 
         this.preProcessRequest('expireAccessToken', event);
 
@@ -278,7 +274,7 @@ export class OAuthAgent {
     /*
      * Make the refresh token inside secure cookies act expired, for testing purposes
      */
-    public async expireRefresh(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    private async expireRefresh(event: APIGatewayProxyExtendedEvent): Promise<APIGatewayProxyResult> {
 
         this.preProcessRequest('expireRefreshToken', event);
 
@@ -311,7 +307,7 @@ export class OAuthAgent {
     /*
      * Return the logout URL and clear cookies
      */
-    public async logout(event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> {
+    private async logout(event: APIGatewayProxyExtendedEvent): Promise<APIGatewayProxyResult> {
 
         this.preProcessRequest('logout', event);
 
@@ -331,15 +327,15 @@ export class OAuthAgent {
     /*
      * Pre process the request to perform logging and return the ID token
      */
-    private preProcessRequest(operationName: string, event: APIGatewayProxyEvent): any {
+    private preProcessRequest(operationName: string, event: APIGatewayProxyExtendedEvent): any {
 
-        this.container.getLogEntry().setOperationName(operationName);
+        event.logEntry.setOperationName(operationName);
 
         const idTokenPayload = this.cookieProcessor.readIdCookie(event);
         if (idTokenPayload) {
 
             const claims = JSON.parse(Base64Url.decode(idTokenPayload).toString());
-            this.container.getLogEntry().setIdTokenInfo(claims.sub, claims.origin_jti);
+            event.logEntry.setIdTokenInfo(claims.sub, claims.origin_jti);
             return claims;
         }
 

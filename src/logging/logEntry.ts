@@ -1,10 +1,10 @@
-import {APIGatewayProxyEvent} from 'aws-lambda';
 import {randomUUID} from 'crypto';
 import fs from 'node:fs/promises';
 import {ClientError} from '../errors/clientError';
 import {ServerError} from '../errors/serverError';
 import {HeaderProcessor} from '../http/headerProcessor';
 import {PathProcessor} from '../http/pathProcessor';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 import {TextValidator} from '../utilities/textValidator';
 import {LogEntryData} from './logEntryData';
 
@@ -22,7 +22,7 @@ export class LogEntry {
     /*
      * Methods to populate data during a request
      */
-    public start(event: APIGatewayProxyEvent): void {
+    public start(event: APIGatewayProxyExtendedEvent): void {
 
         this.data.performance.start();
         this.data.path = PathProcessor.getFullPath(event);

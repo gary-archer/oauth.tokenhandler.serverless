@@ -1,18 +1,16 @@
 import middy from '@middy/core';
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {APIGatewayProxyResult} from 'aws-lambda';
 import {LoggerFactory} from '../logging/loggerFactory';
-import {Container} from '../utilities/container';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 
 /*
  * The middleware coded in a class based manner
  */
-export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
+export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyExtendedEvent, APIGatewayProxyResult> {
 
-    private readonly container: Container;
     private readonly loggerFactory: LoggerFactory;
 
-    public constructor(container: Container, loggerFactory: LoggerFactory) {
-        this.container = container;
+    public constructor(loggerFactory: LoggerFactory) {
         this.loggerFactory = loggerFactory;
         this.setupCallbacks();
     }
@@ -20,11 +18,11 @@ export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEven
     /*
      * Start logging when a request begins
      */
-    public before(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
+    public before(request: middy.Request<APIGatewayProxyExtendedEvent, APIGatewayProxyResult>): void {
 
         // Create the log entry for the current request
         const logEntry = this.loggerFactory.createLogEntry();
-        this.container.setLogEntry(logEntry);
+        request.event.logEntry = logEntry;
 
         // Start request logging
         logEntry.start(request.event);
@@ -33,10 +31,10 @@ export class LoggerMiddleware implements middy.MiddlewareObj<APIGatewayProxyEven
     /*
      * Finish logging after normal completion
      */
-    public after(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
+    public after(request: middy.Request<APIGatewayProxyExtendedEvent, APIGatewayProxyResult>): void {
 
-        // Get the log entry
-        const logEntry = this.container.getLogEntry();
+        // Get the log entry for the current request
+        const logEntry = request.event.logEntry;
 
         // End logging
         if (request.response && request.response.statusCode) {

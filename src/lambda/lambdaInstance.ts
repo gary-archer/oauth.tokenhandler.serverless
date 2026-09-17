@@ -1,51 +1,54 @@
 import middy from '@middy/core';
-import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
+import {APIGatewayProxyResult, Context} from 'aws-lambda';
 import fs from 'fs';
 import {Configuration} from '../configuration/configuration';
 import {ResponseWriter} from '../http/responseWriter';
 import {LoggerFactory} from '../logging/loggerFactory';
-import {AuthorizerMiddleware} from '../middleware/authorizerMiddleware';
 import {CorsMiddleware} from '../middleware/corsMiddleware';
 import {ExceptionMiddleware} from '../middleware/exceptionMiddleware';
 import {LoggerMiddleware} from '../middleware/loggerMiddleware';
-import {Container} from '../utilities/container';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 
 /*
  * A shorthand type for this module
  */
-type AsyncHandler = (event: APIGatewayProxyEvent, context: Context) => Promise<APIGatewayProxyResult>;
+type AsyncHandler = (event: APIGatewayProxyExtendedEvent, context: Context) => Promise<APIGatewayProxyResult>;
 
 /*
- * A class to configure the lambda and manage cross cutting concerns
+ * Each instance of the lambda receives multiple HTTP requests
  */
-export class LambdaConfiguration {
+export class LambdaInstance {
 
-    public enrichHandler(baseHandler: AsyncHandler, container: Container)
-        : middy.MiddyfiedHandler<APIGatewayProxyEvent, APIGatewayProxyResult> | AsyncHandler {
+    private configuration: Configuration | null = null;
+
+    /*
+     * Enrich the base handler with middleware to manage cross cutting concerns
+     */
+    public prepare(baseHandler: AsyncHandler)
+        : middy.MiddyfiedHandler<APIGatewayProxyExtendedEvent, APIGatewayProxyResult> | AsyncHandler {
 
         const loggerFactory = new LoggerFactory();
         try {
-            // Load our JSON configuration
-            const configuration = this.loadConfiguration();
-            container.setConfiguration(configuration);
-            loggerFactory.configure(configuration.logging);
+
+            // Load the JSON configuration and configure logging
+            const configJson = fs.readFileSync('config.json', 'utf8');
+            this.configuration = JSON.parse(configJson) as Configuration;
+            loggerFactory.configure(this.configuration.logging);
 
             // Create middleware objects
-            const loggerMiddleware = new LoggerMiddleware(container, loggerFactory);
-            const exceptionMiddleware = new ExceptionMiddleware(container, loggerFactory);
-            const authorizerMiddleware = new AuthorizerMiddleware(container);
-            const corsMiddleware = new CorsMiddleware(configuration);
+            const loggerMiddleware = new LoggerMiddleware(loggerFactory);
+            const exceptionMiddleware = new ExceptionMiddleware(this.configuration, loggerFactory);
+            const corsMiddleware = new CorsMiddleware(this.configuration);
 
             // Wrap the base handler and add middleware for cross cutting concerns
-            return middy(async (event: APIGatewayProxyEvent, context: Context) => {
+            return middy(async (event: APIGatewayProxyExtendedEvent, context: Context) => {
                 return baseHandler(event, context);
 
             })
                 // Handlers run in the reverse order listed here, so that CORS headers are added to the response
                 .use(corsMiddleware)
                 .use(loggerMiddleware)
-                .use(exceptionMiddleware)
-                .use(authorizerMiddleware);
+                .use(exceptionMiddleware);
 
         } catch (e: any) {
 
@@ -55,12 +58,11 @@ export class LambdaConfiguration {
     }
 
     /*
-     * Load the configuration JSON file
+     * Return the configuration to lambda code
      */
-    private loadConfiguration(): Configuration {
-
-        const configJson = fs.readFileSync('config.json', 'utf8');
-        return JSON.parse(configJson) as Configuration;
+    /* eslint-disable @typescript-eslint/no-non-null-assertion */
+    public getConfiguration(): Configuration {
+        return this.configuration!;
     }
 
     /*

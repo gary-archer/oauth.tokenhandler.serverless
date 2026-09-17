@@ -1,12 +1,14 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {APIGatewayProxyResult} from 'aws-lambda';
 import middy from '@middy/core';
 import {Configuration} from '../configuration/configuration';
-import {PathProcessor} from '../http/pathProcessor';
+import {ErrorUtils} from '../errors/errorUtils';
+import {HeaderProcessor} from '../http/headerProcessor';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 
 /*
  * A middleware to add CORS response headers
  */
-export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
+export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyExtendedEvent, APIGatewayProxyResult> {
 
     private readonly configuration: Configuration;
 
@@ -18,14 +20,14 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
     /*
      * Run after a lambda completes successfully
      */
-    public after(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
+    public after(request: middy.Request<APIGatewayProxyExtendedEvent, APIGatewayProxyResult>): void {
         this.addResponseHeaders(request);
     }
 
     /*
      * Run after a lambda fails and returns an error
      */
-    public onError(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
+    public onError(request: middy.Request<APIGatewayProxyExtendedEvent, APIGatewayProxyResult>): void {
 
         this.addResponseHeaders(request);
     }
@@ -33,16 +35,14 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
     /*
      * Do the work of adding the CORS repsonse headers needed by the SPA
      */
-    private addResponseHeaders(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
+    private addResponseHeaders(request: middy.Request<APIGatewayProxyExtendedEvent, APIGatewayProxyResult>): void {
 
-        // Only add headers for trusted origins
-        const origin = this.readHeader('origin', request.event);
-        if (origin && this.isTrustedOrigin(request.event, origin) && request.response) {
+        if (this.isTrustedOrigin(request.event) && request.response) {
 
             const headers = request.response?.headers || {};
 
             // Always return these two CORS response headers
-            headers['access-control-allow-origin'] = origin;
+            headers['access-control-allow-origin'] = this.configuration.cors.trustedWebOrigin;
             headers['access-control-allow-credentials'] = 'true';
             headers['vary'] = 'origin';
 
@@ -59,6 +59,13 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
                     headers['access-control-allow-headers'] = requestedHeaders;
                     headers['vary'] = 'origin,access-control-request-headers';
                 }
+            } else {
+
+                // On the main request, require the custom header that ensure triggering of CORS preflights
+                const headerValue = HeaderProcessor.readHeader(request.event, 'token-handler-version');
+                if (headerValue != '1') {
+                    throw ErrorUtils.fromMissingCustomHeaderError();
+                }
             }
 
             // Set the final headers to return
@@ -67,35 +74,22 @@ export class CorsMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent,
     }
 
     /*
-     * We only add CORS response headers for trusted web origins
+     * We only add CORS response headers for the trusted web origin
      */
-    private isTrustedOrigin(event: APIGatewayProxyEvent, origin: string | null): boolean {
+    private isTrustedOrigin(event: APIGatewayProxyExtendedEvent): boolean {
 
+        const origin = this.readHeader('origin', event);
         if (!origin) {
             return false;
         }
 
-        const route = PathProcessor.findRoute(event, this.configuration.routes);
-        if (!route) {
-            return false;
-        }
-
-        const cors = route.plugins.find((p) => p === 'cors');
-        if (!cors) {
-            return false;
-        }
-
-        if (origin.toLowerCase() !== this.configuration.cors.trustedWebOrigin.toLowerCase()) {
-            return false;
-        }
-
-        return true;
+        return origin.toLowerCase() === this.configuration.cors.trustedWebOrigin.toLowerCase();
     }
 
     /*
      * Read a single value header value
      */
-    private readHeader(name: string, event: APIGatewayProxyEvent): string | null {
+    private readHeader(name: string, event: APIGatewayProxyExtendedEvent): string | null {
 
         if (event.headers) {
 

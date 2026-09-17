@@ -1,8 +1,8 @@
-import {APIGatewayProxyEvent} from 'aws-lambda';
 import {SerializeOptions, stringifySetCookie} from 'cookie';
 import {CookieConfiguration} from '../configuration/cookieConfiguration';
 import {ErrorUtils} from '../errors/errorUtils';
 import {CookieEncrypter} from '../utilities/cookieEncrypter';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 import {HeaderProcessor} from './headerProcessor';
 
 const STATE_COOKIE   = 'state';
@@ -37,7 +37,7 @@ export class CookieProcessor {
     /*
      * Read the state cookie object when a login ends
      */
-    public readStateCookie(event: APIGatewayProxyEvent): any {
+    public readStateCookie(event: APIGatewayProxyExtendedEvent): any {
 
         const name = this.getCookieName(STATE_COOKIE);
         const ciphertext = HeaderProcessor.readCookieValue(event, name);
@@ -63,7 +63,7 @@ export class CookieProcessor {
     /*
      * Read the refresh token from the cookie
      */
-    public readRefreshCookie(event: APIGatewayProxyEvent): string | null {
+    public readRefreshCookie(event: APIGatewayProxyExtendedEvent): string | null {
 
         const name = this.getCookieName(REFRESH_COOKIE);
         const ciphertext = HeaderProcessor.readCookieValue(event, name);
@@ -87,7 +87,7 @@ export class CookieProcessor {
     /*
      * Read the access token from the cookie
      */
-    public readAccessCookie(event: APIGatewayProxyEvent): string | null {
+    public readAccessCookie(event: APIGatewayProxyExtendedEvent): string | null {
 
         const name = this.getCookieName(ACCESS_COOKIE);
         const ciphertext = HeaderProcessor.readCookieValue(event, name);
@@ -117,7 +117,7 @@ export class CookieProcessor {
     /*
      * Read the ID token from the cookie
      */
-    public readIdCookie(event: APIGatewayProxyEvent): string | null {
+    public readIdCookie(event: APIGatewayProxyExtendedEvent): string | null {
 
         const name = this.getCookieName(ID_COOKIE);
         const ciphertext = HeaderProcessor.readCookieValue(event, name);
@@ -131,7 +131,7 @@ export class CookieProcessor {
     /*
      * Get the cookie without reading it to detect whether logged in
      */
-    public isLoggedIn(event: APIGatewayProxyEvent): boolean {
+    public isLoggedIn(event: APIGatewayProxyExtendedEvent): boolean {
         const name = this.getCookieName(ID_COOKIE);
         const ciphertext = HeaderProcessor.readCookieValue(event, name);
         return !!ciphertext;

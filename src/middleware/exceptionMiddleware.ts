@@ -1,5 +1,6 @@
-import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {APIGatewayProxyResult} from 'aws-lambda';
 import middy from '@middy/core';
+import {Configuration} from '../configuration/configuration';
 import {ClientError} from '../errors/clientError';
 import {ErrorCodes} from '../errors/errorCodes';
 import {ErrorUtils} from '../errors/errorUtils';
@@ -7,18 +8,18 @@ import {ServerError} from '../errors/serverError';
 import {CookieProcessor} from '../http/cookieProcessor';
 import {ResponseWriter} from '../http/responseWriter';
 import {LoggerFactory} from '../logging/loggerFactory';
-import {Container} from '../utilities/container';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 
 /*
  * The exception middleware coded in a class based manner
  */
-export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyEvent, APIGatewayProxyResult> {
+export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyExtendedEvent, APIGatewayProxyResult> {
 
-    private readonly container: Container;
+    private readonly configuration: Configuration;
     private readonly apiName: string;
 
-    public constructor(container: Container, loggerFactory: LoggerFactory) {
-        this.container = container;
+    public constructor(configuration: Configuration, loggerFactory: LoggerFactory) {
+        this.configuration = configuration;
         this.apiName = loggerFactory.apiName;
         this.setupCallbacks();
     }
@@ -26,10 +27,10 @@ export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyE
     /*
      * All exceptions are caught and returned from AWS here
      */
-    public onError(request: middy.Request<APIGatewayProxyEvent, APIGatewayProxyResult>): void {
+    public onError(request: middy.Request<APIGatewayProxyExtendedEvent, APIGatewayProxyResult>): void {
 
         // Get the log entry
-        const logEntry = this.container.getLogEntry();
+        const logEntry = request.event.logEntry;
 
         // Get the error into a known object
         const error = ErrorUtils.fromException(request.error);
@@ -64,7 +65,7 @@ export class ExceptionMiddleware implements middy.MiddlewareObj<APIGatewayProxyE
         // Handle the special session expire case, and clear all cookies
         if (clientError.getStatusCode() === 401 && clientError.getErrorCode() === ErrorCodes.sessionExpiredError) {
 
-            const cookieProcessor = new CookieProcessor(this.container.getConfiguration().cookie);
+            const cookieProcessor = new CookieProcessor(this.configuration.cookie);
             request.response.multiValueHeaders = {
                 'set-cookie': cookieProcessor.expireAllCookies()
             };

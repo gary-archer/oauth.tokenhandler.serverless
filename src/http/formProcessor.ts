@@ -1,11 +1,11 @@
-import {APIGatewayProxyEvent} from 'aws-lambda';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 
 /*
  * A utility to read form data
  */
 export class FormProcessor {
 
-    public static readJsonField(event: APIGatewayProxyEvent, name: string): string | null {
+    public static readJsonField(event: APIGatewayProxyExtendedEvent, name: string): string | null {
 
         const body = event.body ? JSON.parse(event.body) : {};
 

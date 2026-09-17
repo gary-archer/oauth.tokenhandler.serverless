@@ -117,7 +117,7 @@ try {
     if (!userInfo) {
         const refreshed = await oauthClient.refresh();
         if (!refreshed) {
-            console.log('10. Session is expired');
+            console.log('10. Session expired correctly');
         }
     }
 

@@ -1,5 +1,5 @@
-import {APIGatewayProxyEvent} from 'aws-lambda';
-import {RouteConfiguration} from '../configuration/routeConfiguration';
+import {ApiRouteConfiguration} from '../configuration/apiRouteConfiguration';
+import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
 
 /*
  * A utility to deal with paths
@@ -7,9 +7,11 @@ import {RouteConfiguration} from '../configuration/routeConfiguration';
 export class PathProcessor {
 
     /*
-     * Try to find a reverse proxy route for the current path
+     * Try to find an API route for the current path
      */
-    public static findRoute(event: APIGatewayProxyEvent, routes: RouteConfiguration[]): RouteConfiguration | undefined {
+    public static findApiRoute(
+        event: APIGatewayProxyExtendedEvent,
+        routes: ApiRouteConfiguration[]): ApiRouteConfiguration | undefined {
 
         return routes.find(r => event.path.toLowerCase().startsWith(r.path.toLowerCase()));
     }
@@ -17,7 +19,7 @@ export class PathProcessor {
     /*
      * Get the full request path, including query parameters
      */
-    public static getFullPath(event: APIGatewayProxyEvent): string {
+    public static getFullPath(event: APIGatewayProxyExtendedEvent): string {
 
         let path = '';
         if (event.path) {

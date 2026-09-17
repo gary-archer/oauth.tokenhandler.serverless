@@ -3,7 +3,7 @@ import {CorsConfiguration} from './corsConfiguration';
 import {HostConfiguration} from './hostConfiguration';
 import {LoggingConfiguration} from './loggingConfiguration';
 import {OAuthAgentConfiguration} from './oauthAgentConfiguration';
-import {RouteConfiguration} from './routeConfiguration';
+import {ApiRouteConfiguration} from './apiRouteConfiguration';
 
 /*
  * The overall configuration
@@ -14,5 +14,5 @@ export interface Configuration {
     cors: CorsConfiguration;
     cookie: CookieConfiguration;
     oauthAgent: OAuthAgentConfiguration;
-    routes: RouteConfiguration[];
+    apiRoutes: ApiRouteConfiguration[];
 }

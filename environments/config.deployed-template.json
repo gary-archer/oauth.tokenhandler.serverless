@@ -28,20 +28,14 @@
             "scope": "openid profile https://api.authsamples.com/investments"
         }
     },
-    "routes": [
-        {
-            "path": "/oauth-agent",
-            "plugins": ["cors", "oauthAgent"]
-        },
+    "apiRoutes": [
         {
             "path": "/investments",
-            "target": "https://api.authsamples.com/investments",
-            "plugins": ["cors", "oauthProxy"]
+            "target": "https://api.authsamples.com/investments"
         },
         {
             "path": "/oauthuserinfo",
-            "target": "https://login.authsamples.com/oauth2/userInfo",
-            "plugins": ["cors", "oauthProxy"]
+            "target": "https://login.authsamples.com/oauth2/userInfo"
         }
     ]
 }

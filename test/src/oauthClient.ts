@@ -65,7 +65,7 @@ export class OAuthClient {
      * Refresh tokens
      */
     public async refresh(): Promise<boolean> {
-        
+
         try {
 
             await this.callOAuthAgent('POST', 'oauth-agent/refresh', null, false);

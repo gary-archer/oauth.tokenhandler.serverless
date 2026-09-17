@@ -40,7 +40,7 @@ async function login(authorizationRequestUrl: string): Promise<string> {
 }
 
 /*
- * Use the browser to test a logout operation
+ * Use the browser to test a logout operation and work around Playwright automatic redirect issues
  */
 async function logout(endSessionRequestUrl: string): Promise<void> {
 
@@ -60,7 +60,15 @@ async function logout(endSessionRequestUrl: string): Promise<void> {
         },
     );
 
-    page.goto(endSessionRequestUrl).catch(() => {});
+    const response = await page.request.get(endSessionRequestUrl, {
+        maxRedirects: 0,
+    });
+
+    if (response.status() === 302) {
+        const postLogoutRedirectUri = response.headers()['location'];
+        await page.goto(postLogoutRedirectUri).catch(() => {});
+    }
+
     await callbackPromise;
     browser.close();
 }

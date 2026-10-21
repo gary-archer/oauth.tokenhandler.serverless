@@ -6,7 +6,6 @@ import {CookieProcessor} from '../http/cookieProcessor';
 import {FormProcessor} from '../http/formProcessor';
 import {ResponseWriter} from '../http/responseWriter';
 import {APIGatewayProxyExtendedEvent} from '../utilities/apiGatewayProxyExtendedEvent';
-import {Base64Url} from '../utilities/base64url';
 import {AuthorizationServerClient} from './authorizationServerClient';
 import {EndLoginResponse} from './endLoginResponse';
 
@@ -166,7 +165,8 @@ export class OAuthAgent {
 
             // Log ID token info
             const idTokenPayload = idToken.split('.')[1];
-            const claims = JSON.parse(Base64Url.decode(idTokenPayload).toString());
+            const idTokenPayloadJson = Buffer.from(idTokenPayload, 'base64url').toString('utf-8');
+            const claims = JSON.parse(idTokenPayloadJson);
             event.logEntry.setIdTokenInfo(claims.sub, claims.origin_jti);
 
             // Inform the SPA that that a login response was handled
@@ -334,7 +334,8 @@ export class OAuthAgent {
         const idTokenPayload = this.cookieProcessor.readIdCookie(event);
         if (idTokenPayload) {
 
-            const claims = JSON.parse(Base64Url.decode(idTokenPayload).toString());
+            const idTokenPayloadJson = Buffer.from(idTokenPayload, 'base64url').toString('utf-8');
+            const claims = JSON.parse(idTokenPayloadJson);
             event.logEntry.setIdTokenInfo(claims.sub, claims.origin_jti);
             return claims;
         }

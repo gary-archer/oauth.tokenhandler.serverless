@@ -14,10 +14,11 @@ export class OAuthLoginState {
      */
     public constructor() {
 
+        this.state = this.getBytes().toString('base64url');
+
         const verifierBytes = this.getBytes();
-        this.state = this.base64UrlEncode(this.getBytes());
-        this.codeVerifier = this.base64UrlEncode(verifierBytes);
-        this.codeChallenge = this.base64UrlEncode(this.sha256(this.codeVerifier));
+        this.codeVerifier = verifierBytes.toString('base64url');
+        this.codeChallenge = this.sha256(this.codeVerifier).toString('base64url');
     }
 
     public getState(): string {
@@ -37,17 +38,6 @@ export class OAuthLoginState {
      */
     private getBytes(): Buffer {
         return randomBytes(32);
-    }
-
-    /*
-     * Convert a previously generated buffer to a string
-     */
-    private base64UrlEncode(buffer: Buffer): string {
-
-        return buffer.toString('base64')
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=/g, '');
     }
 
     /*

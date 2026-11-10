@@ -51,7 +51,6 @@ export class OAuthProxy {
         const fullPath = PathProcessor.getFullPath(event);
         const fullPathToForward = fullPath.replace(apiRoute.path, '');
         const url = `${apiRoute.target}${fullPathToForward}`;
-        console.log(url);
 
         const headers: any  = {
             'accept': 'application/json',

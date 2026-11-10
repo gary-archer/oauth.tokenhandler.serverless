@@ -1,5 +1,4 @@
 import {randomUUID} from 'crypto';
-import fs from 'node:fs/promises';
 import {ClientError} from '../errors/clientError';
 import {ServerError} from '../errors/serverError';
 import {HeaderProcessor} from '../http/headerProcessor';
@@ -80,9 +79,8 @@ export class LogEntry {
 
             if (this.prettyPrint) {
 
-                // On a developer PC, output from 'npm run lambda' is written with pretty printing to a file
-                const data = JSON.stringify(this.data.toLogFormat(), null, 2);
-                fs.appendFile('./test/tokenhandler.log', data);
+                // On a developer PC, output uses pretty printing
+                console.log(JSON.stringify(this.data.toLogFormat(), null, 2));
 
             } else {
 

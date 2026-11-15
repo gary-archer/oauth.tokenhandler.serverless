@@ -9,7 +9,7 @@ The lambda manages all web specific security, to keep the [Serverless API](https
 
 ![SPA Architecture](./images/spa-architecture.png)
 
-API performance is a little suboptimal, due to the nature of the AWS API gateway:
+API hosting is low cost, but performance is a little suboptimal, due to the nature of the AWS infrastructure:
 
 - SPA requests first call the AWS API gateway for the BFF domain and invoke the wildcard lambda.  
 - The wildcard lambdas then makes an upstream request to AWS API gateway for the API domain.  

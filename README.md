@@ -11,8 +11,13 @@ The lambda manages all web specific security, to keep the [Serverless API](https
 
 ## Local Development Quick Start
 
-The token handler uses a [Real World OAuth Development URL](https://github.com/gary-archer/oauth.blog/blob/master/public/posts/developer-ssl-setup.mdx#real-world-oauth-development-urls) on a local computer.  
-You must use admin permissions to configure infrastructure, starting with DNS entries in your `/etc/hosts` file:
+Run the code sample from a terminal on Linux, macOS or Windows (with Git bash).  
+The SPA and API use [Real World OAuth Development URLs](https://github.com/gary-archer/oauth.blog/blob/master/public/posts/developer-ssl-setup.mdx#real-world-oauth-development-urls) on a local computer.  
+
+### Administrator Setup
+
+You must use admin permissions to configure infrastructure before you run the code.  
+First, add DNS entries to your `/etc/hosts` file:
 
 ```bash
 127.0.0.1 localhost bfflocal.authsamples-dev.com

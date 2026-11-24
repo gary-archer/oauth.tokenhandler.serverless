@@ -14,7 +14,7 @@ const BFF_BASE_URL = 'https://bfflocal.authsamples-dev.com:444';
  */
 async function login(authorizationRequestUrl: string): Promise<string> {
 
-    const browser = await chromium.launch({ headless: false });
+    const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     await page.goto(authorizationRequestUrl);
     await page.getByPlaceholder('name@host.com').fill(TEST_USERNAME);
@@ -44,7 +44,7 @@ async function login(authorizationRequestUrl: string): Promise<string> {
  */
 async function logout(endSessionRequestUrl: string): Promise<void> {
 
-    const browser = await chromium.launch({ headless: false });
+    const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
 
     const callbackPromise = new Promise<string>(
